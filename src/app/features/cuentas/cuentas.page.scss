@@ -63,6 +63,15 @@
 // 12 columnas de la página (ver `cuentas.page.html`), que aplica por igual
 // al encabezado y a los grupos.
 
+// En el celular la tarjeta mide lo mismo que en las otras pantallas
+// (ver `.hero--pantalla`): sin la barra, que el punto de color de cada
+// cifra ya hace de leyenda.
+@media (max-width: 767.98px) {
+  .resumen .bar--segmentos {
+    display: none;
+  }
+}
+
 // Sin nada reservado, una línea en lugar de la barra y las dos cifras.
 .resumen__nota {
   display: flex;

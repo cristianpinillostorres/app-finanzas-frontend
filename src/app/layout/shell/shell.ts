@@ -1,5 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +22,7 @@ import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
 import { GuiaPaso } from '../../shared/bienvenida/guia-paso';
 import { MontosVisibilityService } from '../../core/montos-visibility.service';
 import { OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
+import { AccionesEscritorioService } from '../acciones-escritorio.service';
 import { HeaderActionService } from '../header-action.service';
 import { HeaderSearchService } from '../header-search.service';
 import { NAV_ITEMS } from '../nav/nav-items';
@@ -67,6 +76,8 @@ export class Shell {
   );
 
   private readonly campoBusqueda = viewChild<ElementRef<HTMLInputElement>>('campoBusqueda');
+  private readonly accionesEscritorio = viewChild.required<TemplateRef<unknown>>('acciones');
+  private readonly acciones = inject(AccionesEscritorioService);
 
   /** Nombre de la sección actual, para el header móvil. */
   protected readonly tituloPantalla = toSignal(
@@ -84,7 +95,7 @@ export class Shell {
 
   protected readonly opcionesTema = OPCIONES_TEMA;
 
-  /** Correo de la sesión, para el bloque de usuario junto a la marca. */
+  /** Correo de la sesión, para el avatar y el menú de la cuenta en escritorio. */
   protected readonly correoUsuario = this.auth.email;
   protected readonly inicialUsuario = computed(() =>
     (this.correoUsuario() ?? '?').trim().charAt(0).toUpperCase(),
@@ -100,6 +111,12 @@ export class Shell {
     // insertado").
     effect(() => {
       if (this.headerSearch.abierta()) this.campoBusqueda()?.nativeElement.focus();
+    });
+
+    // En escritorio los botones globales van en la fila del título de cada
+    // pantalla (ver `PageHead`); en el teléfono ya están en el header.
+    effect(() => {
+      this.acciones.establecer(this.viewport.esMovil() ? null : this.accionesEscritorio());
     });
 
     // Sin ninguna cuenta y sin haber saltado el recorrido, el lugar es la
@@ -153,5 +170,4 @@ export class Shell {
   vincularGoogle(): void {
     this.auth.vincularGoogle();
   }
-
 }

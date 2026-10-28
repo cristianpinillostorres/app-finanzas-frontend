@@ -26,7 +26,8 @@ import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
  */
 @Component({
   selector: 'app-ajustar-saldo-form',
-  imports: [HojaCabecera, 
+  imports: [
+    HojaCabecera,
     Selector,
     ReactiveFormsModule,
     MatIconModule,

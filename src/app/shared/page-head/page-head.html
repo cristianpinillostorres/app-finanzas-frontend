@@ -1,9 +1,4 @@
 <header class="page-head">
-  @if (icono()) {
-    <span class="page-head__sello" aria-hidden="true">
-      <mat-icon>{{ icono() }}</mat-icon>
-    </span>
-  }
   <div class="page-head__texto">
     <h1 class="page-head__titulo">{{ titulo() }}</h1>
     @if (detalle()) {
@@ -13,4 +8,9 @@
   <div class="page-head__acciones">
     <ng-content></ng-content>
   </div>
+  @if (accionesGlobales(); as plantilla) {
+    <div class="page-head__globales">
+      <ng-container *ngTemplateOutlet="plantilla" />
+    </div>
+  }
 </header>

@@ -1,4 +1,7 @@
-<app-hoja-cabecera [titulo]="editando ? 'Editar categoría' : 'Nueva categoría'" (cerrar)="cerrar()" />
+<app-hoja-cabecera
+  [titulo]="editando ? 'Editar categoría' : 'Nueva categoría'"
+  (cerrar)="cerrar()"
+/>
 
 <form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
   @if (!editando) {

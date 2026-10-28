@@ -1,13 +1,8 @@
 <div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
-  <app-page-head
-    icono="credit_card"
-    class="col-md-12"
-    titulo="Créditos"
-    [detalle]="detalleCreditos()"
-  >
+  <app-page-head class="col-md-12" titulo="Créditos" [detalle]="detalleCreditos()">
     <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
     @if (!listo() || !sinDatos()) {
-      <button class="btn btn-outline" type="button" (click)="agregarCredito()">
+      <button class="btn btn-tonal" type="button" (click)="agregarCredito()">
         <mat-icon aria-hidden="true">add</mat-icon>
         Agregar crédito
       </button>
@@ -37,7 +32,7 @@
     preguntas que se hacen juntas: van en la misma tarjeta, con la deuda
     como cifra que manda.
   -->
-    <section class="hero col-md-12">
+    <section class="hero hero--pantalla col-md-12">
       <span class="t-meta">Deuda total</span>
       <span class="t-hero amt" [class.mon-deuda]="deudaTotal() > 0"
         ><app-amount [valor]="deudaTotal()" [animar]="true" [cargando]="!listo()"
@@ -257,7 +252,7 @@
                       <span class="accion-redonda__circulo">
                         <mat-icon aria-hidden="true">add_shopping_cart</mat-icon>
                       </span>
-                      Agregar<br />compra
+                      Agregar <br />compra
                     </button>
                   }
                   @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
@@ -269,7 +264,7 @@
                       <span class="accion-redonda__circulo">
                         <mat-icon aria-hidden="true">percent</mat-icon>
                       </span>
-                      Cambiar<br />tasa
+                      Cambiar <br />tasa
                     </button>
                   }
                   @if (item.credito.grupo === 'PERSONA') {
@@ -281,7 +276,7 @@
                       <span class="accion-redonda__circulo">
                         <mat-icon aria-hidden="true">payments</mat-icon>
                       </span>
-                      Registrar<br />abono
+                      Registrar <br />abono
                     </button>
                   }
                   <button class="accion-redonda" type="button" (click)="editar(item.credito)">

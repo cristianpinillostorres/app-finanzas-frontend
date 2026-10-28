@@ -1,13 +1,8 @@
 <div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
-  <app-page-head
-    icono="event_repeat"
-    class="col-md-12"
-    titulo="Pagos fijos"
-    [detalle]="detallePagos()"
-  >
+  <app-page-head class="col-md-12" titulo="Pagos fijos" [detalle]="detallePagos()">
     <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
     @if (!listo() || !sinDatos()) {
-      <button class="btn btn-outline" type="button" (click)="agregarPagoFijo()">
+      <button class="btn btn-tonal" type="button" (click)="agregarPagoFijo()">
         <mat-icon aria-hidden="true">add</mat-icon>
         Nuevo pago fijo
       </button>
@@ -32,24 +27,14 @@
       </button>
     </app-pantalla-vacia>
   } @else {
-    <!-- Fuera de la cabecera: en móvil esa no se dibuja y el mes hay que
-       poder cambiarlo igual. -->
-    <div class="col-md-12">
-      <app-month-selector
-        [etiqueta]="etiquetaMes()"
-        (anterior)="mesAnterior()"
-        (siguiente)="mesSiguiente()"
-      />
-    </div>
-
     <!--
-    El héroe lidera con lo que falta, pero la barra lee "pagado vs total":
-    el número grande responde "¿cuánto me queda?" y la barra "¿qué tan
-    avanzado voy?". Antes la barra no tenía rótulo y no se sabía qué medía.
+    La misma tarjeta que Movimientos o Créditos: lo que falta manda, y
+    debajo el total del mes y lo pagado en dos columnas. Va antes del mes,
+    en el celular y en la web, por eso el rótulo nombra el mes.
   -->
-    <section class="hero col-md-12 col-lg-4">
+    <section class="hero hero--pantalla col-md-12">
       <span class="hd">
-        <span class="t-meta">Falta por pagar</span>
+        <span class="t-meta">Falta por pagar en {{ nombreMes() }}</span>
         @if (vencidos(); as cuantos) {
           <span class="badge sem-rojo">
             <mat-icon aria-hidden="true">error</mat-icon>
@@ -61,29 +46,27 @@
         ><app-amount [valor]="resumen().totalPorPagar" [animar]="true" [cargando]="!listo()"
       /></span>
 
-      <div class="progreso">
-        <div class="progreso__rotulos">
-          <!-- Rótulo y porcentaje miden lo mismo (plata): antes decía "3 de 15
-             pagados" al lado de un 52% que era del dinero, no de los pagos. -->
-          <span class="t-sec">Pagado del total del mes</span>
-          @if (listo()) {
-            <span class="t-sec tnum">{{ resumen().progreso }}%</span>
-          }
-        </div>
-        <div class="bar bar--ingreso"><i [style.--progreso]="resumen().progreso / 100"></i></div>
-      </div>
-
-      <div class="desglose">
+      <div class="desglose desglose--columnas">
         <div>
-          <span>Total del mes</span>
+          <span class="t-meta">Total del mes</span>
           <app-amount class="amt" [valor]="resumen().totalMes" [cargando]="!listo()" />
         </div>
         <div>
-          <span>Pagado</span>
+          <span class="t-meta">Pagado</span>
           <app-amount class="amt" [valor]="resumen().totalPagado" [cargando]="!listo()" />
         </div>
       </div>
     </section>
+
+    <!-- Fuera de la cabecera: en móvil esa no se dibuja y el mes hay que
+       poder cambiarlo igual. -->
+    <div class="col-md-12">
+      <app-month-selector
+        [etiqueta]="etiquetaMes()"
+        (anterior)="mesAnterior()"
+        (siguiente)="mesSiguiente()"
+      />
+    </div>
 
     <!--
     "¿Qué tengo que pagar y cuándo?" como una línea de tiempo del mes: los
@@ -92,7 +75,7 @@
     Reemplaza las dos columnas Por pagar / Pagados, que obligaban a cruzar
     dos listas para saber qué venía primero.
   -->
-    <section class="seccion-linea col-md-12 col-lg-8" aria-labelledby="titulo-linea">
+    <section class="seccion-linea col-md-12" aria-labelledby="titulo-linea">
       <div class="group-head">
         <h2 class="group-head__titulo" id="titulo-linea">Tu mes, día por día</h2>
         @if (listo()) {
@@ -200,7 +183,7 @@
                                 <span class="accion-redonda__circulo">
                                   <mat-icon aria-hidden="true">check</mat-icon>
                                 </span>
-                                Ya lo<br />pagué
+                                Ya lo <br />pagué
                               </button>
                             } @else if (item.marcadoSinMovimiento) {
                               <button

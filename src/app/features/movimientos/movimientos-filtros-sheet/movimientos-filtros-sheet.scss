@@ -1,8 +1,5 @@
-// El pie con "Limpiar"/"Aplicar" queda fijo abajo con flex, no con
-// `position: fixed` — el contenedor de `MatBottomSheet` puede animar con un
-// `transform` (crea un nuevo containing block), lo que rompería un `fixed`
-// hijo. Con flex-column + `overflow-y` solo en `.cuerpo`, el pie no
-// necesita salirse del flujo para quedar siempre visible.
+// Sin pie: "Aplicar" va en la barra de arriba y "Limpiar filtros" es una
+// fila más, como en los ajustes de iOS.
 :host {
   display: flex;
   flex-direction: column;
@@ -10,44 +7,26 @@
 }
 
 .cuerpo {
-  overflow-y: auto;
-  padding: var(--space-4);
-}
-
-.sheet-hd {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.grupo-filtro {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--border);
-
-  &:first-of-type {
-    border-top: none;
-    padding-top: 0;
-  }
+  gap: var(--space-5);
+  overflow-y: auto;
+  padding: 0 var(--space-4);
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
 }
 
-.cuerpo > .ios-grupo {
-  margin-top: var(--space-3);
+// La cabecera trae su propio margen; el `gap` ya separa.
+app-hoja-cabecera {
+  margin-bottom: calc(-1 * var(--space-3));
 }
 
-.sheet-ft {
-  flex-shrink: 0;
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
-  background: var(--bg-page);
-  border-top: 1px solid var(--border);
+.fila-limpiar {
+  justify-content: center;
+  font-size: var(--text-fila);
+  color: var(--accent);
+  cursor: pointer;
 
-  .btn {
-    flex: 1;
+  &:active {
+    opacity: 0.5;
   }
 }

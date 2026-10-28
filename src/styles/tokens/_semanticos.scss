@@ -284,7 +284,7 @@
   --focus-color: var(--accent-brillo);
 
   // -- layout --
-  // Ancho del cabezote + barra lateral + contenido en escritorio. El
+  // Ancho de la barra lateral + contenido en escritorio. El
   // contenido solo queda en ~1150px, lo mismo que tenía antes la columna
   // única de 1200px.
   --layout-max: 1440px;
@@ -292,7 +292,6 @@
   --ancho-lateral-iconos: 76px;
   --layout-gutter: var(--space-4);
   --altura-topbar: 56px;
-  --altura-cabezote: 76px;
   --altura-barra-inferior: 64px;
   --altura-fab: 56px;
   // Área táctil mínima (WCAG 2.5.5 / HIG): ningún control baja de acá.

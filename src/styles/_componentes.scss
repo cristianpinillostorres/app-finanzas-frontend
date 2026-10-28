@@ -191,6 +191,30 @@
   border-color: var(--accent-brillo);
 }
 
+// Acción secundaria con el tinte del acento: el mismo tono de los círculos
+// de `.accion-redonda`. Es el escalón entre "Nuevo movimiento" (relleno
+// sólido) y las acciones de texto, para que la app tenga un solo tono
+// secundario y no uno por botón.
+// Mide lo mismo que las acciones de una cuenta abierta en escritorio y que
+// el ojo (40px, texto pequeño, menos aire a la izquierda del ícono): con el
+// `.btn` de 44px se veía más grande y más relleno que sus vecinos.
+.btn-tonal {
+  min-height: var(--space-10);
+  padding: 0 var(--space-4) 0 var(--space-3);
+  font-size: var(--text-sm);
+  background: var(--accent-bg);
+  color: var(--accent);
+
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+.btn-tonal:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 12%, var(--accent-bg));
+}
+
 .btn-text {
   color: var(--accent);
   padding: 0 var(--space-3);
@@ -355,6 +379,21 @@
   border-radius: var(--radius-card);
   overflow: hidden;
 }
+// Panel que lleva a su pantalla al tocarlo (en General). Se levanta un poco
+// al pasar el mouse para decir que es tocable; solo con mouse, porque en el
+// teléfono el `:hover` se queda pegado después del toque.
+.panel--enlace {
+  cursor: pointer;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .panel--enlace:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+}
 .panel-head {
   display: flex;
   align-items: center;
@@ -492,6 +531,31 @@
     mask-size: auto 120px;
   }
 }
+// El héroe de cada pantalla: mide lo mismo en todas y va en el mismo
+// sitio, así al cambiar de pestaña solo cambia el número. Rótulo, cifra y
+// dos columnas; el alto mínimo cubre los casos con menos contenido (una
+// nota en vez del desglose) y el desglose se ancla abajo. En escritorio el
+// alto es el de General, que suma una frase explicativa.
+//
+// En el celular General sigue con su alto propio: allá su frase ocupa dos
+// o tres líneas y no tiene sentido estirar las demás a esa medida.
+//
+// Con nombre propio en la transición de vista: al cambiar de pantalla no
+// se funde con el resto, se queda en su sitio y solo cambia su contenido.
+.hero--pantalla {
+  view-transition-name: heroe-pantalla;
+  justify-content: space-between;
+}
+@media (max-width: 767.98px) {
+  .hero--pantalla:not(.hero--libre) {
+    min-height: var(--alto-hero-pantalla);
+  }
+}
+@media (min-width: 768px) {
+  .hero--pantalla {
+    min-height: var(--alto-hero-pantalla-escritorio);
+  }
+}
 .desglose {
   display: flex;
   flex-direction: column;
@@ -536,42 +600,26 @@
 // Título, detalle y acciones en una sola fila. En móvil las acciones bajan
 // a su propia línea: con "Movimientos" y un selector de mes al lado no
 // caben en 360px sin que el título se parta.
-// Es la `.cat-header` de Mi Semana: un panel con el sello de la sección a
-// la izquierda (el mismo ícono de la barra lateral, sobre teal) y el
-// título en Anton.
+// Un panel bajo, sin sello: el título en Anton y el detalle debajo. Comparte
+// la fila con los botones globales (ver `PageHead`), así que su alto es el
+// de esos botones más poco: lo justo para que el contenido empiece arriba.
+// Sin borde, como el héroe y los paneles de abajo: la superficie blanca
+// sobre el gris de la página ya lo separa.
 .page-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-4);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-5);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius-card);
-}
-
-.page-head__sello {
-  display: grid;
-  place-items: center;
-  width: var(--space-16);
-  height: var(--space-16);
-  flex: none;
-  border-radius: var(--radius-md);
-  background: var(--accent-solid);
-  color: var(--text-on-accent);
-
-  mat-icon {
-    font-size: var(--space-8);
-    width: var(--space-8);
-    height: var(--space-8);
-  }
 }
 
 .page-head__texto {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -630,6 +678,8 @@
 // empiecen a la misma altura (ver `.hero--libre` en General).
 :root {
   --alto-group-head: 20px;
+  --alto-hero-pantalla: 180px;
+  --alto-hero-pantalla-escritorio: 230px;
 }
 .group-head {
   display: flex;
@@ -1970,5 +2020,65 @@ button.ios-fila:focus-visible {
   .accion-redonda__circulo {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+}
+
+// En escritorio sobra ancho y el puntero no necesita un círculo grande: la
+// fila de círculos con el nombre partido debajo se veía como un teléfono
+// estirado. Ahí cada acción es un botón tonal (ver `.btn-tonal`) con el
+// ícono y el nombre en una línea, alineados a la izquierda.
+@media (min-width: 768px) {
+  .acciones-redondas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .accion-redonda {
+    flex-direction: row;
+    gap: var(--space-2);
+    min-height: var(--space-10);
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-size: var(--text-sm);
+    line-height: 1;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-out);
+
+    // El nombre va en una línea: el corte es solo del teléfono.
+    br {
+      display: none;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 12%, var(--accent-bg));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+
+      .accion-redonda__circulo {
+        outline: none;
+      }
+    }
+  }
+
+  .accion-redonda__circulo {
+    width: auto;
+    height: auto;
+    background: none;
+
+    mat-icon {
+      font-size: var(--text-lg);
+      width: var(--text-lg);
+      height: var(--text-lg);
+    }
+  }
+
+  .accion-redonda:active .accion-redonda__circulo {
+    transform: none;
   }
 }

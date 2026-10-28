@@ -149,7 +149,8 @@ export class CreditosPage {
     // Mientras carga, sin conteo: un "0" se leería como dato real.
     if (!this.listo()) return '';
     const total = this.todosLosCreditos().length;
-    return `${total} ${total === 1 ? 'crédito activo' : 'créditos activos'}`;
+    if (total === 0) return 'No tienes créditos activos';
+    return `Tienes ${total} ${total === 1 ? 'crédito activo' : 'créditos activos'}`;
   });
   protected readonly deudaTotal = computed(() =>
     this.todosLosCreditos().reduce((acc, c) => acc + c.deuda, 0),

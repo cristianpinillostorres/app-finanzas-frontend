@@ -28,7 +28,14 @@ import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
  */
 @Component({
   selector: 'app-bolsillo-form',
-  imports: [HojaCabecera, ReactiveFormsModule, MatIconModule, MatButtonModule, MonedaCopPipe, GuardandoOverlay],
+  imports: [
+    HojaCabecera,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MonedaCopPipe,
+    GuardandoOverlay,
+  ],
   templateUrl: './bolsillo-form.html',
   styleUrl: './bolsillo-form.scss',
 })

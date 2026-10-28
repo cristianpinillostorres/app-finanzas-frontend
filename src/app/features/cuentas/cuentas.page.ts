@@ -165,7 +165,10 @@ export class CuentasPage {
     const total = this.totalCuentasActivas();
     const cuentas = total === 1 ? '1 cuenta activa' : `${total} cuentas activas`;
     const bolsillos = this.totalBolsillos();
-    return bolsillos > 0 ? `${cuentas} · ${this.textoBolsillos(bolsillos)}` : cuentas;
+    if (total === 0) return 'No tienes cuentas activas';
+    return bolsillos > 0
+      ? `Tienes ${cuentas} · ${this.textoBolsillos(bolsillos)}`
+      : `Tienes ${cuentas}`;
   });
 
   protected textoBolsillos(cantidad: number): string {

@@ -3,9 +3,22 @@
 // queda fuera del grid — la clase no aplica y el `.page-head` de adentro
 // cae como ítem suelto en la primera columna. Es el mismo motivo por el que
 // `StatCard` tampoco usa `contents`.
+// Adentro de la tarjeta, después de la acción de la pantalla, van el ojo
+// y la cuenta del `Shell`.
 :host {
   display: block;
   min-width: 0;
+}
+
+// Son los mismos botones en todas las pantallas: con nombre propio en la
+// transición de vista se quedan quietos al cambiar de sección en vez de
+// fundirse con el resto de la página.
+.page-head__globales {
+  view-transition-name: acciones-globales;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 // Solo escritorio. En móvil el header ya muestra el nombre de la pantalla y

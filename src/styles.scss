@@ -37,6 +37,10 @@
 
 html {
   height: 100%;
+  // Reserva el lugar de la barra de scroll aunque la pantalla no la
+  // necesite: sin esto el contenido se ensanchaba 15px en las pantallas
+  // cortas y el héroe cambiaba de ancho al pasar de una a otra.
+  scrollbar-gutter: stable;
   @include tokens-material.aplicar(
     (
       color: (
@@ -123,6 +127,17 @@ a:hover {
 }
 ::view-transition-new(root) {
   animation: vt-entrada var(--dur-base) var(--ease-out) both;
+}
+// El fondo de la sección activa del menú se desliza al ítem nuevo (ver
+// `.nav__fondo` en el shell); el héroe se queda en su sitio y solo funde
+// su contenido (ver `.hero--pantalla`).
+::view-transition-group(nav-activo) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out);
+}
+::view-transition-group(heroe-pantalla) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-out);
 }
 @keyframes vt-salida {
   to {

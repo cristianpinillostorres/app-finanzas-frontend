@@ -1,4 +1,8 @@
-<app-hoja-cabecera [titulo]="modoEdicion ? 'Editar cuenta' : 'Agregar cuenta'" [cerrarDeshabilitado]="guardando()" (cerrar)="cerrar()" />
+<app-hoja-cabecera
+  [titulo]="modoEdicion ? 'Editar cuenta' : 'Agregar cuenta'"
+  [cerrarDeshabilitado]="guardando()"
+  (cerrar)="cerrar()"
+/>
 
 <form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
   <div class="ios-grupo">

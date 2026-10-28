@@ -28,7 +28,14 @@ interface OpcionTipo {
  */
 @Component({
   selector: 'app-cuenta-form',
-  imports: [HojaCabecera, Selector, ReactiveFormsModule, MatIconModule, MatButtonModule, GuardandoOverlay],
+  imports: [
+    HojaCabecera,
+    Selector,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    GuardandoOverlay,
+  ],
   templateUrl: './cuenta-form.html',
   styleUrl: './cuenta-form.scss',
 })

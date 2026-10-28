@@ -1,19 +1,6 @@
 // El layout lo arma `.grid-12` en la plantilla; acá solo lo propio de
 // Pagos fijos.
 
-.progreso {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.progreso__rotulos {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
 // El semáforo y el badge "Crédito" van en la misma línea bajo el nombre.
 .fila-etiquetas {
   display: flex;
@@ -88,18 +75,6 @@
 // pero sin perder contraste (`--text-secondary` cumple AA).
 .fila-pagada .t-row {
   color: var(--text-secondary);
-}
-
-// En escritorio el héroe acompaña al mes mientras se recorre: lo que falta
-// sigue a la vista aunque la línea sea larga. Baja lo que mide la cabecera
-// de la línea para que las dos tarjetas empiecen a la misma altura.
-@media (min-width: 1024px) {
-  .hero {
-    margin-top: calc(var(--alto-group-head) + var(--space-2));
-    position: sticky;
-    top: calc(var(--altura-topbar) + var(--space-4));
-    align-self: start;
-  }
 }
 
 // ───────────────────────── línea del mes ─────────────────────────
@@ -182,7 +157,6 @@
 .linea__pagos .row-end {
   min-width: 6.5rem;
 }
-
 
 // Hoy: un punto sobre el riel y una línea de acento que cruza el panel.
 .linea__hoy {

@@ -1,10 +1,5 @@
 <div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
-  <app-page-head
-    icono="swap_horiz"
-    class="col-md-12"
-    titulo="Movimientos"
-    [detalle]="detalleMovimientos()"
-  />
+  <app-page-head class="col-md-12" titulo="Movimientos" [detalle]="detalleMovimientos()" />
 
   @if (listo() && sinDatos()) {
     <app-pantalla-vacia
@@ -25,12 +20,33 @@
     </app-pantalla-vacia>
   } @else {
     <!--
-    El selector de mes va en su propia fila, no dentro de `app-page-head`:
-    esa cabecera no se dibuja en móvil, y ahí cambiar de mes es justo lo
-    primero que se necesita.
+    Una sola tarjeta: lo que quedó del mes manda, y debajo de dónde sale.
+    Antes eran tres tarjetas sueltas, con la de la diferencia sola en una
+    fila y medio vacía. Va antes del mes, en el celular y en la web, por eso
+    el rótulo nombra el mes.
   -->
-    <!-- En el celular, "Filtros" va al lado del mes en vez de ocupar una
-         fila sola. -->
+    <section class="hero hero--pantalla col-md-12">
+      <span class="t-meta">Balance de {{ nombreMes() }}</span>
+      <span class="t-hero amt" [class.mon-out]="resumen().balance < 0"
+        ><app-amount [valor]="resumen().balance" [cargando]="!listo()"
+      /></span>
+      <div class="desglose desglose--columnas">
+        <div>
+          <span class="t-meta">Ingresos</span>
+          <app-amount class="amt" [valor]="resumen().ingresos" [cargando]="!listo()" />
+        </div>
+        <div>
+          <span class="t-meta">Gastos</span>
+          <app-amount class="amt" [valor]="resumen().gastos" [cargando]="!listo()" />
+        </div>
+      </div>
+    </section>
+
+    <!--
+    El selector de mes va en su propia fila, no dentro de `app-page-head`:
+    esa cabecera no se dibuja en móvil. En el celular "Filtros" va al lado
+    del mes en vez de ocupar una fila sola.
+  -->
     <div class="col-md-12 barra-mes">
       <app-month-selector
         [etiqueta]="etiquetaMes()"
@@ -53,28 +69,6 @@
         </button>
       }
     </div>
-
-    <!--
-    Una sola tarjeta: lo que quedó del mes manda, y debajo de dónde sale.
-    Antes eran tres tarjetas sueltas, con la de la diferencia sola en una
-    fila y medio vacía.
-  -->
-    <section class="hero col-md-12">
-      <span class="t-meta">Ingresos − gastos</span>
-      <span class="t-hero amt" [class.mon-out]="resumen().balance < 0"
-        ><app-amount [valor]="resumen().balance" [cargando]="!listo()"
-      /></span>
-      <div class="desglose desglose--columnas">
-        <div>
-          <span class="t-meta">Ingresos</span>
-          <app-amount class="amt" [valor]="resumen().ingresos" [cargando]="!listo()" />
-        </div>
-        <div>
-          <span class="t-meta">Gastos</span>
-          <app-amount class="amt" [valor]="resumen().gastos" [cargando]="!listo()" />
-        </div>
-      </div>
-    </section>
 
     <!--
     Escritorio: buscador y chips de tipo siempre visibles, los dos filtros

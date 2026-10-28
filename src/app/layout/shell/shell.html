@@ -1,60 +1,25 @@
-<!-- La bienvenida ocupa toda la pantalla: sin menú, cabezote ni "+".
+<!-- La bienvenida ocupa toda la pantalla: sin menú ni "+".
      Tiene su propio marco, el mismo del login. -->
 @if (pantallaCompleta()) {
   <router-outlet />
 } @else {
   @if (!viewport.esMovil()) {
     <!--
-    La marca arriba a la izquierda (el mismo cuadrito del teléfono), las
-    acciones a la derecha, y debajo una barra lateral con las secciones y
-    la cuenta junto al contenido. Es la misma navegación del teléfono (los
-    mismos cinco enlaces); solo cambia dónde se dibuja.
+    La barra lateral lleva la marca, "Nuevo movimiento" y las secciones.
+    Arriba del contenido no hay barra propia: el ojo y la cuenta van dentro
+    de la tarjeta del título de cada pantalla (ver la plantilla `#acciones`
+    al final y `PageHead`). Es la misma navegación del teléfono (los mismos
+    cinco enlaces); solo cambia dónde se dibuja.
   -->
-    <header class="cabezote">
-      <div class="cabezote__inner">
+    <div class="cuerpo">
+      <aside class="lateral">
         <span class="marca">
           <span class="brand__marca" aria-hidden="true"><mat-icon>savings</mat-icon></span>
-          Finanzas
+          <span class="marca__nombre">Finanzas</span>
         </span>
 
-        <!-- Quién tiene la sesión abierta, junto a la marca. El correo largo se
-           corta con elipsis y el `title` lo muestra completo. -->
-        @if (correoUsuario(); as correo) {
-          <div class="usuario" [title]="correo">
-            <span class="avatar__inicial" aria-hidden="true">{{ inicialUsuario() }}</span>
-            <span class="usuario__datos">
-              <span class="usuario__correo">{{ correo }}</span>
-              <span class="t-meta">Cuenta personal</span>
-            </span>
-          </div>
-        }
-
-        <span class="spacer"></span>
-
-        <button
-          mat-icon-button
-          type="button"
-          class="cabezote__icono"
-          [attr.aria-label]="tituloOjo()"
-          [title]="tituloOjo()"
-          (click)="montos.alternar()"
-        >
-          <mat-icon aria-hidden="true">{{
-            montos.oculto() ? 'visibility_off' : 'visibility'
-          }}</mat-icon>
-        </button>
-
-        <button
-          mat-icon-button
-          type="button"
-          class="cabezote__icono"
-          aria-label="Elegir tema"
-          title="Elegir tema"
-          [matMenuTriggerFor]="menuTema"
-        >
-          <mat-icon aria-hidden="true">contrast</mat-icon>
-        </button>
-
+        <!-- La acción principal, arriba y antes de las secciones: es lo que
+             más se usa y queda a la vista sin buscarla. -->
         <button
           mat-flat-button
           type="button"
@@ -62,16 +27,13 @@
           [class.boton-nuevo--bloqueado]="bienvenida.faltaCuenta()"
           [matTooltip]="bienvenida.faltaCuenta() ? bienvenida.motivoBloqueo : ''"
           aria-label="Nuevo movimiento"
+          title="Nuevo movimiento"
           (click)="abrirNuevoMovimiento()"
         >
           <mat-icon aria-hidden="true">add</mat-icon>
           <span class="boton-nuevo__texto">Nuevo movimiento</span>
         </button>
-      </div>
-    </header>
 
-    <div class="cuerpo">
-      <aside class="lateral">
         <span class="lateral__titulo" aria-hidden="true">Secciones</span>
         <!--
         Cada ítem lleva el mismo ícono que la barra inferior de móvil, así
@@ -95,14 +57,15 @@
               [matTooltip]="bienvenida.seccionBloqueada(item.path) ? bienvenida.motivoBloqueo : ''"
               matTooltipPosition="right"
             >
+              <span class="nav__fondo" aria-hidden="true"></span>
               <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
               <span class="nav__texto">{{ item.label }}</span>
             </a>
           }
         </nav>
 
-        <!-- Las acciones de la cuenta, al final de la barra como el bloque de
-           "Administrar" de Mi Semana (el correo va en el cabezote). -->
+        <!-- Las acciones de la cuenta, debajo de las secciones como el bloque
+           de "Administrar" de Mi Semana. -->
         <hr class="lateral__divisor" />
         <span class="lateral__titulo" aria-hidden="true">Cuenta</span>
         <div class="cuenta" role="group" aria-label="Cuenta">
@@ -115,6 +78,7 @@
             aria-label="Categorías"
             title="Categorías"
           >
+            <span class="nav__fondo" aria-hidden="true"></span>
             <mat-icon aria-hidden="true">sell</mat-icon>
             <span class="nav__texto">Categorías</span>
           </a>
@@ -132,19 +96,6 @@
             </button>
           }
         </div>
-
-        <!-- Solo "Cerrar sesión" va al fondo de la barra: queda siempre en el
-           mismo sitio, lejos de las secciones. -->
-        <button
-          type="button"
-          class="nav__item lateral__salir"
-          aria-label="Cerrar sesión"
-          title="Cerrar sesión"
-          (click)="cerrarSesion()"
-        >
-          <mat-icon aria-hidden="true">logout</mat-icon>
-          <span class="nav__texto">Cerrar sesión</span>
-        </button>
       </aside>
 
       <main class="contenido">
@@ -312,4 +263,48 @@
       <span>Vincular con Google</span>
     </button>
   }
+</ng-template>
+
+<!-- Botones globales de escritorio: el ojo, que se usa a diario, y la
+     cuenta. `PageHead` los dibuja dentro de la tarjeta del título de cada
+     pantalla (ver `AccionesEscritorioService`). El tema, que se elige una
+     vez, vive en el menú de la cuenta, como en el "···" del teléfono. -->
+<ng-template #acciones>
+  <button
+    mat-icon-button
+    type="button"
+    class="cabezote__icono"
+    [attr.aria-label]="tituloOjo()"
+    [title]="tituloOjo()"
+    (click)="montos.alternar()"
+  >
+    <mat-icon aria-hidden="true">{{ montos.oculto() ? 'visibility_off' : 'visibility' }}</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
+    type="button"
+    class="cabezote__avatar"
+    aria-label="Cuenta"
+    [title]="correoUsuario() ?? 'Cuenta'"
+    [matMenuTriggerFor]="menuCuenta"
+  >
+    <span class="avatar__inicial" aria-hidden="true">{{ inicialUsuario() }}</span>
+  </button>
+  <mat-menu #menuCuenta="matMenu" xPosition="before" class="menu-cuenta">
+    @if (correoUsuario(); as correo) {
+      <div class="menu-cuenta__quien">
+        <span class="menu-cuenta__correo">{{ correo }}</span>
+        <span class="t-meta">Cuenta personal</span>
+      </div>
+    }
+    <button mat-menu-item type="button" [matMenuTriggerFor]="menuTema">
+      <mat-icon aria-hidden="true">contrast</mat-icon>
+      <span>Tema</span>
+    </button>
+    <button mat-menu-item type="button" class="menu-cuenta__salir" (click)="cerrarSesion()">
+      <mat-icon aria-hidden="true">logout</mat-icon>
+      <span>Cerrar sesión</span>
+    </button>
+  </mat-menu>
 </ng-template>

@@ -1,4 +1,8 @@
-<app-hoja-cabecera titulo="Agregar bolsillo" [cerrarDeshabilitado]="guardando()" (cerrar)="cerrar()" />
+<app-hoja-cabecera
+  titulo="Agregar bolsillo"
+  [cerrarDeshabilitado]="guardando()"
+  (cerrar)="cerrar()"
+/>
 
 <form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
   <p class="ios-nota ios-nota--arriba">

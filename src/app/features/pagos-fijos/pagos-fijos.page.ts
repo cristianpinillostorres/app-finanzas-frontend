@@ -41,7 +41,11 @@ import { mostrarErrorGuardado } from '../../shared/guardado/guardado.util';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { PantallaVacia } from '../../shared/pantalla-vacia/pantalla-vacia';
 import { PageHead } from '../../shared/page-head/page-head';
-import { formatearDiaMes, formatearMesAnioCapitalizado } from '../../shared/format/fecha';
+import {
+  formatearDiaMes,
+  formatearMesAnioCapitalizado,
+  formatearNombreMes,
+} from '../../shared/format/fecha';
 import { textoVencimiento } from '../../shared/format/texto-vencimiento';
 import { MonthSelector } from '../../shared/month-selector/month-selector';
 import { SemaforoBadge } from '../../shared/semaforo-badge/semaforo-badge';
@@ -153,6 +157,10 @@ export class PagosFijosPage {
   protected readonly etiquetaMes = computed(() =>
     formatearMesAnioCapitalizado(primerDiaDelMes(this.mesSeleccionado())),
   );
+  /** "octubre", para el rótulo de la tarjeta: en el celular el selector queda debajo. */
+  protected readonly nombreMes = computed(() =>
+    formatearNombreMes(primerDiaDelMes(this.mesSeleccionado())),
+  );
 
   /** Pagos del mes, pagados y no: el denominador de "X de Y pagados". */
   protected readonly totalPagos = computed(
@@ -162,7 +170,8 @@ export class PagosFijosPage {
     // Mientras carga, sin conteo: un "0" se leería como dato real.
     if (!this.listo()) return '';
     const total = this.totalPagos();
-    return `${total} ${total === 1 ? 'pago' : 'pagos'} este mes`;
+    if (total === 0) return 'No tienes pagos este mes';
+    return `Tienes ${total} ${total === 1 ? 'pago' : 'pagos'} este mes`;
   });
 
   // Sin esto, la cuota de un banco con tasa variable se calcula con la tasa

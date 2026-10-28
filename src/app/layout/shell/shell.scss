@@ -1,44 +1,16 @@
-// Layout del shell: en escritorio, cabezote + barra lateral + contenido
+// Layout del shell: en escritorio, barra lateral + contenido
 // (el esquema de Mi Semana); en móvil, header, barra inferior y FAB.
 // Solo tokens semánticos, nada de hex ni px sueltos — ver `styles/tokens`.
 
-// ─────────────────────────── cabezote (escritorio) ───────────────────────────
+// ─────────────────────────── marca (escritorio) ───────────────────────────
 
-// Sobre el color de la página y sin borde, como el header de Mi Semana.
-// Sigue pegado arriba al hacer scroll: el fondo translúcido con desenfoque
-// deja que el contenido se insinúe detrás en vez de cortarse en seco. El
-// `background` sólido va primero como respaldo para navegadores sin
-// `color-mix` — con él, la barra simplemente queda opaca.
-.cabezote {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-  background: var(--bg-page);
-  background: color-mix(in srgb, var(--bg-page) 86%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-// Mismo ancho máximo y gutter que el cuerpo de abajo: sin esto, en 1920px
-// la marca queda contra el borde de la ventana y la barra lateral no.
-.cabezote__inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: var(--layout-max);
-  min-height: var(--altura-cabezote);
-  margin: 0 auto;
-  padding: var(--space-3) var(--layout-gutter);
-}
-
-// La marca: el cuadrito del header del teléfono y el nombre en la sans de
-// la app. Ocupa el ancho de la barra lateral para que lo que viene después
-// (el usuario) arranque en la misma columna que el contenido.
+// La marca encabeza la barra lateral: el cuadrito del header del teléfono
+// y el nombre en la sans de la app.
 .marca {
-  flex: none;
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  width: var(--ancho-lateral);
+  padding: 0 var(--space-1) var(--space-2);
   font-size: var(--text-xl);
   font-weight: var(--weight-extrabold);
   letter-spacing: var(--tracking-hero);
@@ -46,12 +18,71 @@
   white-space: nowrap;
 }
 
-// Botones redondos sobre la página (el ojo de los montos y el tema): los
-// mismos `topbar__boton` del teléfono.
+// El ojo de los montos y la cuenta, redondos de 40px dentro de la tarjeta
+// del título. El ojo lleva el tinte del acento, el tono de todas las
+// acciones secundarias (ver `.btn-tonal`); la cuenta, el sólido. Viven en la
+// plantilla `#acciones`, que `PageHead` dibuja en la tarjeta; conservan
+// estos estilos porque la plantilla es del shell.
+.cabezote__icono,
+.cabezote__avatar {
+  --mat-icon-button-state-layer-size: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+
 .cabezote__icono {
-  background: var(--bg-surface);
+  background: var(--accent-bg);
   color: var(--accent);
-  box-shadow: var(--shadow-xs);
+}
+
+// La cuenta: solo la inicial, del tamaño del ojo. El correo, el tema y
+// "Cerrar sesión" están en su menú. Es de otra clase que las acciones de
+// la pantalla: va aparte, tras una raya fina, y no pegada al ojo.
+.cabezote__avatar {
+  position: relative;
+  // Con el `gap` de 8px del grupo, el ojo queda a 40px: la raya va en la
+  // mitad, a 20px de cada uno — el mismo aire que hay del avatar al borde
+  // de la tarjeta (`--space-5`).
+  margin-left: var(--space-8);
+  padding: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--space-5) - 1px);
+    top: 50%;
+    width: 1px;
+    height: var(--space-6);
+    transform: translateY(-50%);
+    background: var(--border);
+  }
+
+  .avatar__inicial {
+    width: 40px;
+    height: 40px;
+    font-size: var(--text-base);
+  }
+}
+
+// Encabezado del menú de la cuenta: quién tiene la sesión abierta, sin
+// acción. El correo largo se corta con elipsis.
+.menu-cuenta__quien {
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-cuenta__correo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
 }
 
 // ─────────────────────── cuerpo: barra lateral + contenido ───────────────────────
@@ -62,23 +93,23 @@
   gap: var(--space-4);
   max-width: var(--layout-max);
   margin: 0 auto;
-  padding: 0 var(--layout-gutter) var(--space-8);
+  padding: var(--space-4) var(--layout-gutter) var(--space-8);
 }
 
-// Panel flotante de 28px con sombra larga, pegado bajo el cabezote al
-// hacer scroll: la `.sidebar` de Mi Semana. Con la cuenta al final ya no
-// cabe entera en una ventana baja (un portátil con la barra del navegador
-// abierta): ahí se desplaza sola en vez de cortar "Cerrar sesión".
-// Siempre mide lo mismo (el alto de la ventana, no el de su contenido) y la
-// cuenta queda anclada al fondo, así no cambia de tamaño entre pantallas.
+// Panel flotante de 28px con sombra larga, pegado arriba al hacer scroll:
+// la `.sidebar` de Mi Semana. En una ventana baja (un portátil con la barra
+// del navegador abierta) no cabe entera: ahí se desplaza sola en vez de
+// cortar la última sección. Siempre mide lo mismo (el alto de la ventana,
+// no el de su contenido), así no cambia de tamaño entre pantallas.
 .lateral {
   position: sticky;
-  top: calc(var(--altura-cabezote) + var(--space-1));
+  top: var(--space-4);
   flex: none;
   width: var(--ancho-lateral);
-  // Arranca 4px bajo el cabezote y abajo le sigue el relleno de `.cuerpo`
-  // (space-8): restando los dos cabe justo en la ventana, sin scroll.
-  height: calc(100dvh - var(--altura-cabezote) - var(--space-1) - var(--space-8));
+  // Resta los rellenos de arriba (space-4) y de abajo (space-8) de
+  // `.cuerpo`: con menos, la barra sola ya pasaba del alto de la ventana y
+  // aparecía scroll en pantallas con poco contenido.
+  height: calc(100dvh - var(--space-4) - var(--space-8));
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
@@ -101,11 +132,6 @@
 }
 
 // El `.divider` de Mi Semana entre grupos de la barra.
-// El margen automático empuja "Cerrar sesión" al fondo de la barra.
-.lateral__salir {
-  margin-top: auto;
-}
-
 .lateral__divisor {
   width: 100%;
   margin: var(--space-2) 0;
@@ -230,6 +256,8 @@
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  position: relative;
+  isolation: isolate;
   transition:
     background-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out);
@@ -252,12 +280,29 @@
   }
 }
 
-.nav__item--activo {
+// El fondo de la sección activa es una pieza aparte, detrás del texto, con
+// nombre propio en la transición de vista: al cambiar de sección se desliza
+// de un ítem al otro en vez de apagarse en uno y prenderse en el otro. Solo
+// el activo lo muestra, así que el nombre nunca está repetido.
+.nav__fondo {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background: var(--accent-bg);
+}
+
+.nav__item--activo {
   color: var(--accent);
 
   &:hover {
-    background: var(--accent-bg);
+    background: none;
+  }
+
+  .nav__fondo {
+    display: block;
+    view-transition-name: nav-activo;
   }
 
   mat-icon {
@@ -271,33 +316,6 @@
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
-}
-
-// ── usuario (junto a la marca, en el cabezote) ──
-// Alineado con el borde izquierdo de las cards: el `gap` del cabezote más
-// este margen suman el `gap` de `.cuerpo`. Cede ancho antes que los
-// botones de la derecha.
-.usuario {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  margin-left: calc(var(--space-4) - var(--space-2));
-}
-
-.usuario__datos {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.usuario__correo {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
 }
 
 .avatar__inicial {
@@ -353,12 +371,14 @@
   flex: 1;
 }
 
-// La acción principal, con el halo teal (`#newBtn` de Mi Semana).
+// La acción principal, con el halo teal (`#newBtn` de Mi Semana), bajo la
+// marca de la barra lateral.
 .boton-nuevo {
   flex-shrink: 0;
+  align-self: flex-start;
   height: var(--tap-min);
-  margin-left: var(--space-2);
-  padding-inline: var(--space-4);
+  margin-bottom: var(--space-2);
+  padding-inline: var(--space-4) var(--space-5);
   box-shadow: var(--glow-md);
 }
 
@@ -493,22 +513,34 @@
     padding-inline: 0;
   }
 
-  // "Finanzas" no cabe en los 76px de la barra de íconos: la marca vuelve
-  // a su ancho y una raya la separa del correo, que si no se leía como
-  // parte del título.
+  // "Finanzas" no cabe en los 76px de la barra de íconos: queda el
+  // cuadrito de la marca. "Nuevo movimiento" queda en su "+".
   .marca {
-    width: auto;
+    justify-content: center;
+    padding-inline: 0;
   }
 
-  .usuario {
-    margin-left: var(--space-2);
-    padding-left: var(--space-4);
-    border-left: 1px solid var(--border);
+  .marca__nombre,
+  .boton-nuevo__texto {
+    display: none;
+  }
+
+  .brand__marca {
+    margin-right: 0;
+  }
+
+  .boton-nuevo {
+    align-self: center;
+    min-width: 0;
+    padding-inline: var(--space-3);
+
+    mat-icon {
+      margin: 0;
+    }
   }
 }
 
 @media (min-width: 1024px) {
-  .cabezote__inner,
   .cuerpo {
     padding-inline: var(--space-8);
   }

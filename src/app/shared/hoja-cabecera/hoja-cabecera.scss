@@ -54,6 +54,15 @@
   }
 }
 
+// La acción de la derecha: el mismo botón de texto, en negrita como la
+// acción que confirma en iOS.
+.barra__accion {
+  justify-self: end;
+  margin-left: 0;
+  margin-right: calc(-1 * var(--space-2));
+  font-weight: var(--weight-semibold);
+}
+
 .barra__titulo {
   margin: 0;
   overflow: hidden;

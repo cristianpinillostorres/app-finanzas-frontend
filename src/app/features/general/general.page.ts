@@ -48,7 +48,6 @@ import { AutoAnimar } from '../../shared/motion/auto-animar';
 import { StatCard } from '../../shared/stat-card/stat-card';
 import {
   etiquetaDia,
-  formatearDiaSemana,
   formatearMesAnioCapitalizado,
   formatearNombreMes,
 } from '../../shared/format/fecha';
@@ -181,6 +180,23 @@ export class GeneralPage {
   /** Pagos fijos o cuotas de crédito en el mes: lo que llena "Pagos del mes". */
   protected readonly hayPagosDelMes = computed(() => this.lineaMes().dias.length > 0);
 
+  // Qué tarjetas se dibujan. Mientras carga van todas (en esqueleto); cada
+  // pareja de escritorio mira si está su vecina para saber si llena la fila.
+  protected readonly mostrarTendencia = computed(
+    () => !this.datosListos() || this.hayMovimientos(),
+  );
+  protected readonly mostrarPagos = computed(() => !this.datosListos() || this.hayPagosDelMes());
+  protected readonly mostrarCuotas = computed(() => !this.datosListos() || this.hayCreditos());
+
+  /**
+   * Tocar el panel de una sección lleva a su pantalla, igual que el enlace
+   * de su cabecera. Es un atajo del mouse; el teclado y los lectores de
+   * pantalla usan ese enlace, así que el panel no se vuelve un botón.
+   */
+  protected abrir(ruta: string): void {
+    void this.router.navigateByUrl(ruta);
+  }
+
   protected readonly disponible = computed(() => disponible(this.cuentas(), this.movimientos()));
   protected readonly reservado = computed(() => reservado(this.cuentas(), this.movimientos()));
   protected readonly faltaPorPagarMes = computed(() => this.resumenPagosFijos().totalPorPagar);
@@ -199,8 +215,11 @@ export class GeneralPage {
     const hoy = new Date();
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
     const quedan = ultimoDia - hoy.getDate();
-    if (quedan === 0) return `${formatearDiaSemana(hoy)} · último día del mes`;
-    return `${formatearDiaSemana(hoy)} · ${quedan === 1 ? 'queda 1 día' : `quedan ${quedan} días`} del mes`;
+    // "Miércoles 28": el mes ya está en el título, no se repite.
+    const semana = hoy.toLocaleDateString('es-CO', { weekday: 'long' });
+    const fecha = `${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${hoy.getDate()}`;
+    if (quedan === 0) return `${fecha} · último día del mes`;
+    return `${fecha} · ${quedan === 1 ? 'queda 1 día' : `quedan ${quedan} días`} del mes`;
   })();
 
   protected readonly nombreMesActual = formatearNombreMes(

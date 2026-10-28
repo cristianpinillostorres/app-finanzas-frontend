@@ -52,6 +52,7 @@ import {
   etiquetaDia,
   formatearFechaCompleta,
   formatearMesAnioCapitalizado,
+  formatearNombreMes,
 } from '../../shared/format/fecha';
 import { claseIconoDeMovimiento, iconoDeMovimiento } from '../../shared/format/icono-categoria';
 import { MonthSelector } from '../../shared/month-selector/month-selector';
@@ -147,6 +148,10 @@ export class MovimientosPage {
   protected readonly etiquetaMes = computed(() =>
     formatearMesAnioCapitalizado(primerDiaDelMes(this.mesSeleccionado())),
   );
+  /** "octubre", para el rótulo de la tarjeta: en el celular el selector queda debajo. */
+  protected readonly nombreMes = computed(() =>
+    formatearNombreMes(primerDiaDelMes(this.mesSeleccionado())),
+  );
 
   protected readonly primerDiaMesIso = computed(() =>
     fechaIsoDesdeLocal(primerDiaDelMes(this.mesSeleccionado())),
@@ -199,7 +204,8 @@ export class MovimientosPage {
     // Mientras carga, sin conteo: un "0" se leería como dato real.
     if (!this.listo()) return '';
     const total = this.movimientosDelMes().length;
-    return `${total} ${total === 1 ? 'movimiento' : 'movimientos'} este mes`;
+    if (total === 0) return 'No has registrado movimientos este mes';
+    return `Has realizado ${total} ${total === 1 ? 'movimiento' : 'movimientos'} este mes`;
   });
 
   protected readonly grupos = computed(() => {

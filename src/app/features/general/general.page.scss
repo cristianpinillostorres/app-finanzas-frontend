@@ -10,8 +10,8 @@
   padding-block: var(--space-3);
 }
 
-// Etiqueta, monto y frase van juntos arriba; en escritorio el desglose
-// queda anclado abajo (ver `.hero--libre`), sin una frase flotando en medio.
+// Etiqueta, monto y frase van juntos arriba; el desglose queda anclado
+// abajo (ver `.hero--pantalla`), sin una frase flotando en medio.
 .hero__cabeza {
   display: flex;
   flex-direction: column;
@@ -34,20 +34,9 @@
   border-bottom: 1px solid var(--border);
 }
 
-// En escritorio el héroe comparte fila con "Pagos del mes", que es más
-// alto: estirarlo y repartir su contenido evita el escalón bajo la tarjeta.
-// El desglose queda anclado abajo, alineado con el final del panel vecino,
-// y el héroe baja lo que mide la cabecera "Pagos del mes" para que las dos
-// tarjetas empiecen a la misma altura.
+// En escritorio las dos tarjetas de una fila miden lo mismo: la más baja
+// se estira y su panel llena el alto, en vez de dejar un escalón.
 @media (min-width: 1024px) {
-  .hero--libre {
-    align-self: stretch;
-    justify-content: space-between;
-  }
-  .hero--libre.col-lg-7 {
-    margin-top: calc(var(--alto-group-head) + var(--space-2));
-  }
-  // Y al revés: si el héroe es el más alto, la tarjeta de pagos se estira.
   .seccion {
     align-self: stretch;
     display: flex;
@@ -59,21 +48,32 @@
   }
 }
 
-// El orden del DOM es el de móvil: héroe, resumen, próximos pagos, y luego
-// las dos columnas. Es el orden que se lee de verdad en una sola columna, y
-// el que siguen los lectores de pantalla.
+// El orden del DOM es el del celular: héroe, cifras, pagos del mes,
+// gráfica, movimientos, cuotas, presupuestos y categorías. Es el que se lee
+// en una sola columna y el que siguen los lectores de pantalla.
 //
-// En escritorio "Próximos pagos" tiene que volver a la primera fila, junto
-// al héroe: es lo que explica de qué se compone ese "falta por pagar". Se
-// recoloca con `order` en vez de reescribir el DOM porque el orden solo
-// puede coincidir con uno de los dos tamaños, y móvil es donde más pesa.
+// En escritorio, debajo del héroe y las cifras, van filas de dos con un
+// tema cada una: el mes (gráfica y pagos), el detalle (movimientos y
+// categorías) y el seguimiento (cuotas y presupuestos). Se recoloca con
+// `order` porque el DOM solo puede coincidir con uno de los dos tamaños.
 @media (min-width: 1024px) {
-  .kpis {
+  .g-tendencia {
     order: 1;
   }
-
-  .col-apilada {
+  .g-pagos {
     order: 2;
+  }
+  .g-ultimos {
+    order: 3;
+  }
+  .g-categorias {
+    order: 4;
+  }
+  .g-cuotas {
+    order: 5;
+  }
+  .g-presupuestos {
+    order: 6;
   }
 }
 
@@ -98,4 +98,11 @@
 
 .bar--pasado > i {
   background: var(--color-gasto);
+}
+
+// Los primeros pasos se van solos al terminarlos, pero el elemento queda
+// vacío en el grid y sumaba un hueco de más: el héroe de General quedaba
+// 20px más abajo que el de las otras pantallas.
+app-primeros-pasos:empty {
+  display: none;
 }

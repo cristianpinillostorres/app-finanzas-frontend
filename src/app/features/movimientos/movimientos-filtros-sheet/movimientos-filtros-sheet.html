@@ -1,109 +1,59 @@
 <div class="cuerpo">
-  <app-hoja-cabecera titulo="Filtros" (cerrar)="cerrar()" />
+  <app-hoja-cabecera
+    titulo="Filtros"
+    textoAccion="Aplicar"
+    (cerrar)="cerrar()"
+    (accion)="aplicar()"
+  />
 
-  <div class="grupo-filtro">
-    <span class="t-sec">Tipo</span>
-    <div class="chips">
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().tipo === 'todos'"
-        (click)="fijarTipo('todos')"
-      >
-        Todos
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().tipo === 'GASTO'"
-        (click)="fijarTipo('GASTO')"
-      >
-        Gastos
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().tipo === 'INGRESO'"
-        (click)="fijarTipo('INGRESO')"
-      >
-        Ingresos
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().tipo === 'transferencia'"
-        (click)="fijarTipo('transferencia')"
-      >
-        Transferencias
-      </button>
+  <!-- Todo en filas de iOS: rótulo a la izquierda y el valor elegido a la
+       derecha, que abre su lista al tocarlo. -->
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="s-tipo">Tipo</label>
+      <app-selector
+        inputId="s-tipo"
+        [opciones]="opcionesTipo"
+        [valor]="draft().tipo"
+        (cambio)="fijarTipo($any($event))"
+      />
     </div>
-  </div>
-
-  <div class="grupo-filtro">
-    <span class="t-sec">Fecha</span>
-    <div class="chips">
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().fecha === 'todo-mes'"
-        (click)="fijarFecha('todo-mes')"
-      >
-        Todo el mes
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().fecha === 'hoy'"
-        (click)="fijarFecha('hoy')"
-      >
-        Hoy
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().fecha === '7-dias'"
-        (click)="fijarFecha('7-dias')"
-      >
-        Últimos 7 días
-      </button>
-      <button
-        class="chip"
-        type="button"
-        [attr.aria-pressed]="draft().fecha === 'rango'"
-        (click)="fijarFecha('rango')"
-      >
-        Rango
-      </button>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="s-fecha">Fecha</label>
+      <app-selector
+        inputId="s-fecha"
+        [opciones]="opcionesFecha"
+        [valor]="draft().fecha"
+        (cambio)="fijarFecha($any($event))"
+      />
     </div>
     @if (draft().fecha === 'rango') {
-      <div class="form-2">
-        <div class="field">
-          <label for="f-desde">Desde</label>
-          <input
-            class="input"
-            id="f-desde"
-            type="date"
-            #campoDesde
-            [value]="draft().desde ?? data.minFecha"
-            [min]="data.minFecha"
-            [max]="draft().hasta ?? data.maxFecha"
-            (change)="fijarDesde(campoDesde.value)"
-          />
-        </div>
-        <div class="field">
-          <label for="f-hasta">Hasta</label>
-          <input
-            class="input"
-            id="f-hasta"
-            type="date"
-            #campoHasta
-            [value]="draft().hasta ?? data.maxFecha"
-            [min]="draft().desde ?? data.minFecha"
-            [max]="data.maxFecha"
-            (change)="fijarHasta(campoHasta.value)"
-          />
-        </div>
-      </div>
+      <label class="ios-fila" for="f-desde">
+        <span class="ios-fila__rotulo">Desde</span>
+        <input
+          class="ios-fila__valor"
+          id="f-desde"
+          type="date"
+          #campoDesde
+          [value]="draft().desde ?? data.minFecha"
+          [min]="data.minFecha"
+          [max]="draft().hasta ?? data.maxFecha"
+          (change)="fijarDesde(campoDesde.value)"
+        />
+      </label>
+      <label class="ios-fila" for="f-hasta">
+        <span class="ios-fila__rotulo">Hasta</span>
+        <input
+          class="ios-fila__valor"
+          id="f-hasta"
+          type="date"
+          #campoHasta
+          [value]="draft().hasta ?? data.maxFecha"
+          [min]="draft().desde ?? data.minFecha"
+          [max]="data.maxFecha"
+          (change)="fijarHasta(campoHasta.value)"
+        />
+      </label>
     }
   </div>
 
@@ -143,9 +93,10 @@
       />
     </label>
   </div>
-</div>
 
-<div class="sheet-ft">
-  <button class="btn btn-outline" type="button" (click)="limpiar()">Limpiar</button>
-  <button class="btn btn-primary" type="button" (click)="aplicar()">Aplicar</button>
+  <!-- Como "Restablecer" en los ajustes de iOS: una fila sola, en el color
+       de acento. No cierra la hoja; lo aplica "Aplicar". -->
+  <div class="ios-grupo">
+    <button class="ios-fila fila-limpiar" type="button" (click)="limpiar()">Limpiar filtros</button>
+  </div>
 </div>

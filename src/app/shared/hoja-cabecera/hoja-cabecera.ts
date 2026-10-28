@@ -3,7 +3,9 @@ import { Component, input, output } from '@angular/core';
 /**
  * Barra de arriba de las hojas y diálogos de formulario, la de iOS:
  * "Cancelar" a la izquierda y el título centrado sobre el ancho de la hoja.
- * La acción principal va abajo, al alcance del pulgar.
+ * En los formularios la acción principal va abajo, al alcance del pulgar;
+ * las hojas sin formulario (los filtros) la llevan a la derecha con
+ * `textoAccion`, como el "Aplicar" de iOS.
  *
  * El título queda centrado mientras quepa; si es largo se corre hacia la
  * derecha para no pisar "Cancelar" y, si aun así no cabe, se corta con "…".
@@ -21,4 +23,6 @@ export class HojaCabecera {
   /** Mientras se guarda, cerrar dejaría el guardado a medias. */
   cerrarDeshabilitado = input(false);
   cerrar = output<void>();
+  textoAccion = input<string | null>(null);
+  accion = output<void>();
 }
