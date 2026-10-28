@@ -1,0 +1,37 @@
+<div class="dona">
+  <div class="dona__grafica">
+    <apx-chart
+      [series]="series()"
+      [labels]="etiquetas()"
+      [colors]="colores()"
+      [chart]="chart()"
+      [plotOptions]="plotOptions()"
+      [stroke]="stroke()"
+      [tooltip]="tooltip()"
+      [dataLabels]="{ enabled: false }"
+      [legend]="{ show: false }"
+    />
+
+    <!--
+      Total al centro, como HTML y no como etiqueta de ApexCharts: usa la
+      tipografía del sistema y pasa por `<app-amount>`, así respeta el botón
+      de ocultar montos. `pointer-events: none` para no tapar el tooltip de
+      las porciones que quedan debajo.
+    -->
+    <div class="dona__centro" aria-hidden="true">
+      <span class="t-meta">Total</span>
+      <span class="t-kpi amt"><app-amount [valor]="total()" /></span>
+    </div>
+  </div>
+
+  <ul class="leyenda">
+    @for (porcion of porciones(); track porcion.nombre) {
+      <li class="leyenda__item">
+        <span class="leyenda__muestra" [style.background]="porcion.color" aria-hidden="true"></span>
+        <span class="leyenda__nombre">{{ porcion.nombre }}</span>
+        <span class="leyenda__porcentaje tnum">{{ porcentajeTexto(porcion) }}</span>
+        <span class="leyenda__monto amt"><app-amount [valor]="porcion.monto" /></span>
+      </li>
+    }
+  </ul>
+</div>

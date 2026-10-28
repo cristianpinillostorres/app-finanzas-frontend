@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+// `.empty__accion` siempre está en la plantilla (envuelve el `ng-content`),
+// así que sin esto deja un margen incluso cuando no se proyectó ningún
+// botón — `:empty` lo colapsa en ese caso.
+.empty__accion:empty {
+  display: none;
+}

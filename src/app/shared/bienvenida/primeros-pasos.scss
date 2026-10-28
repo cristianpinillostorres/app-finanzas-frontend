@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+// Frase y progreso lado a lado en escritorio; apilados en móvil.
+.cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.cabeza__texto {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.cabeza__progreso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1 1 12rem;
+  max-width: 20rem;
+}
+
+.pasos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso-item {
+  border-bottom: 1px solid var(--border);
+}
+.paso-item:last-child {
+  border-bottom: 0;
+}
+
+// El borde lo pone el `li`: la fila es su único hijo y `.row:last-child`
+// le quitaría el suyo a todas.
+.paso {
+  border-bottom: 0;
+}
+
+// La descripción es la instrucción: que se lea entera, aunque parta en dos
+// renglones, en vez de cortarse con "…" como en las listas de datos.
+.paso .row-main .t-meta {
+  white-space: normal;
+}
+
+.paso--resuelto .t-row {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.paso__flecha {
+  flex: none;
+  color: var(--text-secondary);
+}

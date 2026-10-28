@@ -1,0 +1,64 @@
+@if (estado(); as estado) {
+  <section class="panel" aria-labelledby="primeros-pasos-titulo">
+    <div class="panel-head">
+      <h2 id="primeros-pasos-titulo">{{ textos().titulo }}</h2>
+      <button type="button" class="btn btn-text" (click)="bienvenida.ocultar()">
+        <!-- En lo esencial, ocultarlo también abre lo que el recorrido
+             bloquea (ver `BienvenidaService.faltaCuenta`): que se note. -->
+        {{ estado.bloque === 'esencial' ? 'Saltar recorrido' : 'Ocultar' }}
+      </button>
+    </div>
+
+    <div class="cabeza">
+      <p class="cabeza__texto">{{ textos().intro(estado.pasos.length) }}</p>
+      <div class="cabeza__progreso">
+        <span class="t-meta tnum">{{ estado.resueltos }} de {{ estado.pasos.length }} listos</span>
+        <div
+          class="bar"
+          role="progressbar"
+          [attr.aria-label]="textos().titulo + ': pasos resueltos'"
+          [attr.aria-valuenow]="estado.resueltos"
+          aria-valuemin="0"
+          [attr.aria-valuemax]="estado.pasos.length"
+        >
+          <i [style.--progreso]="estado.resueltos / estado.pasos.length"></i>
+        </div>
+      </div>
+    </div>
+
+    <ol class="pasos">
+      @for (item of estado.pasos; track item.paso.id; let i = $index) {
+        <li class="paso-item">
+          @if (item.estado !== 'pendiente') {
+            <div class="row row--estatica paso paso--resuelto">
+              <span class="ico" [class.ico--ingreso]="item.estado === 'hecho'">
+                <mat-icon aria-hidden="true">{{
+                  item.estado === 'hecho' ? 'check' : 'remove'
+                }}</mat-icon>
+              </span>
+              <span class="row-main">
+                <span class="t-row">{{ item.paso.titulo }}</span>
+                @if (item.estado === 'omitido') {
+                  <span class="t-meta">{{ item.paso.omitir }}</span>
+                } @else {
+                  <span class="sr-only">Hecho.</span>
+                }
+              </span>
+            </div>
+          } @else {
+            <button type="button" class="row paso" (click)="bienvenida.irA(item.paso)">
+              <span class="ico ico--accent">
+                <mat-icon aria-hidden="true">{{ item.paso.icono }}</mat-icon>
+              </span>
+              <span class="row-main">
+                <span class="t-row">{{ i + 1 }}. {{ item.paso.titulo }}</span>
+                <span class="t-meta">{{ item.paso.descripcion }}</span>
+              </span>
+              <mat-icon class="paso__flecha" aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          }
+        </li>
+      }
+    </ol>
+  </section>
+}

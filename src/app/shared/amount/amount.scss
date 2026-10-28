@@ -1,0 +1,17 @@
+// `tabular-nums` como estilo propio del host en vez de una clase que haya
+// que recordar poner en cada uso. Es lo que mantiene la columna de montos
+// alineada dígito a dígito — y, durante el conteo animado, lo que evita que
+// el número tiemble de ancho en cada cuadro.
+:host {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+// Del ancho de un monto típico y del alto de la letra que lo rodea: en el
+// héroe es un bloque grande y en una fila uno chico, sin medidas por caso.
+.amount__esqueleto {
+  display: inline-block;
+  width: 7ch;
+  height: 0.8em;
+  vertical-align: -0.05em;
+}

@@ -1,0 +1,63 @@
+// Capa 1 — Primitivas: solo valores hex. Nada más referencia estos nombres
+// directamente salvo `_semanticos.scss`.
+//
+// Paleta compartida con Mi Semana (la otra app de la casa): neutros fríos
+// con un tinte verde azulado y el teal como único color de marca. Los hex
+// de marca, neutros y estado son los de `mi_semana/static/styles/tokens.css`;
+// los que Finanzas necesita y Mi Semana no tiene (un tercer nivel de texto,
+// el borde de control a 3:1, los fondos de badge de cada monto) se
+// derivaron de esa misma rampa. Cada valor que termina usándose como texto
+// o como borde de control está verificado contra WCAG AA sobre sus fondos
+// reales: `npm run verificar:contraste`. No cambies un hex de acá sin
+// volver a correrlo.
+:root {
+  // — neutros oscuros (superficies del tema oscuro) —
+  --p-ink-950: #0b1213; // página
+  --p-ink-800: #121b1d; // superficie (paneles, barra lateral)
+  --p-ink-700: #1a2528; // superficie elevada (diálogo, hoja, menú)
+  --p-ink-600: #2b3a3d; // relleno (chips, pistas de barra, ícono de fila)
+  --p-ink-550: #3a4b4f; // borde decorativo fuerte (hover)
+  --p-ink-500: #637377; // borde de control — 3:1 sobre superficie
+  --p-ink-400: #9db0b3; // texto atenuado
+  --p-ink-300: #bccbcd; // texto secundario
+  --p-ink-50: #eaf2f2; // texto primario
+
+  // — neutros claros (superficies del tema claro) —
+  --p-white: #ffffff;
+  --p-neutral-50: #ffffff; // superficie (paneles, tarjetas): blanco puro
+  --p-neutral-100: #f6f8f9; // página: casi blanca, que no se vea apagada con poco brillo
+  --p-neutral-200: #e3e8ea; // relleno (chips, pistas de barra, ícono de fila)
+  --p-neutral-300: #cbd5d8; // borde decorativo
+  --p-neutral-350: #b4c0c4; // borde decorativo fuerte (hover)
+  --p-neutral-500: #7f8c90; // borde de control — 3:1 sobre la página
+  --p-neutral-600: #5b686c; // texto atenuado
+  --p-neutral-700: #3e4a4e; // texto secundario
+  --p-neutral-950: #0e1414; // texto primario
+
+  // — teal (marca: acción primaria, enlaces, foco, selección) —
+  --p-teal-100: #ddf1f2; // fondo de acento, tema claro
+  --p-teal-200: #b4e0e3; // texto secundario sobre el panel de marca
+  --p-teal-300: #7fd0d5; // acento del tema oscuro; también su botón sólido
+  --p-teal-400: #4fb3b8; // brillo y foco del tema oscuro
+  --p-teal-500: #2e7f85; // brillo y foco del tema claro
+  --p-teal-700: #22545b; // acento del tema claro; también su botón sólido
+  --p-teal-900: #17383b; // fondo de acento del tema oscuro; panel de marca
+
+  // — verde (ingresos) —
+  --p-green-700: #2f6e35;
+  --p-green-300: #7bc276;
+  --p-green-50: #e4f2e3;
+  --p-green-950: #17291a;
+
+  // — rojo (gastos) —
+  --p-red-700: #b42318;
+  --p-red-300: #f28b82;
+  --p-red-50: #f9e4e2;
+  --p-red-950: #2e1715;
+
+  // — ámbar (deuda, vencimientos) —
+  --p-amber-800: #7f5d0f;
+  --p-amber-300: #e6b84e;
+  --p-amber-50: #f7eedb;
+  --p-amber-950: #2b2210;
+}

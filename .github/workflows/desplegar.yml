@@ -1,0 +1,47 @@
+# Cada push corre las pruebas, compila y publica en Cloudflare Pages:
+# - main → producción (app-finanzas.pages.dev)
+# - cualquier otra rama → URL de vista previa propia (p. ej. hotfix-x.app-finanzas.pages.dev)
+# Si las pruebas fallan, no se publica nada.
+name: Desplegar
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: desplegar-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Pruebas
+        run: npx ng test --watch=false
+
+      - name: Compilar
+        run: npx ng build
+
+      - name: Publicar en Cloudflare Pages
+        run: >-
+          npx wrangler pages deploy dist/app-finanzas-frontend/browser
+          --project-name app-finanzas
+          --branch "$RAMA"
+          --commit-hash "$GITHUB_SHA"
+        env:
+          RAMA: ${{ github.ref_name }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

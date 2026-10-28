@@ -1,0 +1,15 @@
+<h2 class="screen-title">{{ datos.titulo }}</h2>
+<p class="t-sec">{{ datos.mensaje }}</p>
+<div class="acciones">
+  <button class="btn btn-outline" type="button" (click)="cancelar()">
+    {{ datos.textoCancelar ?? 'Cancelar' }}
+  </button>
+  <button
+    class="btn"
+    [class]="datos.peligro ? 'btn-peligro' : 'btn-primary'"
+    type="button"
+    (click)="confirmar()"
+  >
+    {{ datos.textoConfirmar ?? 'Confirmar' }}
+  </button>
+</div>

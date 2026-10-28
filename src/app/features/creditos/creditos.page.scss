@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// La fila de crédito es también el botón que abre/cierra el detalle. Igual
+// que `.fila-cuenta` en Cuentas, se sale 8px hacia los bordes de la
+// tarjeta: el fondo al pasar por encima (y el aro de foco) rodean el
+// contenido con aire en vez de cortarlo al ras.
+.fila-credito {
+  width: calc(100% + 2 * var(--space-2));
+  min-height: var(--tap-min);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    border-radius: var(--radius-md);
+  }
+}
+
+// El desglose (`.caja-detalle`) y las acciones (`.acciones-fila`) son los
+// mismos de Cuentas: ver `_componentes.scss`.
+.credito__detalle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+// Igual que en Cuentas: el tope de 680px que había acá desalineaba las
+// tarjetas respecto del encabezado con "Agregar crédito". El ancho lo
+// decide ahora el grid de 12 columnas de la página.

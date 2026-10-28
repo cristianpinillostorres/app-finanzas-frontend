@@ -1,0 +1,335 @@
+// Capa 2 — Semánticos: referencian primitivas. Ningún componente escribe un
+// hex ni un px suelto; todo sale de acá.
+//
+// Comportamiento del tema (sin cambios respecto de antes): por defecto sigue
+// `prefers-color-scheme`, con override manual vía `data-theme` en `<html>`
+// (`ThemeService`, menú "···" del `Shell`). 'claro'/'oscuro' fuerza el tema
+// sin importar el sistema; sin el atributo sigue al sistema en vivo.
+//
+// El diseño se piensa oscuro-primero (es el tema principal del producto),
+// pero el arranque respeta la preferencia del sistema a propósito: cambiar
+// el default sorprendería a quien tiene el SO en claro.
+//
+// — Contraste WCAG AA —
+// Los pares texto/fondo y borde-de-control/fondo están verificados en los
+// dos temas (`npm run verificar:contraste`): texto normal >= 4.5:1,
+// componentes de interfaz >= 3:1. Los más ajustados, y por eso los que hay
+// que re-verificar ante cualquier cambio de paleta, son en claro:
+// `--text-muted` y `--color-deuda` sobre `--bg-subtle` (4.67:1 y 4.89:1) y
+// `--border-control` sobre la página (3.10:1).
+//
+// — Bordes —
+// Mi Semana dibuja todos sus bordes con el mismo gris claro. Acá eso vale
+// para tarjetas, botones y chips (`--border`), que se identifican por su
+// texto; los campos de texto, cuyo borde es la única señal de "acá se
+// escribe", usan `--border-control`, que llega a 3:1.
+
+// --------------------------- tema oscuro ---------------------------
+@mixin tokens-oscuro {
+  color-scheme: dark;
+
+  // superficies
+  --bg-page: var(--p-ink-950);
+  --bg-surface: var(--p-ink-800);
+  --bg-raised: var(--p-ink-700);
+  // Campos de texto: hundidos con el color de la página, como en Mi Semana.
+  --bg-sunken: var(--p-ink-950);
+  --bg-subtle: var(--p-ink-600);
+  --bg-hover: var(--p-ink-700);
+
+  // texto
+  --text-primary: var(--p-ink-50);
+  --text-secondary: var(--p-ink-300);
+  --text-muted: var(--p-ink-400);
+
+  // bordes
+  --border: var(--p-ink-600);
+  --border-strong: var(--p-ink-550);
+  --border-control: var(--p-ink-500);
+
+  // acento
+  --accent: var(--p-teal-300);
+  --accent-bg: var(--p-teal-900);
+  --accent-solid: var(--p-teal-300);
+  // Brillo de marca: bordes de lo seleccionado, foco y el halo de la
+  // acción primaria. No se usa como texto.
+  --accent-brillo: var(--p-teal-400);
+  // Texto oscuro sobre el teal claro: el blanco sobre este tono no llega a
+  // AA, y oscurecer el teal para salvar el blanco lo vuelve turbio sobre
+  // fondo oscuro. Es lo mismo que hace Mi Semana.
+  --text-on-accent: var(--p-ink-950);
+
+  // Superficie invertida: la usan los avisos transitorios (snack bar), que
+  // contrastan con el resto de la interfaz a propósito: un aviso que se ve
+  // igual que una tarjeta se pierde entre el contenido.
+  --bg-inverse: var(--p-ink-50);
+  --text-on-inverse: var(--p-ink-950);
+  // El acento también se invierte: el teal claro del tema oscuro sobre una
+  // superficie clara no llegaría a contraste.
+  --accent-on-inverse: var(--p-teal-700);
+
+  // semántica de montos
+  --color-ingreso: var(--p-green-300);
+  --color-ingreso-bg: var(--p-green-950);
+  --color-gasto: var(--p-red-300);
+  --color-gasto-bg: var(--p-red-950);
+  --color-deuda: var(--p-amber-300);
+  --color-deuda-bg: var(--p-amber-950);
+  --color-neutro: var(--text-primary);
+
+  // Textura de billete de `.hero`: sobre fondo oscuro el acento claro se
+  // pierde más, así que necesita más presencia que en el tema claro.
+  --textura-opacidad: 0.2;
+
+  // sombras y brillo — en fondo oscuro la sombra es negro casi opaco
+  --shadow-color: rgb(0 0 0 / 45%);
+  --glow-color: rgb(79 179 184 / 55%);
+}
+
+// --------------------------- tema claro ----------------------------
+@mixin tokens-claro {
+  color-scheme: light;
+
+  --bg-page: var(--p-neutral-100);
+  --bg-surface: var(--p-neutral-50);
+  --bg-raised: var(--p-neutral-50);
+  --bg-sunken: var(--p-neutral-100);
+  --bg-subtle: var(--p-neutral-200);
+  --bg-hover: var(--p-neutral-100);
+
+  --text-primary: var(--p-neutral-950);
+  --text-secondary: var(--p-neutral-700);
+  --text-muted: var(--p-neutral-600);
+
+  --border: var(--p-neutral-300);
+  --border-strong: var(--p-neutral-350);
+  --border-control: var(--p-neutral-500);
+
+  --accent: var(--p-teal-700);
+  --accent-bg: var(--p-teal-100);
+  --accent-solid: var(--p-teal-700);
+  --accent-brillo: var(--p-teal-500);
+  --text-on-accent: var(--p-white);
+
+  --bg-inverse: var(--p-neutral-950);
+  --text-on-inverse: var(--p-neutral-100);
+  --accent-on-inverse: var(--p-teal-300);
+
+  --color-ingreso: var(--p-green-700);
+  --color-ingreso-bg: var(--p-green-50);
+  --color-gasto: var(--p-red-700);
+  --color-gasto-bg: var(--p-red-50);
+  --color-deuda: var(--p-amber-800);
+  --color-deuda-bg: var(--p-amber-50);
+  --color-neutro: var(--text-primary);
+
+  --textura-opacidad: 0.14;
+
+  --shadow-color: rgb(14 20 20 / 12%);
+  --glow-color: rgb(46 127 133 / 45%);
+}
+
+:root {
+  @include tokens-claro;
+
+  // -- alias por tipo de movimiento --
+  // Transferencias y ajustes no tienen color propio: una transferencia no
+  // suma ni resta patrimonio, y un ajuste es una corrección, no un hecho
+  // económico. Se pintan neutro y ámbar respectivamente.
+  --color-transferencia: var(--text-secondary);
+  --color-transferencia-bg: var(--bg-subtle);
+  --color-ajuste: var(--color-deuda);
+  --color-ajuste-bg: var(--color-deuda-bg);
+
+  // -- semáforo de vencimientos (`core/domain/semaforo.ts`) --
+  // Mapeado sobre la misma semántica de color: verde = al día,
+  // ámbar = por vencer, rojo = vencido, neutro = ya pagado.
+  --semaforo-verde-text: var(--color-ingreso);
+  --semaforo-verde-bg: var(--color-ingreso-bg);
+  --semaforo-amarillo-text: var(--color-deuda);
+  --semaforo-amarillo-bg: var(--color-deuda-bg);
+  --semaforo-rojo-text: var(--color-gasto);
+  --semaforo-rojo-bg: var(--color-gasto-bg);
+  --semaforo-pagado-text: var(--text-secondary);
+  --semaforo-pagado-bg: var(--bg-subtle);
+
+  // -- panel de marca (login) --
+  // Igual en los dos temas: teal profundo con texto claro. Es la única
+  // superficie de color de la app y solo existe en el login, donde la
+  // textura de billete puede crecer sin competir con ninguna cifra.
+  --bg-marca: var(--p-teal-900);
+  // El mismo teal con profundidad: un brillo arriba a la izquierda (donde
+  // van la marca y la cifra) que se apaga hacia abajo. Un color plano se
+  // leía como un bloque muerto.
+  --bg-marca-degradado:
+    radial-gradient(120% 70% at 0% 35%, rgb(46 127 133 / 55%) 0%, transparent 60%),
+    linear-gradient(165deg, #1d4549 0%, var(--p-teal-900) 45%, #0f2629 100%);
+  --text-on-marca: var(--p-ink-50);
+  --text-on-marca-secundario: var(--p-teal-200);
+  --marca-textura: var(--p-teal-300);
+
+  // -- sombras y brillo (los mismos de Mi Semana) --
+  // Una sola tinta por tema (`--shadow-color`) a distintas distancias. El
+  // brillo es el halo teal de la acción primaria y de la sección activa:
+  // es la firma visual de las dos apps.
+  --shadow-xs: 0 1px 2px var(--shadow-color);
+  --shadow-sm: 0 2px 6px var(--shadow-color);
+  --shadow-md: 0 12px 24px var(--shadow-color);
+  --shadow-lg: 0 24px 40px var(--shadow-color);
+  --glow-md: 0 0 24px var(--glow-color);
+
+  // Nombre histórico, usado por la capa de Material para diálogo y hoja
+  // inferior. Se mantiene como alias de la sombra grande.
+  --shadow-overlay: var(--shadow-lg);
+
+  // -- tipografía --
+  // Plus Jakarta Sans para todo y Anton (condensada, en mayúsculas) solo
+  // para la marca y los títulos de pantalla y de diálogo, como en Mi
+  // Semana. Las dos van servidas desde `public/fonts` (ver `styles.scss`).
+  --font-sans:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+  --font-display: 'Anton', 'League Gothic', Impact, 'Arial Narrow', sans-serif;
+  // Escala usada en toda la app. Los nombres describen el rol, no el px,
+  // para poder afinar un paso sin renombrar nada.
+  --text-2xs: 11px; // contadores dentro de un badge
+  --text-xs: 12px; // meta: fechas, etiquetas de grupo
+  --text-sm: 13px; // secundario: subtítulos de fila, kv
+  --text-base: 14px; // cuerpo de listas y controles
+  --text-md: 16px; // inputs (por debajo de 16px iOS hace zoom al enfocar)
+  --text-lg: 18px; // títulos de pantalla y de panel
+  --text-xl: 20px; // KPI
+  --text-2xl: 24px; // monto de stat-card destacada
+  --text-kpi: 28px; // cifra de stat-card (la de `.metric` en Mi Semana)
+  // Monto héroe: crece con el viewport pero con tope, para que
+  // "$12.345.678.900" no desborde en 360px ni se vuelva cartel en 1920px.
+  --text-hero: clamp(28px, 7vw, 44px);
+  // Títulos en Anton: la marca del cabezote, el de cada pantalla y el de
+  // los diálogos. Anton es condensada, así que 28px se leen como un 20px
+  // de texto corrido.
+  --text-display-lg: 44px;
+  --text-display: 28px;
+
+  // `--weight-light` solo queda para el lema del login.
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  // Etiquetas en mayúsculas y cifras: la voz de Mi Semana.
+  --weight-extrabold: 800;
+
+  --leading-display: 0.92;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+
+  --tracking-tight: -0.01em;
+  --tracking-hero: -0.02em;
+  // Anton se apreta sola: con un poco de aire se lee mejor en mayúsculas.
+  --tracking-display: 0.01em;
+  // Etiquetas en mayúsculas: "DEUDA TOTAL", encabezados de panel.
+  --tracking-caps: 0.06em;
+  // Rótulos de grupo de la barra lateral, más abiertos todavía.
+  --tracking-caps-ancho: 0.22em;
+
+  // -- espaciado (escala de 4px) --
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+
+  // -- forma --
+  // Escala de Mi Semana: tarjetas de 20px, paneles grandes y diálogos de
+  // 28px, campos de 12px y botones en píldora.
+  --radius-xs: 6px;
+  --radius-control: 8px;
+  --radius-md: 12px;
+  --radius-campo: 12px;
+  --radius-chip: 16px;
+  --radius-card: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+
+  // -- movimiento --
+  // Rango 150-250ms, salida suave, sin rebote. `--ease-out` es un
+  // cubic-bezier de desaceleración fuerte: arranca rápido y frena, que es
+  // lo que hace que una entrada se sienta "ya está" en vez de "va llegando".
+  --dur-instant: 100ms;
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 250ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  // -- foco --
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --focus-color: var(--accent-brillo);
+
+  // -- layout --
+  // Ancho del cabezote + barra lateral + contenido en escritorio. El
+  // contenido solo queda en ~1150px, lo mismo que tenía antes la columna
+  // única de 1200px.
+  --layout-max: 1440px;
+  --ancho-lateral: 220px;
+  --ancho-lateral-iconos: 76px;
+  --layout-gutter: var(--space-4);
+  --altura-topbar: 56px;
+  --altura-cabezote: 76px;
+  --altura-barra-inferior: 64px;
+  --altura-fab: 56px;
+  // Área táctil mínima (WCAG 2.5.5 / HIG): ningún control baja de acá.
+  --tap-min: 44px;
+
+  // -- capas --
+  --z-sticky: 10;
+  --z-fab: 20;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --layout-gutter: var(--space-6);
+  }
+}
+
+// El override manual gana en las dos direcciones; sin atributo, manda el
+// sistema. Este orden (media query primero, `[data-theme]` después) es lo
+// que permite forzar claro estando el SO en oscuro y viceversa.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='claro']) {
+    @include tokens-oscuro;
+  }
+}
+
+:root[data-theme='oscuro'] {
+  @include tokens-oscuro;
+}
+
+:root[data-theme='claro'] {
+  @include tokens-claro;
+}
+
+// Accesibilidad: quien pide menos movimiento no recibe ninguna animación no
+// esencial. Los tokens de duración pasan a ~0 para que cualquier
+// `transition`/`animation` que los use se apague sola, sin que cada
+// componente tenga que repetir la media query. Las animaciones escritas a
+// mano (motion, animate.enter) consultan además `prefers-reduced-motion`
+// en su propio código — ver fase 4.
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0.01ms;
+    --dur-fast: 0.01ms;
+    --dur-base: 0.01ms;
+    --dur-slow: 0.01ms;
+  }
+}

@@ -1,0 +1,333 @@
+<div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
+  <app-page-head
+    class="col-md-12"
+    icono="credit_card"
+    titulo="Créditos"
+    [detalle]="detalleCreditos()"
+  >
+    <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
+    @if (!listo() || !sinDatos()) {
+      <button class="btn btn-outline" type="button" (click)="agregarCredito()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Agregar crédito
+      </button>
+    }
+  </app-page-head>
+
+  @if (listo() && sinDatos()) {
+    <app-pantalla-vacia
+      class="col-md-12"
+      icono="credit_card"
+      titulo="Todo lo que debes, en un solo lugar"
+      descripcion="Tarjetas de crédito, préstamos del banco, compras a cuotas o lo que le debes a alguien."
+      [puntos]="[
+        'Cuánto debes en total y cuánto pagas este mes',
+        'Cuántas cuotas te faltan en cada compra o préstamo',
+        'Cuándo vence la próxima cuota',
+      ]"
+    >
+      <button class="btn btn-primary" type="button" (click)="agregarCredito()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Agregar crédito
+      </button>
+    </app-pantalla-vacia>
+  } @else {
+    <!--
+    "Cuánto debo", "cuánto sale este mes" y "cuándo es lo próximo" son tres
+    preguntas que se hacen juntas: van en la misma tarjeta, con la deuda
+    como cifra que manda.
+  -->
+    <section class="hero col-md-12">
+      <span class="t-meta">Deuda total</span>
+      <span class="t-hero amt mon-deuda"
+        ><app-amount [valor]="deudaTotal()" [animar]="true" [cargando]="!listo()"
+      /></span>
+      <div class="desglose desglose--columnas">
+        <div>
+          <span class="t-meta">Por pagar este mes</span>
+          <app-amount class="amt" [valor]="porPagarEsteMes()" [cargando]="!listo()" />
+        </div>
+        @if (cuotaMasCercana(); as proxima) {
+          @if (proxima.vencidas > 0) {
+            <div>
+              <span class="t-meta">Vencidas sin pagar</span>
+              <span class="amt mon-out"
+                >{{ proxima.vencidas }} {{ proxima.vencidas === 1 ? 'cuota' : 'cuotas' }}</span
+              >
+            </div>
+          } @else if (proxima.fecha) {
+            <div>
+              <span class="t-meta">Próxima cuota</span>
+              <span class="amt">{{ fechaCortaDe(proxima.fecha) }}</span>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    @if (!listo()) {
+      <section class="stack col-md-6 col-lg-4">
+        <div class="panel">
+          <app-skeleton-rows [filas]="3" [conIcono]="false" />
+        </div>
+      </section>
+    }
+    @for (grupo of listo() ? grupos() : []; track grupo.grupo) {
+      <section class="stack col-md-6 col-lg-4" auto-animate>
+        <div class="group-head">
+          <span class="t-meta">{{ grupo.etiqueta }}</span>
+        </div>
+
+        @for (item of grupo.creditos; track item.credito.id) {
+          <div class="credito" auto-animate>
+            <button
+              class="row fila-credito"
+              type="button"
+              [attr.aria-expanded]="expandido(item.credito.id)"
+              (click)="alternarExpandido(item.credito.id)"
+            >
+              <span class="row-main">
+                <span class="t-row">{{ item.credito.nombre }}</span>
+                @if (item.estadoPago) {
+                  <span class="badge" [class]="claseBadge(item)">{{
+                    textoFecha(item.estadoPago.fechaLimite)
+                  }}</span>
+                } @else if (item.credito.grupo === 'PERSONA' && item.credito.fechaAcordada) {
+                  <span class="t-meta">Desde {{ fechaTexto(item.credito.fechaAcordada) }}</span>
+                } @else {
+                  <span class="t-meta">Sin fecha límite</span>
+                }
+              </span>
+              <span class="row-end">
+                <span class="t-meta">Saldo pendiente</span>
+                <span class="t-row amt"><app-amount [valor]="item.deuda" /></span>
+              </span>
+              <mat-icon class="fila-flecha" aria-hidden="true">expand_more</mat-icon>
+            </button>
+
+            @if (item.credito.grupo === 'BANCO') {
+              <div class="hd">
+                <span class="t-meta tnum">
+                  {{ item.credito.plazoMeses - (item.cuotasFaltantes ?? 0) }} de
+                  {{ item.credito.plazoMeses }} cuotas pagadas
+                </span>
+                <span class="t-meta tnum">{{ progresoPagoBanco(item.credito) }}%</span>
+              </div>
+              <div class="bar">
+                <i [style.--progreso]="progresoPagoBanco(item.credito) / 100"></i>
+              </div>
+            } @else if (progresoCuotas(item.credito.id); as progreso) {
+              <div class="hd">
+                <span class="t-meta tnum">
+                  {{ progreso.total - progreso.faltan }} de {{ progreso.total }} cuotas pagadas
+                </span>
+                <span class="t-meta tnum">{{ progreso.progreso }}%</span>
+              </div>
+              <div class="bar"><i [style.--progreso]="progreso.progreso / 100"></i></div>
+            }
+
+            <!--
+            Abierta, el desglose va antes del pie: así el pie (la cuota y
+            "Registrar pago") sigue siendo lo último de la tarjeta, en vez
+            de quedar partido entre el progreso y los datos.
+          -->
+            @if (expandido(item.credito.id)) {
+              <div class="credito__detalle">
+                @let compras = comprasDe(item.credito.id);
+                <!-- Una plataforma sin planes no tiene nada que desglosar. -->
+                @if (item.credito.grupo !== 'PLATAFORMA' || compras.length > 0) {
+                  <div class="caja-detalle">
+                    @if (item.credito.grupo === 'TARJETA') {
+                      <div class="caja-detalle__fila caja-detalle__fila--total">
+                        <span>Cupo disponible</span>
+                        <app-amount
+                          class="amt"
+                          [valor]="cupoDisponible(item.credito, item.deuda)"
+                        />
+                      </div>
+                      @if (valorExtracto(item.credito.id); as valor) {
+                        <div class="caja-detalle__fila">
+                          <span>Valor del extracto</span>
+                          <app-amount class="amt" [valor]="valor" />
+                        </div>
+                      }
+                    }
+
+                    @if (item.credito.grupo === 'BANCO') {
+                      <div class="caja-detalle__fila">
+                        <span
+                          >Tasa E.A.{{
+                            item.credito.tipoTasa === 'VARIABLE' ? ' vigente' : ''
+                          }}</span
+                        >
+                        <span class="tnum">{{ tasaEaTexto(tasaEaVigenteDe(item.credito)) }}</span>
+                      </div>
+                      <div class="caja-detalle__fila">
+                        <span>Tasa mensual</span>
+                        <span class="tnum">{{
+                          tasaMensualTexto(tasaEaVigenteDe(item.credito))
+                        }}</span>
+                      </div>
+                      @if (item.credito.seguroMensual > 0) {
+                        <div class="caja-detalle__fila">
+                          <span>Seguros</span>
+                          <app-amount class="amt" [valor]="item.credito.seguroMensual" />
+                        </div>
+                      }
+                      @if (terminaTexto(item.credito, item.cuotasFaltantes); as termina) {
+                        <div class="caja-detalle__fila">
+                          <span>Termina</span>
+                          <span>{{ termina }}</span>
+                        </div>
+                      }
+                      @if (proximaCuota(item.credito); as proxima) {
+                        <div class="caja-detalle__fila">
+                          <span>Próxima cuota · capital / interés</span>
+                          <span class="amt">
+                            <app-amount [valor]="proxima.capital" /> /
+                            <app-amount [valor]="proxima.interes" />
+                          </span>
+                        </div>
+                      }
+                      @if (item.credito.tipoTasa === 'VARIABLE') {
+                        @let cambios = cambiosTasaDe(item.credito.id);
+                        @if (cambios.length > 0) {
+                          <span class="t-rotulo caja-detalle__titulo">Cambios de tasa</span>
+                          @for (cambio of cambios; track cambio.id) {
+                            <div class="caja-detalle__fila">
+                              <span>Desde {{ fechaTexto(cambio.fechaDesde) }}</span>
+                              <span class="tnum">{{ tasaEaTexto(cambio.tasaEa) }}</span>
+                            </div>
+                          }
+                        }
+                      }
+                    }
+
+                    @if (item.credito.grupo === 'PERSONA') {
+                      <div class="caja-detalle__fila caja-detalle__fila--total">
+                        <span>Monto original</span>
+                        <app-amount class="amt" [valor]="item.credito.monto" />
+                      </div>
+                      @let abonos = abonosPersona(item.credito.id);
+                      @if (abonos.length > 0) {
+                        <span class="t-rotulo caja-detalle__titulo">Abonos</span>
+                        @for (abono of abonos; track abono.id) {
+                          <div class="caja-detalle__fila">
+                            <span>{{ fechaTexto(abono.fecha) }}</span>
+                            <app-amount class="amt" [valor]="abono.monto" />
+                          </div>
+                        }
+                      }
+                    }
+
+                    @if (
+                      (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') &&
+                      compras.length > 0
+                    ) {
+                      <span class="t-rotulo caja-detalle__titulo">{{
+                        item.credito.grupo === 'TARJETA' ? 'Compras' : 'Planes'
+                      }}</span>
+                      @for (compra of compras; track compra.id) {
+                        <div class="caja-detalle__fila">
+                          <span class="caja-detalle__nombre">
+                            <mat-icon aria-hidden="true">shopping_bag</mat-icon>
+                            {{ compra.descripcion }}
+                          </span>
+                          <span class="tnum"
+                            >Cuota {{ cuotaActualCompra(compra) }} de {{ compra.numCuotas }}</span
+                          >
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+
+                <div class="acciones-fila">
+                  @if (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') {
+                    <button class="chip" type="button" (click)="agregarCompra(item.credito)">
+                      <mat-icon aria-hidden="true">add</mat-icon>
+                      Agregar compra
+                    </button>
+                  }
+                  @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
+                    <button class="chip" type="button" (click)="cambiarTasa(item.credito)">
+                      <mat-icon aria-hidden="true">trending_up</mat-icon>
+                      Cambiar tasa
+                    </button>
+                  }
+                  @if (item.credito.grupo === 'PERSONA') {
+                    <button
+                      class="btn btn-primary btn-compacto"
+                      type="button"
+                      (click)="registrarAbono(item.credito)"
+                    >
+                      Registrar abono
+                    </button>
+                  }
+                  <span class="acciones-fila__secundarias">
+                    <button
+                      class="btn btn-text btn-compacto"
+                      type="button"
+                      (click)="editar(item.credito)"
+                    >
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                      Editar
+                    </button>
+                    <button
+                      class="btn btn-text btn-compacto"
+                      type="button"
+                      (click)="archivar(item.credito)"
+                    >
+                      <mat-icon aria-hidden="true">inventory_2</mat-icon>
+                      Archivar
+                    </button>
+                  </span>
+                </div>
+              </div>
+            }
+
+            @if (item.estadoPago && item.cuota > 0) {
+              <!--
+              La acción donde se está mirando la deuda: es el mismo
+              movimiento que hace "Pagar" en Pagos fijos, pero sin salir de
+              acá. Antes había que ir a la otra pantalla a buscarlo.
+            -->
+              <div class="credito__pie">
+                <span class="credito__proxima">
+                  <span class="t-meta" [class.mon-out]="vencida(item)"
+                    >{{ vencida(item) ? 'Venció el' : 'Vence el' }}
+                    {{ fechaCortaDe(item.estadoPago.fechaLimite) }}</span
+                  >
+                  <span class="t-row amt"><app-amount [valor]="item.cuota" /></span>
+                </span>
+                <button
+                  class="btn btn-compacto"
+                  [class]="urgente(item) ? 'btn-primary' : 'btn-outline'"
+                  type="button"
+                  (click)="registrarPago(item)"
+                >
+                  Registrar pago<span class="sr-only"> de {{ item.credito.nombre }}</span>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    } @empty {
+      @if (listo()) {
+        <div class="panel col-md-12">
+          <app-empty-state
+            icono="credit_card"
+            titulo="Sin créditos registrados"
+            descripcion="Agrega una tarjeta, un crédito de banco o una deuda con alguien para seguirle el rastro."
+          >
+            <button class="btn btn-primary" type="button" (click)="agregarCredito()">
+              <mat-icon aria-hidden="true">add</mat-icon>
+              Agregar crédito
+            </button>
+          </app-empty-state>
+        </div>
+      }
+    }
+  }
+</div>

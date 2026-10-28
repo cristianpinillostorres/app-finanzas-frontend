@@ -1,0 +1,247 @@
+<div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
+  <app-page-head
+    class="col-md-12"
+    icono="event_repeat"
+    titulo="Pagos fijos"
+    [detalle]="detallePagos()"
+  >
+    <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
+    @if (!listo() || !sinDatos()) {
+      <button class="btn btn-outline" type="button" (click)="agregarPagoFijo()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Nuevo pago fijo
+      </button>
+    }
+  </app-page-head>
+
+  @if (listo() && sinDatos()) {
+    <app-pantalla-vacia
+      class="col-md-12"
+      icono="event_repeat"
+      titulo="Que no se te pase ningún pago"
+      descripcion="Arriendo, servicios, suscripciones: todo lo que pagas cada mes."
+      [puntos]="[
+        'Tu mes día por día, con lo vencido y lo que viene',
+        'Márcalos como pagados en un toque',
+        'Las cuotas de tus créditos aparecen solas',
+      ]"
+    >
+      <button class="btn btn-primary" type="button" (click)="agregarPagoFijo()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Nuevo pago fijo
+      </button>
+    </app-pantalla-vacia>
+  } @else {
+    <!-- Fuera de la cabecera: en móvil esa no se dibuja y el mes hay que
+       poder cambiarlo igual. -->
+    <div class="col-md-12">
+      <app-month-selector
+        [etiqueta]="etiquetaMes()"
+        (anterior)="mesAnterior()"
+        (siguiente)="mesSiguiente()"
+      />
+    </div>
+
+    <!--
+    El héroe lidera con lo que falta, pero la barra lee "pagado vs total":
+    el número grande responde "¿cuánto me queda?" y la barra "¿qué tan
+    avanzado voy?". Antes la barra no tenía rótulo y no se sabía qué medía.
+  -->
+    <section class="hero col-md-12 col-lg-4">
+      <span class="hd">
+        <span class="t-meta">Falta por pagar</span>
+        @if (vencidos(); as cuantos) {
+          <span class="badge sem-rojo">
+            <mat-icon aria-hidden="true">error</mat-icon>
+            {{ cuantos }} {{ cuantos === 1 ? 'vencido' : 'vencidos' }}
+          </span>
+        }
+      </span>
+      <span class="t-hero amt"
+        ><app-amount [valor]="resumen().totalPorPagar" [animar]="true" [cargando]="!listo()"
+      /></span>
+
+      <div class="progreso">
+        <div class="progreso__rotulos">
+          <!-- Rótulo y porcentaje miden lo mismo (plata): antes decía "3 de 15
+             pagados" al lado de un 52% que era del dinero, no de los pagos. -->
+          <span class="t-sec">Pagado del total del mes</span>
+          @if (listo()) {
+            <span class="t-sec tnum">{{ resumen().progreso }}%</span>
+          }
+        </div>
+        <div class="bar bar--ingreso"><i [style.--progreso]="resumen().progreso / 100"></i></div>
+      </div>
+
+      <div class="desglose">
+        <div>
+          <span>Total del mes</span>
+          <app-amount class="amt" [valor]="resumen().totalMes" [cargando]="!listo()" />
+        </div>
+        <div>
+          <span>Pagado</span>
+          <app-amount class="amt" [valor]="resumen().totalPagado" [cargando]="!listo()" />
+        </div>
+      </div>
+    </section>
+
+    <!--
+    "¿Qué tengo que pagar y cuándo?" como una línea de tiempo del mes: los
+    pagos cuelgan del día en que vencen, con hoy marcado. Lo que quedó
+    arriba de "Hoy" sin pagar está vencido; lo de abajo es lo que viene.
+    Reemplaza las dos columnas Por pagar / Pagados, que obligaban a cruzar
+    dos listas para saber qué venía primero.
+  -->
+    <section class="panel linea col-md-12 col-lg-8" aria-labelledby="titulo-linea">
+      <div class="panel-head">
+        <h2 id="titulo-linea">Tu mes, día por día</h2>
+        @if (listo()) {
+          <span class="t-meta">{{ resumen().pagados.length }} de {{ totalPagos() }} pagados</span>
+        }
+      </div>
+
+      @if (!listo()) {
+        <app-skeleton-rows [filas]="4" [conIcono]="false" />
+      } @else if (linea().dias.length === 0) {
+        <!-- Sin ningún pago en el mes, "todo al día" sería una tranquilidad
+           falsa: lo más probable es que todavía no haya nada creado. -->
+        <app-empty-state
+          icono="event_repeat"
+          titulo="Todavía no tienes pagos fijos"
+          descripcion="Agrega lo que pagas cada mes, como el arriendo, los servicios o las suscripciones, para saber cuánto te queda libre."
+        >
+          <button class="btn btn-outline" type="button" (click)="agregarPagoFijo()">
+            <mat-icon aria-hidden="true">add</mat-icon>
+            Nuevo pago fijo
+          </button>
+        </app-empty-state>
+      } @else {
+        <ol class="linea__dias">
+          @for (dia of linea().dias; track dia.fecha.getTime(); let i = $index) {
+            @if (linea().indiceHoy === i) {
+              <ng-container *ngTemplateOutlet="marcaHoy" />
+            }
+            <li class="linea__dia" [class]="'linea__dia--' + dia.tramo">
+              <span class="sello-fecha linea__sello" aria-hidden="true">
+                <span class="sello-fecha__dia tnum">{{ dia.fecha.getDate() }}</span>
+                <span class="sello-fecha__mes">{{ mesCorto(dia.fecha) }}</span>
+              </span>
+              <span class="sr-only">{{ fechaLarga(dia.fecha) }}</span>
+              <div class="linea__pagos" auto-animate>
+                @for (item of dia.items; track item.id) {
+                  <div class="stack" auto-animate>
+                    <div
+                      class="row fila-pago"
+                      [class.row--estatica]="item.esCredito"
+                      [class.fila-pagada]="item.pagado"
+                    >
+                      @if (item.esCredito) {
+                        <ng-container *ngTemplateOutlet="infoPago; context: { $implicit: item }" />
+                      } @else {
+                        <button
+                          class="fila-pago__abrir"
+                          type="button"
+                          [attr.aria-expanded]="expandido(item.id)"
+                          [attr.aria-controls]="'detalle-' + item.id"
+                          (click)="alternarExpandido(item.id)"
+                        >
+                          <ng-container
+                            *ngTemplateOutlet="infoPago; context: { $implicit: item }"
+                          />
+                          <mat-icon class="fila-pago__chevron" aria-hidden="true"
+                            >expand_more</mat-icon
+                          >
+                        </button>
+                      }
+                      <span class="row-end">
+                        <span class="t-row amt">
+                          @if (item.esEstimado) {
+                            <span aria-hidden="true">~</span
+                            ><span class="sr-only">aproximadamente </span>
+                          }
+                          <app-amount [valor]="item.monto"
+                        /></span>
+                        @if (!item.pagado) {
+                          <button
+                            class="btn btn-text boton-pagar"
+                            type="button"
+                            (click)="pagar(item)"
+                          >
+                            Pagar<span class="sr-only"> {{ item.nombre }}</span>
+                          </button>
+                        }
+                      </span>
+                    </div>
+                    @if (expandido(item.id)) {
+                      <div class="detalle" [id]="'detalle-' + item.id">
+                        <div class="kv">
+                          <span>Se paga</span>
+                          <b>{{ cuandoSePaga(item) }}</b>
+                        </div>
+                        @if (cuentaDe(item); as cuenta) {
+                          <div class="kv">
+                            <span>Desde</span>
+                            <b>{{ cuenta }}</b>
+                          </div>
+                        }
+                        @if (!item.pagado) {
+                          <p class="help">
+                            ¿Ya lo pagaste antes de empezar a usar la app? Márcalo sin registrar un
+                            gasto, para no contarlo dos veces.
+                          </p>
+                        }
+                        <div class="chips">
+                          @if (!item.pagado) {
+                            <button class="chip" type="button" (click)="marcarPagado(item)">
+                              <mat-icon aria-hidden="true">check</mat-icon>
+                              Ya lo pagué
+                            </button>
+                          } @else if (item.marcadoSinMovimiento) {
+                            <button class="chip" type="button" (click)="desmarcar(item)">
+                              Desmarcar
+                            </button>
+                          }
+                          <button class="chip" type="button" (click)="editar(item)">Editar</button>
+                          <button class="chip chip--peligro" type="button" (click)="eliminar(item)">
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </li>
+          }
+          @if (linea().indiceHoy === linea().dias.length) {
+            <ng-container *ngTemplateOutlet="marcaHoy" />
+          }
+        </ol>
+      }
+    </section>
+  }
+</div>
+
+<ng-template #marcaHoy>
+  <li class="linea__hoy">
+    <span class="linea__hoy-punto" aria-hidden="true"></span>
+    <span class="linea__hoy-texto">Hoy, {{ fechaLarga(linea().hoy!) }}</span>
+  </li>
+</ng-template>
+
+<!-- Contenido de la fila, compartido entre la versión que se despliega
+     (pagos fijos propios) y la estática (cuotas de crédito). -->
+<ng-template #infoPago let-item>
+  <span class="row-main">
+    <span class="t-row">{{ item.nombre }}</span>
+    <span class="fila-etiquetas">
+      <app-semaforo-badge
+        [estado]="item.estado"
+        [texto]="item.marcadoSinMovimiento ? 'Pagado (sin gasto)' : textoDe(item)"
+      />
+      @if (item.esCredito) {
+        <span class="badge badge-neutral">Crédito</span>
+      }
+    </span>
+  </span>
+</ng-template>

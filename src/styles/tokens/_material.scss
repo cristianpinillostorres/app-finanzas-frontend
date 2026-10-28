@@ -1,0 +1,137 @@
+// Capa 3 — Integración con Angular Material: mapea los tokens semánticos al
+// tema de Material (M3). Ningún componente debe escribir hex ni usar
+// `mat.theme()` con la paleta azure/blue por defecto sin este mapeo encima.
+//
+// `mat.theme()` sigue generando el set base de variables `--mat-sys-*` (lo
+// necesitan densidad y tipografía), pero acá se sobrescriben con nuestros
+// tokens: primero las variables de sistema más usadas como red de seguridad,
+// y después los overrides por componente para los que sí importa el detalle
+// (tabs, botones, fab, diálogo, hoja inferior).
+@use '@angular/material' as mat;
+
+@mixin aplicar($theme) {
+  @include mat.theme($theme);
+
+  // Variables de sistema: cubren cualquier componente que no tenga un
+  // override explícito más abajo (checkbox, slide-toggle, menú...).
+  --mat-sys-surface: var(--bg-surface);
+  --mat-sys-surface-container: var(--bg-subtle);
+  --mat-sys-surface-container-high: var(--bg-raised);
+  --mat-sys-surface-container-low: var(--bg-surface);
+  --mat-sys-on-surface: var(--text-primary);
+  --mat-sys-on-surface-variant: var(--text-secondary);
+  --mat-sys-outline: var(--border);
+  --mat-sys-outline-variant: var(--border);
+  --mat-sys-primary: var(--accent-solid);
+  --mat-sys-on-primary: var(--text-on-accent);
+  --mat-sys-primary-container: var(--accent-bg);
+  --mat-sys-on-primary-container: var(--accent);
+  --mat-sys-error: var(--color-gasto);
+  --mat-sys-on-error: var(--text-on-accent);
+  --mat-sys-error-container: var(--color-gasto-bg);
+  --mat-sys-on-error-container: var(--color-gasto);
+  --mat-sys-body-medium: var(--weight-regular) var(--text-base) / var(--leading-normal)
+    var(--font-sans);
+  --mat-sys-title-medium: var(--weight-semibold) var(--text-lg) / var(--leading-snug)
+    var(--font-sans);
+  --mat-sys-title-large: var(--weight-semibold) var(--text-lg) / var(--leading-snug)
+    var(--font-sans);
+
+  // Botones en píldora y en semibold, como los de Mi Semana.
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--accent-solid),
+      filled-label-text-color: var(--text-on-accent),
+      filled-container-shape: var(--radius-pill),
+      filled-label-text-weight: var(--weight-semibold),
+      outlined-container-shape: var(--radius-pill),
+      outlined-outline-color: var(--border),
+      outlined-label-text-color: var(--text-primary),
+      outlined-label-text-weight: var(--weight-semibold),
+      text-label-text-color: var(--accent),
+      text-container-shape: var(--radius-pill),
+      text-label-text-weight: var(--weight-semibold),
+      protected-container-shape: var(--radius-pill),
+      tonal-container-color: var(--accent-bg),
+      tonal-label-text-color: var(--accent),
+    )
+  );
+
+  // 44px de área táctil (`--tap-min`): con el tamaño por defecto el ojo,
+  // el "⋮" y la X de las hojas medían 40px, bajo el mínimo de la app.
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--text-secondary),
+      state-layer-size: var(--tap-min),
+    )
+  );
+
+  @include mat.fab-overrides(
+    (
+      container-color: var(--accent-solid),
+      foreground-color: var(--text-on-accent),
+      container-shape: var(--radius-pill),
+      small-container-color: var(--accent-solid),
+      small-foreground-color: var(--text-on-accent),
+    )
+  );
+
+  @include mat.tabs-overrides(
+    (
+      active-indicator-color: var(--accent),
+      active-label-text-color: var(--accent),
+      inactive-label-text-color: var(--text-secondary),
+      active-hover-label-text-color: var(--accent),
+      inactive-hover-label-text-color: var(--accent),
+      active-focus-label-text-color: var(--accent),
+      label-text-size: var(--text-base),
+      label-text-weight: var(--weight-medium),
+      divider-color: var(--border),
+      divider-height: 1px,
+      background-color: var(--bg-surface),
+    )
+  );
+
+  // El título de cada diálogo es un `.screen-title` (Anton, en mayúsculas
+  // y teal: ver `styles/componentes`), no el `mat-dialog-title`.
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--bg-raised),
+      container-shape: var(--radius-lg),
+      subhead-color: var(--text-primary),
+      supporting-text-color: var(--text-secondary),
+    )
+  );
+
+  @include mat.menu-overrides(
+    (
+      container-color: var(--bg-raised),
+      container-shape: var(--radius-chip),
+      item-label-text-color: var(--text-primary),
+      item-label-text-weight: var(--weight-semibold),
+      item-icon-color: var(--text-secondary),
+    )
+  );
+
+  // El aviso transitorio: Material lo genera desde su paleta azure y sale
+  // un gris violáceo ajeno a esta paleta. Se mapea a la superficie
+  // invertida propia.
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--bg-inverse),
+      supporting-text-color: var(--text-on-inverse),
+      button-color: var(--accent-on-inverse),
+      container-shape: var(--radius-md),
+      supporting-text-size: var(--text-base),
+      supporting-text-weight: var(--weight-semibold),
+    )
+  );
+
+  @include mat.bottom-sheet-overrides(
+    (
+      container-background-color: var(--bg-raised),
+      container-shape: var(--radius-lg) var(--radius-lg) 0 0,
+      container-text-color: var(--text-primary),
+    )
+  );
+}

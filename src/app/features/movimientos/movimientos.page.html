@@ -1,0 +1,327 @@
+<div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
+  <app-page-head
+    class="col-md-12"
+    icono="swap_horiz"
+    titulo="Movimientos"
+    [detalle]="detalleMovimientos()"
+  />
+
+  @if (listo() && sinDatos()) {
+    <app-pantalla-vacia
+      class="col-md-12"
+      icono="swap_horiz"
+      titulo="Tu historial empieza aquí"
+      descripcion="Cada gasto, ingreso o transferencia que registres queda guardado acá."
+      [puntos]="[
+        'Busca y filtra por mes, cuenta o categoría',
+        'Cuánto entró y cuánto salió cada mes',
+        'Se registra en segundos con el botón +',
+      ]"
+    >
+      <button class="btn btn-primary" type="button" (click)="registrarMovimiento()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Registrar movimiento
+      </button>
+    </app-pantalla-vacia>
+  } @else {
+    <!--
+    El selector de mes va en su propia fila, no dentro de `app-page-head`:
+    esa cabecera no se dibuja en móvil, y ahí cambiar de mes es justo lo
+    primero que se necesita.
+  -->
+    <div class="col-md-12">
+      <app-month-selector
+        [etiqueta]="etiquetaMes()"
+        (anterior)="mesAnterior()"
+        (siguiente)="mesSiguiente()"
+      />
+    </div>
+
+    <div class="kpis kpis--movimientos col-md-12">
+      <app-stat-card
+        etiqueta="Ingresos"
+        icono="trending_up"
+        tono="ingreso"
+        [valor]="resumen().ingresos"
+        [cargando]="!listo()"
+      />
+      <app-stat-card
+        etiqueta="Gastos"
+        icono="trending_down"
+        tono="gasto"
+        [valor]="resumen().gastos"
+        [cargando]="!listo()"
+      />
+      <app-stat-card
+        etiqueta="Ingresos − gastos"
+        icono="balance"
+        tono="neutro"
+        [valor]="resumen().balance"
+        [cargando]="!listo()"
+      />
+    </div>
+
+    <!--
+    Buscador y chips de tipo: siempre visibles, en los dos tamaños. Son los
+    dos filtros que se usan a diario; esconderlos detrás de un panel obliga
+    a dos toques para la acción más común. El resto (fechas, cuenta,
+    categoría, internos) va al panel colapsable de abajo en escritorio, y a
+    la hoja inferior en móvil.
+  -->
+    <div class="col-md-12 filtros-base">
+      @if (!viewport.esMovil()) {
+        <div class="field campo-buscador">
+          <input
+            class="input"
+            #campoTexto
+            type="search"
+            placeholder="Buscar por descripción…"
+            aria-label="Buscar movimientos"
+            [value]="textoEscritorio()"
+            (input)="actualizarTextoEscritorio(campoTexto.value)"
+          />
+        </div>
+      }
+
+      <div class="chips chips-tipo">
+        <!-- En móvil el tipo vive dentro de la hoja de filtros; acá solo el botón. -->
+        @if (!viewport.esMovil()) {
+          <button
+            class="chip"
+            type="button"
+            [attr.aria-pressed]="filtros().tipo === 'todos'"
+            (click)="fijarTipo('todos')"
+          >
+            Todos
+          </button>
+          <button
+            class="chip"
+            type="button"
+            [attr.aria-pressed]="filtros().tipo === 'GASTO'"
+            (click)="fijarTipo('GASTO')"
+          >
+            Gastos
+          </button>
+          <button
+            class="chip"
+            type="button"
+            [attr.aria-pressed]="filtros().tipo === 'INGRESO'"
+            (click)="fijarTipo('INGRESO')"
+          >
+            Ingresos
+          </button>
+          <button
+            class="chip"
+            type="button"
+            [attr.aria-pressed]="filtros().tipo === 'transferencia'"
+            (click)="fijarTipo('transferencia')"
+          >
+            Transferencias
+          </button>
+        }
+
+        @if (viewport.esMovil()) {
+          <button class="chip chip-filtros" type="button" (click)="abrirFiltros()">
+            <mat-icon aria-hidden="true">tune</mat-icon>
+            Filtros
+            @if (contadorFiltros() > 0) {
+              <span class="badge-contador">{{ contadorFiltros() }}</span>
+            }
+          </button>
+        } @else {
+          <button
+            class="chip chip-filtros"
+            type="button"
+            [attr.aria-pressed]="filtrosAbiertos()"
+            [attr.aria-expanded]="filtrosAbiertos()"
+            aria-controls="panel-filtros"
+            (click)="alternarFiltros()"
+          >
+            <mat-icon aria-hidden="true">tune</mat-icon>
+            Más filtros
+            @if (contadorFiltros() > 0) {
+              <span class="badge-contador">{{ contadorFiltros() }}</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (!viewport.esMovil() && filtrosAbiertos()) {
+      <div
+        class="panel col-md-12"
+        id="panel-filtros"
+        animate.enter="entra-desvanecido"
+        animate.leave="sale-desvanecido"
+      >
+        <div class="filtros-avanzados">
+          <div class="field">
+            <label for="f-desde">Desde</label>
+            <input
+              class="input"
+              id="f-desde"
+              type="date"
+              #campoDesde
+              [value]="filtros().desde ?? primerDiaMesIso()"
+              [min]="primerDiaMesIso()"
+              [max]="filtros().hasta ?? ultimoDiaMesIso()"
+              (change)="actualizarDesde(campoDesde.value)"
+            />
+          </div>
+          <div class="field">
+            <label for="f-hasta">Hasta</label>
+            <input
+              class="input"
+              id="f-hasta"
+              type="date"
+              #campoHasta
+              [value]="filtros().hasta ?? ultimoDiaMesIso()"
+              [min]="filtros().desde ?? primerDiaMesIso()"
+              [max]="ultimoDiaMesIso()"
+              (change)="actualizarHasta(campoHasta.value)"
+            />
+          </div>
+          <div class="field">
+            <label for="f-cta">Cuenta o crédito</label>
+            <select
+              class="input"
+              id="f-cta"
+              #campoCuenta
+              (change)="fijarCuentaOCredito(campoCuenta.value || null)"
+            >
+              <option value="">Todas</option>
+              @for (opcion of opcionesCuentaOCredito(); track opcion.id) {
+                <option [value]="opcion.id" [selected]="filtros().cuentaOCreditoId === opcion.id">
+                  {{ opcion.etiqueta }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-cat">Categoría</label>
+            <select
+              class="input"
+              id="f-cat"
+              #campoCategoria
+              (change)="fijarCategoria(campoCategoria.value || null)"
+            >
+              <option value="">Todas</option>
+              @for (categoria of categoriasDisponibles(); track categoria.id) {
+                <option [value]="categoria.id" [selected]="filtros().categoriaId === categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <label class="switch">
+            <input
+              type="checkbox"
+              [checked]="filtros().mostrarInternos"
+              (change)="fijarInternos($any($event.target).checked)"
+            />
+            Mostrar movimientos internos
+          </label>
+
+          @if (contadorFiltros() > 0) {
+            <button class="btn btn-text limpiar" type="button" (click)="limpiarFiltros()">
+              Limpiar filtros
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="panel col-md-12">
+      @if (!listo()) {
+        <app-skeleton-rows [filas]="6" />
+      } @else if (grupos().length === 0) {
+        @if (contadorFiltros() > 0 || textoBusqueda()) {
+          <app-empty-state
+            icono="search_off"
+            titulo="Ningún movimiento coincide"
+            descripcion="Prueba con otro mes o quita algunos filtros."
+          >
+            <button class="btn btn-outline" type="button" (click)="limpiarFiltros()">
+              Limpiar filtros
+            </button>
+          </app-empty-state>
+        } @else {
+          <app-empty-state
+            icono="receipt_long"
+            titulo="Sin movimientos en {{ etiquetaMes() }}"
+            descripcion="Registra un gasto o un ingreso con el botón de nuevo movimiento."
+          />
+        }
+      } @else {
+        @for (grupo of grupos(); track grupo.fecha) {
+          <div class="daysep">
+            <span>{{ etiquetaDiaDe(grupo.fecha) }}</span>
+            <!--
+            Saldo neto del día: responde "¿cómo me fue este día?" sin tener
+            que sumar la columna a ojo. Cero se omite — un día de solo
+            transferencias no tuvo ni ingreso ni gasto, y un "$0" ahí se
+            leería como si algo hubiera cuadrado.
+          -->
+            @if (totalDelDia(grupo.movimientos); as total) {
+              <span class="amt tnum" [class]="total > 0 ? 'mon-in' : 'mon-out'">
+                {{ total > 0 ? '+' : '−' }}<app-amount [valor]="total > 0 ? total : -total" />
+              </span>
+            }
+          </div>
+          <div class="rows" auto-animate>
+            @for (movimiento of grupo.movimientos; track movimiento.id) {
+              <div class="stack" auto-animate>
+                <button
+                  class="row fila-movimiento"
+                  type="button"
+                  [attr.aria-expanded]="expandido(movimiento.id)"
+                  (click)="alternarExpandido(movimiento.id)"
+                >
+                  <span class="ico" [class]="claseIconoDe(movimiento)">
+                    <mat-icon aria-hidden="true">{{ iconoDe(movimiento) }}</mat-icon>
+                  </span>
+                  <span class="row-main">
+                    <span class="t-row">{{ movimiento.descripcion }}</span>
+                    <span class="t-meta">{{ metaTextoDe(movimiento) }}</span>
+                  </span>
+                  <span class="row-end">
+                    <span class="t-row amt" [class]="claseMontoDe(movimiento)"
+                      >{{ signoDe(movimiento) }}<app-amount [valor]="movimiento.monto"
+                    /></span>
+                  </span>
+                </button>
+                @if (expandido(movimiento.id)) {
+                  <div class="detalle">
+                    <div class="kv">
+                      <span>Fecha</span>
+                      <b>{{ fechaCompletaDe(movimiento) }}</b>
+                    </div>
+                    <div class="kv">
+                      <span>Tipo</span>
+                      <b>{{ etiquetaTipoDe(movimiento) }}</b>
+                    </div>
+                    @if (nombrePagoFijoDe(movimiento); as nombrePagoFijo) {
+                      <div class="kv">
+                        <span>Pago fijo</span>
+                        <b>{{ nombrePagoFijo }}</b>
+                      </div>
+                    }
+                    <div class="chips">
+                      <button class="chip" type="button" (click)="editar(movimiento)">
+                        Editar
+                      </button>
+                      <button class="chip" type="button" (click)="eliminar(movimiento)">
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

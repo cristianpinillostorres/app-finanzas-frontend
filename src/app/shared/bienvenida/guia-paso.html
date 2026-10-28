@@ -1,0 +1,51 @@
+@if (bienvenida.listo() && paso(); as paso) {
+  <aside class="guia" [class.guia--lista]="resuelto()" aria-live="polite">
+    <span class="guia__icono">
+      <mat-icon aria-hidden="true">{{ resuelto() ? 'check' : paso.icono }}</mat-icon>
+    </span>
+
+    <div class="guia__cuerpo">
+      @if (!resuelto()) {
+        <span class="guia__meta">Primeros pasos · {{ posicion() }}</span>
+        <strong class="guia__titulo">{{ paso.titulo }}</strong>
+        <p class="guia__texto">{{ paso.guia }}</p>
+      } @else if (siguiente(); as siguiente) {
+        <span class="guia__meta">Primeros pasos · {{ posicion() }}</span>
+        <strong class="guia__titulo">¡Listo! {{ paso.titulo }}</strong>
+        <p class="guia__texto">Sigue con: {{ siguiente.titulo.toLowerCase() }}.</p>
+      } @else {
+        <span class="guia__meta">Primeros pasos</span>
+        <strong class="guia__titulo">¡Terminaste los primeros pasos!</strong>
+        <p class="guia__texto">Ya puedes ver en General cuánto te queda libre este mes.</p>
+      }
+
+      <div class="guia__acciones">
+        @if (!resuelto()) {
+          @if (paso.omitir) {
+            <button type="button" class="btn btn-outline btn-compacto" (click)="omitir(paso)">
+              {{ paso.omitir }}
+            </button>
+          }
+          <a class="btn btn-text btn-compacto" routerLink="/general">Volver a primeros pasos</a>
+        } @else if (siguiente(); as siguiente) {
+          <button type="button" class="btn btn-primary btn-compacto" (click)="irA(siguiente)">
+            Siguiente: {{ siguiente.titulo }}
+            <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+          </button>
+        } @else {
+          <a class="btn btn-primary btn-compacto" routerLink="/general">Ir a General</a>
+        }
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-icon guia__cerrar"
+      aria-label="Cerrar la guía"
+      title="Cerrar la guía"
+      (click)="cerrar()"
+    >
+      <mat-icon aria-hidden="true">close</mat-icon>
+    </button>
+  </aside>
+}

@@ -1,0 +1,46 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">Ajustar saldo</h2>
+  <button
+    mat-icon-button
+    type="button"
+    aria-label="Cerrar"
+    (click)="cerrar()"
+    [disabled]="guardando()"
+  >
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="field">
+    <label for="a-pieza">¿Qué quieres corregir?</label>
+    <select class="input" id="a-pieza" formControlName="piezaId">
+      @for (pieza of piezas; track pieza.id) {
+        <option [value]="pieza.id">{{ etiquetaPieza(pieza) }}</option>
+      }
+    </select>
+  </div>
+
+  <p class="help">Saldo actual: {{ saldoActual() | monedaCop }}</p>
+
+  <div class="field">
+    <label for="a-saldo">Saldo real, el que ves en tu banco</label>
+    <input
+      class="input"
+      id="a-saldo"
+      type="number"
+      inputmode="numeric"
+      placeholder="0"
+      formControlName="saldoReal"
+    />
+    @if (invalido(form.controls.saldoReal)) {
+      <span class="err">Escribe el saldo que tienes de verdad.</span>
+    }
+  </div>
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    Ajustar saldo
+  </button>
+</form>
+
+<app-guardando-overlay [visible]="guardando()" />

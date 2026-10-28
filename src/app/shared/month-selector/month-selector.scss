@@ -1,0 +1,6 @@
+// `display: contents` para que el `<div class="month span-all">` del
+// template sea el que participa en el grid de la página (`.cols-2`), no el
+// propio elemento host del componente.
+:host {
+  display: contents;
+}

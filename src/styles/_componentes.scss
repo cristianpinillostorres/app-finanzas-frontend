@@ -1,0 +1,1530 @@
+// Patrones visuales del sistema de diseño, como clases globales. Se usan
+// directamente en las plantillas de cada feature junto con los componentes
+// de Angular Material que sí necesitan CDK (diálogo, hoja inferior, tabs).
+//
+// Reglas de la capa:
+//  - ningún hex ni px suelto: todo sale de `styles/tokens/_semanticos.scss`;
+//  - solo se anima `transform` y `opacity` (ver `--dur-*` / `--ease-*`);
+//  - ningún control interactivo baja de `--tap-min` de área táctil.
+//
+// Viven acá y no en el `.scss` de cada página a propósito: el presupuesto
+// `anyComponentStyle` del build es de 4kB (aviso) / 8kB (error), y estos
+// patrones se repiten en las cinco pantallas.
+
+.ms {
+  font-family: 'Material Symbols Outlined';
+  font-size: var(--text-xl);
+  line-height: 1;
+  font-weight: var(--weight-regular);
+  -webkit-font-feature-settings: 'liga';
+  font-variation-settings: 'opsz' 20;
+}
+
+// ─────────────────────────── tipografía ───────────────────────────
+
+.t-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.t-sec {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.t-row {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+// Cifras en extrabold, como las de Mi Semana. La de stat-card se mide
+// contra el ancho de su tarjeta (`cqi`, ver `.stat-card`) y no contra la
+// ventana: cuatro tarjetas en 1100px y dos en 360px piden tamaños
+// distintos, y con `vw` el monto se partía en dos líneas en una de las dos.
+.t-kpi {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+.t-hero {
+  font-size: var(--text-hero);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-hero);
+  line-height: var(--leading-tight);
+}
+// Etiqueta en mayúsculas sobre una cifra ("DEUDA TOTAL", "INGRESOS"): la
+// `.metric small` de Mi Semana. Solo para rótulos de una o tres palabras;
+// una frase en mayúsculas se lee a golpes.
+.t-rotulo {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+// El "$" de la cifra héroe va a poco más de la mitad y alzado, como en una
+// lista de precios: la cifra manda y el símbolo la acompaña. Solo acá: en
+// un monto de fila (14px) achicarlo lo vuelve ilegible. `transform` en vez
+// de `vertical-align` para no agrandar la línea.
+.t-hero .amount__moneda {
+  display: inline-block;
+  font-size: 0.55em;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+  margin-right: 0.08em;
+  opacity: 0.72;
+  transform: translateY(-0.62em);
+}
+// Títulos en Anton: el de cada diálogo y hoja (y el del header en móvil,
+// que lo vuelve al color del texto en `shell.scss`). Es el `dialog h2` de
+// Mi Semana: condensado, en mayúsculas y en teal.
+.screen-title,
+.t-display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+// Encabezado de sección dentro del contenido (no de un panel).
+.section-title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+// ───────────────────────────── montos ─────────────────────────────
+// `tabular-nums` es lo que hace que una columna de montos quede alineada
+// dígito a dígito; sin eso, el "1" angosto desalinea todas las filas.
+.amt,
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.mon-in {
+  color: var(--color-ingreso);
+}
+.mon-out {
+  color: var(--color-gasto);
+}
+.mon-tr {
+  color: var(--color-transferencia);
+}
+.mon-aj {
+  color: var(--color-ajuste);
+}
+.mon-deuda {
+  color: var(--color-deuda);
+}
+
+// ───────────────────────────── botones ─────────────────────────────
+
+// Píldoras en semibold, como los botones de Mi Semana: al pasar por encima
+// suben 1px y el borde toma el teal; al tocarlos se hunden 1px.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  // Acuse de recibo del toque, sin rebote: el botón "se hunde" 1px.
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .ms,
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+
+// La acción principal lleva el halo teal (`--glow-md`): la firma de las
+// dos apps. Una sola por vista, o el halo deja de señalar algo.
+.btn-primary {
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+  box-shadow: var(--glow-md);
+}
+.btn-primary:hover:not(:disabled) {
+  // `brightness` sobre un acento claro (tema oscuro) lo lava; el filtro
+  // correcto depende del tema, así que se usa una capa de opacidad en su
+  // lugar: funciona igual en los dos.
+  opacity: 0.9;
+}
+
+.btn-outline {
+  border-color: var(--border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--accent-brillo);
+}
+
+.btn-text {
+  color: var(--accent);
+  padding: 0 var(--space-3);
+  min-height: var(--tap-min);
+}
+.btn-text:hover:not(:disabled) {
+  background: var(--accent-bg);
+  transform: none;
+}
+
+.btn-icon {
+  width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0;
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+.btn-icon:hover:not(:disabled) {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  transform: none;
+}
+
+// Acción destructiva (Eliminar): rojo de gasto sobre la superficie, el
+// mismo par de texto que ya pasa AA en los dos temas. No es relleno a
+// propósito: el azul primario al lado de "Eliminar" decía "esto es lo
+// recomendado" justo donde hay que pensarlo dos veces.
+.btn-peligro {
+  border-color: var(--border);
+  background: var(--bg-surface);
+  color: var(--color-gasto);
+}
+.btn-peligro:hover:not(:disabled) {
+  border-color: currentColor;
+}
+.btn-peligro:hover:not(:disabled) {
+  background: var(--color-gasto-bg);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+// ───────────────────────────── loader ─────────────────────────────
+// Estándar de "guardando" para cualquier formulario (ver
+// `shared/guardado/guardado.util.ts`): un anillo simple que gira, del
+// tamaño de un ícono inline, para meter dentro de `.btn` gracias a su
+// `gap`. CSS puro, sin dependencias.
+.spinner {
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 2px solid currentcolor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: girar 0.6s linear infinite;
+}
+// Variante grande, para la cortina de `shared/guardando-overlay/`.
+.spinner-grande {
+  width: var(--space-10);
+  height: var(--space-10);
+  border-width: 3px;
+  border-color: var(--accent);
+  border-top-color: transparent;
+  opacity: 1;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ─────────────────────────── esqueletos ───────────────────────────
+// Placeholder de carga. El brillo se mueve con `transform` (no con
+// `background-position`) para que corra en el compositor; bajo
+// `prefers-reduced-motion` queda como un bloque gris quieto, que sigue
+// comunicando "esto está cargando" sin movimiento.
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-xs);
+  // Invisible los primeros 150ms: si los datos llegan antes (caché de
+  // Firestore, o una lista vacía), el esqueleto no alcanza a asomarse y no
+  // hay pestañeo esqueleto → pantalla.
+  animation: skeleton-aparece 0.2s var(--ease-out) 0.15s both;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    opacity: 0.35;
+    transform: translateX(-100%);
+    animation: brillar 1.6s var(--ease-standard) infinite;
+  }
+}
+.skeleton-text {
+  height: var(--space-3);
+  margin-block: var(--space-1);
+}
+.skeleton-text--corto {
+  width: 40%;
+}
+.skeleton-text--medio {
+  width: 65%;
+}
+.skeleton-circulo {
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: 50%;
+  flex: none;
+}
+// Gráficas: del alto con que ApexCharts las dibuja (160px la tendencia; la
+// dona, 220px dentro de su relleno), para que el panel no salte al llegar.
+.skeleton-grafica {
+  height: 160px;
+  border-radius: var(--radius-md);
+}
+.skeleton-dona {
+  width: 180px;
+  height: 180px;
+  margin: var(--space-6) auto;
+  border-radius: 50%;
+}
+@keyframes skeleton-aparece {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes brillar {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+    opacity: 0;
+  }
+  .skeleton {
+    animation-duration: 0s;
+  }
+}
+
+// ─────────────────────────── superficies ───────────────────────────
+
+// Superficies como las de Mi Semana: paneles de 20px con borde y sin
+// sombra (la sombra queda para lo que flota o se puede tocar como un
+// objeto: la tarjeta de crédito, los menús, la barra lateral).
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  min-height: var(--space-12);
+}
+// Encabezado de panel en mayúsculas: la `.colhead` de las columnas del
+// tablero de Mi Semana ("PENDIENTE", "REALIZADA").
+.panel-head :is(h2, h3) {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+// El pie de un panel con una sola acción ("Ver todos" al final de una lista).
+.panel-foot {
+  border-top: 1px solid var(--border);
+  padding: var(--space-2);
+  display: flex;
+  justify-content: center;
+}
+
+// ────────────────────────── stat-cards ──────────────────────────
+// Tarjeta de indicador: etiqueta arriba, monto grande abajo. La semántica
+// (ingreso/gasto/deuda) la lleva el color del monto y el ícono de la
+// etiqueta; la franja de color al borde izquierdo se quitó por adorno.
+// `.kpi` es el nombre histórico y se mantiene como alias para no romper las
+// plantillas que ya lo usan.
+// Es la `.metric` de Mi Semana: rótulo en mayúsculas y cifra en extrabold.
+.stat-card,
+.kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4) var(--space-5);
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.stat-card .t-meta,
+.kpi .t-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+// Monto de la tarjeta: crece con la tarjeta hasta los 28px de Mi Semana y
+// se encoge antes de desbordar. `min-width: 0` en el contenedor + este
+// `overflow-wrap` es lo que evita que un "$12.345.678.900" empuje la
+// tarjeta fuera del grid en 360px.
+.stat-card .t-kpi,
+.kpi .t-kpi {
+  font-size: clamp(var(--text-lg), 13cqi, var(--text-kpi));
+  overflow-wrap: anywhere;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+// ──────────────────── selector de mes ────────────────────
+.month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-1);
+}
+.month b {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+// ───────────────────── resumen destacado (héroe) ─────────────────────
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+// El rótulo de la cifra héroe, en la voz de las etiquetas de Mi Semana.
+.hero > .t-meta,
+.hero > .hd:first-child > .t-meta,
+.hero__cabeza > .t-meta {
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+// Textura de billete: líneas finas entrelazadas (guilloché), como las de
+// la impresión de seguridad de un billete, en el color del acento. Es el
+// único adorno de la app (ver DESIGN.md) y solo va en la tarjeta héroe de
+// cada pantalla. El SVG trae su propio desvanecido hacia la izquierda, que
+// es donde va el texto; se usa como máscara para que tome el color del tema.
+// Alto fijo y arriba, a la altura de la cifra: si siguiera el alto de la
+// tarjeta, en el héroe estirado de General (escritorio) crecía hasta
+// tapar media tarjeta y dejaba de ser un detalle.
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--accent);
+  opacity: var(--textura-opacidad);
+  -webkit-mask: url('/textura-billete.svg') right top / auto 200px no-repeat;
+  mask: url('/textura-billete.svg') right top / auto 200px no-repeat;
+  pointer-events: none;
+}
+.desglose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.desglose div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+// Variante en columnas, para el héroe de General: las cifras de apoyo se
+// leen mejor una al lado de otra que como lista de pares. Se separa del
+// monto grande con una línea, porque sin ella el bloque se lee como una
+// continuación del número.
+// Rejilla y no flex con `wrap`: con `flex-basis` el reparto depende del
+// largo de cada monto y en 360px las tres cifras acababan una por fila,
+// estirando el héroe ~100px. Con `auto-fit` caben dos por fila en móvil y
+// las tres en una sola desde que hay sitio.
+.desglose--columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-3) var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.desglose--columnas > div {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.desglose--columnas .amt {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+// ─────────────────────── cabecera de pantalla ───────────────────────
+// Título, detalle y acciones en una sola fila. En móvil las acciones bajan
+// a su propia línea: con "Movimientos" y un selector de mes al lado no
+// caben en 360px sin que el título se parta.
+// Es la `.cat-header` de Mi Semana: un panel con el sello de la sección a
+// la izquierda (el mismo ícono de la barra lateral, sobre teal) y el
+// título en Anton.
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.page-head__sello {
+  display: grid;
+  place-items: center;
+  width: var(--space-16);
+  height: var(--space-16);
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+
+  mat-icon {
+    font-size: var(--space-8);
+    width: var(--space-8);
+    height: var(--space-8);
+  }
+}
+
+.page-head__texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.page-head__titulo {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.page-head__texto .t-meta {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.page-head__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+// Sin acciones proyectadas, el contenedor dejaría un hueco en el `gap`.
+.page-head__acciones:empty {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  // Las acciones no se encogen: con `flex: 1` el selector de mes se partía
+  // en dos líneas dentro de su propio botón. Así, si no caben junto al
+  // título, bajan enteras a la línea siguiente (el `space-between` del
+  // contenedor las deja a la izquierda cuando quedan solas).
+  .page-head__acciones {
+    flex: 0 0 auto;
+    // Tope al ancho de la fila: sin esto el grupo crece hasta su
+    // `max-content` (selector de mes + botón) y desborda los 360px. Con el
+    // tope, envuelven entre ellas en vez de sacar la página de cuadro.
+    max-width: 100%;
+  }
+}
+
+// ───────────────────── encabezados de sección ─────────────────────
+.hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+// Separador de día (Movimientos): pegajoso dentro de su lista, para no
+// perder de vista de qué día es la fila que se está mirando al hacer scroll.
+.daysep {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  padding: var(--space-3) var(--space-4) var(--space-1);
+}
+
+// ─────────────────────────── ícono de fila ───────────────────────────
+.ico {
+  width: var(--space-10);
+  height: var(--space-10);
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+}
+.ico .ms,
+.ico mat-icon {
+  font-size: var(--text-lg);
+  width: var(--text-lg);
+  height: var(--text-lg);
+}
+// Variantes por semántica, para los íconos de categoría/tipo de cuenta.
+.ico--ingreso {
+  background: var(--color-ingreso-bg);
+  color: var(--color-ingreso);
+}
+.ico--gasto {
+  background: var(--color-gasto-bg);
+  color: var(--color-gasto);
+}
+.ico--deuda {
+  background: var(--color-deuda-bg);
+  color: var(--color-deuda);
+}
+.ico--accent {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+// Sello de fecha a la izquierda de una fila (Pagos fijos): día grande y
+// mes corto debajo, del ancho de un ícono de fila para que la columna
+// izquierda quede alineada con las listas que sí llevan ícono.
+.sello-fecha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  flex: none;
+  line-height: 1;
+}
+.sello-fecha__dia {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+.sello-fecha__mes {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+// ───────────────── fila expandible (cuenta, crédito) ─────────────────
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+// El detalle entra y sale del DOM (un `@if` en la plantilla), no se oculta
+// con `display: none`: así el contenedor `.stack`, que lleva `auto-animate`,
+// puede animar el despliegue y el plegado. Con `display` no hay nada que
+// animar — el alto salta de golpe.
+.detalle {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// Tarjeta de crédito: mismo patrón `.stack`/`.detalle` de arriba. El
+// semáforo de fecha límite lo dice la píldora con texto ("Venció hace 10
+// días"); la franja de color al borde izquierdo que lo repetía se quitó:
+// era adorno, y hacía competir cinco tarjetas a la vez.
+// La tarjeta de tarea de Mi Semana: sombra corta, y al pasar por encima
+// sube 2px con un aro teal.
+.credito {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.credito:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px color-mix(in srgb, var(--accent-brillo) 35%, transparent);
+}
+// Pie de la tarjeta de crédito: la cuota que viene y la acción para
+// pagarla, sobre fondo hundido para separarlo de los datos de arriba.
+// Siempre es lo último de la tarjeta (también abierta): los márgenes
+// negativos lo pegan a los bordes de abajo y de los lados.
+.credito__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-1) calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border);
+}
+.credito__proxima {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+// Botón de una fila apretada: los 44px de `.btn` dominan el pie. Mantiene
+// su área táctil con el mismo truco que el chip: 36px visibles y el resto
+// en un pseudo-elemento invisible.
+// Sin halo: va repetido en cada tarjeta de una lista, y cinco botones
+// brillando a la vez dejan de señalar nada.
+.btn-compacto {
+  position: relative;
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  box-shadow: none;
+}
+.btn-compacto::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.kv b,
+.kv app-amount {
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+// ─────────── desglose de una cuenta o un crédito abiertos ───────────
+// Caja hundida con lo que hay "dentro" de la tarjeta de arriba (bolsillos,
+// compras, tasas, abonos). Antes eran renglones `.kv` sueltos sobre el
+// mismo fondo, pegados a los botones, y no se sabía qué era dato y qué
+// era acción ni dónde terminaba una tarjeta.
+.caja-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+.caja-detalle__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.caja-detalle__fila > :last-child {
+  flex: none;
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-align: right;
+}
+// La cifra que resume la caja (el saldo libre): en negrita y en el color
+// del texto, no en gris como los demás rótulos.
+.caja-detalle__fila--total {
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+// Rótulo de una sublista (Bolsillos, Compras, Abonos). Con algo encima,
+// una raya lo separa de los datos de la tarjeta.
+.caja-detalle__titulo:not(:first-child) {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.caja-detalle__nombre {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--text-primary);
+}
+.caja-detalle__nombre mat-icon {
+  font-size: var(--text-md);
+  width: var(--text-md);
+  height: var(--text-md);
+  color: var(--text-muted);
+}
+
+// Acciones de una tarjeta abierta: las que mueven plata en chips con ícono
+// a la izquierda; editar y archivar, que tocan la tarjeta y se usan poco,
+// como texto gris al otro lado. Antes eran chips iguales en fila y
+// ninguno se distinguía.
+.acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.acciones-fila__secundarias {
+  display: inline-flex;
+  margin-left: auto;
+}
+.acciones-fila__secundarias .btn {
+  padding-inline: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+.acciones-fila__secundarias .btn:hover:not(:disabled) {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+.acciones-fila mat-icon {
+  font-size: var(--text-lg);
+  width: var(--text-lg);
+  height: var(--text-lg);
+}
+
+// Flecha al final de la fila que abre una tarjeta: dice que se abre, y
+// girada, que ya está abierta.
+.fila-flecha {
+  flex: none;
+  color: var(--text-muted);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+[aria-expanded='true'] > .fila-flecha {
+  transform: rotate(180deg);
+}
+
+// ───────────────────────────── listas ─────────────────────────────
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-14);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+// Resaltado suave: esquinas redondeadas y sin salirse de la propia fila (un
+// halo por fuera se metía en las filas vecinas). El aire a los lados lo da
+// el `padding-inline` de cada lista. La línea inferior se apaga mientras
+// dura, así no corta el resaltado.
+.row {
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.row:hover {
+  background: var(--bg-hover);
+  border-bottom-color: transparent;
+}
+// Fila puramente informativa (no abre nada): sin cursor de mano ni hover,
+// para no prometer una interacción que no existe. Reemplaza los
+// `style="cursor: default"` sueltos de las plantillas.
+.row--estatica {
+  cursor: default;
+}
+.row--estatica:hover {
+  background: none;
+  border-bottom-color: var(--border);
+}
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+// Nombre y meta en una línea cada uno: sin esto, una descripción larga o
+// un "Ayer · 21 de septiembre · Bancolombia" parten la fila en dos alturas
+// distintas y la lista deja de leerse como una columna.
+.row-main .t-row,
+.row-main .t-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+// Columna a la derecha de la fila (monto arriba, dato secundario abajo).
+// Cada línea tiene que ser **un solo hijo**: al ser un contenedor flex en
+// columna, un nodo de texto suelto junto a un elemento (por ejemplo el
+// signo "+" al lado de `<app-amount>`) se convierte en su propio ítem y
+// queda en su propio renglón. Signo y monto van siempre dentro del mismo
+// `<span>`.
+.row-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  flex: none;
+}
+
+// ───────────────────────────── badges ─────────────────────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-pill);
+  padding: 2px var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  width: fit-content;
+}
+.badge .ms,
+.badge mat-icon {
+  font-size: var(--text-sm);
+  width: var(--text-sm);
+  height: var(--text-sm);
+}
+.sem-verde {
+  background: var(--semaforo-verde-bg);
+  color: var(--semaforo-verde-text);
+}
+.sem-amarillo {
+  background: var(--semaforo-amarillo-bg);
+  color: var(--semaforo-amarillo-text);
+}
+.sem-rojo {
+  background: var(--semaforo-rojo-bg);
+  color: var(--semaforo-rojo-text);
+}
+.sem-pagado {
+  background: var(--semaforo-pagado-bg);
+  color: var(--semaforo-pagado-text);
+}
+.badge-neutral {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+// ─────────────────────── barra de progreso ───────────────────────
+.bar {
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+// El relleno ocupa el ancho completo y se recorta con `scaleX`: animar
+// `width` obliga al navegador a recalcular layout en cada cuadro, mientras
+// que `transform` corre en el compositor. La proporción entra por
+// `--progreso` (0-1) desde la plantilla.
+// Sin `border-radius` propio a propósito: al escalar en X, un borde
+// redondeado se aplasta. Las puntas redondas las da el `overflow: hidden`
+// del `.bar`, que no se deforma.
+.bar > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(var(--progreso, 0));
+  transform-origin: left;
+  background: var(--accent);
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.bar--ingreso > i {
+  background: var(--color-ingreso);
+}
+
+// Barra de dos tramos (disponible / reservado en Cuentas): a diferencia de
+// `.bar` normal, acá los tramos reparten el ancho entre ellos, así que se
+// dimensionan con `flex-basis` y no con el `scaleX` de `--progreso`.
+.bar--segmentos {
+  display: flex;
+}
+.bar--segmentos > i {
+  width: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  transform: none;
+  transition: flex-basis var(--dur-slow) var(--ease-out);
+}
+.bar--segmentos > .seg-disponible {
+  background: var(--accent);
+}
+.bar--segmentos > .seg-reservado {
+  background: var(--color-ingreso);
+}
+
+// Reparto por tipo de cuenta ("Dónde está tu dinero"): nombre, barra y
+// cifra con su porcentaje.
+.reparto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.reparto__fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.reparto__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+.reparto__cabecera .t-row {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+// Punto de color que ata una cifra a su tramo en la barra.
+.punto {
+  display: inline-block;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  margin-right: var(--space-1);
+  vertical-align: baseline;
+}
+.punto--disponible {
+  background: var(--accent);
+}
+.punto--reservado {
+  background: var(--color-ingreso);
+}
+
+.reparto__cifra {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex: none;
+}
+.bar--deuda > i {
+  background: var(--color-deuda);
+}
+
+// Barra de categoría (Gastos por categoría, General).
+.catbar {
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) minmax(0, 2fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+.catbar > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+// ─────────────────────── chips y filtros ───────────────────────
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+// El chip mide 36px para no engordar las filas de filtros, pero su área
+// táctil llega a los 44px con esta extensión invisible arriba y abajo.
+// Así se cumple el mínimo sin inflar el diseño.
+.chip::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+.chip:hover {
+  border-color: var(--accent-brillo);
+  color: var(--text-primary);
+}
+// Acción destructiva dentro de una fila de chips (Eliminar): mismo chip,
+// texto en rojo de gasto, para que no pese igual que "Editar".
+.chip--peligro {
+  color: var(--color-gasto);
+}
+.chip--peligro:hover {
+  background: var(--color-gasto-bg);
+  color: var(--color-gasto);
+}
+// Lo seleccionado va relleno de teal, como la sección activa de la barra
+// lateral y el chip de responsable de Mi Semana.
+.chip[aria-pressed='true'] {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: var(--text-on-accent);
+}
+.chip .ms,
+.chip mat-icon {
+  font-size: var(--text-lg);
+  width: var(--text-lg);
+  height: var(--text-lg);
+}
+
+// ─────────────────────────── formularios ───────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  // evita que un <select> con textos largos (categorías, "Pagar con"...)
+  // fuerce su columna del grid más allá del ancho disponible.
+  min-width: 0;
+}
+.field > label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+}
+// Campo hundido sobre el panel, como los de los diálogos de Mi Semana: el
+// relleno es el color de la página y el borde llega a 3:1.
+.input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  font: inherit;
+  // 16px a propósito: por debajo de eso Safari en iOS hace zoom al enfocar.
+  font-size: var(--text-md);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-campo);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+.input::placeholder {
+  color: var(--text-muted);
+}
+// Flecha propia: la nativa cambia de tamaño y estilo según el navegador y
+// queda pegada al borde. Gris medio para que se lea en claro y en oscuro.
+select.input {
+  appearance: none;
+  padding-right: calc(var(--space-4) + 20px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23839191' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 20px;
+}
+.input:focus-visible {
+  border-color: var(--accent-brillo);
+  outline-offset: 0;
+}
+.err {
+  font-size: var(--text-xs);
+  color: var(--color-gasto);
+}
+.help {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+// Ayuda corta bajo un campo: misma escala que `.err`, que la reemplaza
+// cuando hay error.
+.help-campo {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+// Explicación de un interruptor: qué cambia en las cifras si se apaga.
+.help--switch {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+// Texto solo para lectores de pantalla (ej. "aproximadamente" junto a la
+// "~" de un monto estimado, o el nombre del pago en "Pagar").
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+.seg button {
+  min-height: var(--tap-min);
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: none;
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.seg button:first-child {
+  border-left: 0;
+}
+.seg button:hover {
+  background: var(--bg-hover);
+}
+.seg button[aria-pressed='true'] {
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+}
+// Variante para meter dentro de un menú, donde 44px de alto por opción
+// desbordan el desplegable.
+.seg--compacto button {
+  min-height: var(--space-8);
+  font-size: var(--text-sm);
+  padding-inline: var(--space-3);
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+.switch input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+// Fila de dos campos cortos: apilados en móvil, en columnas desde 768px
+// (ver el override de `.form-2` más abajo).
+.form-2 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// ───────────────────────── estado vacío ─────────────────────────
+// Centrado y con ícono: un estado vacío sin ícono ni acción se lee como un
+// error ("Sin movimientos" a secas), y con los dos se lee como una
+// invitación. El ícono va en un círculo tenue para que no compita con el
+// texto. Ver `shared/empty-state/`.
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+}
+.empty__icono {
+  display: grid;
+  place-items: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+.empty__icono .ms,
+.empty__icono mat-icon {
+  font-size: var(--space-6);
+  width: var(--space-6);
+  height: var(--space-6);
+}
+.empty__titulo {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+.empty__texto {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+.empty__accion {
+  margin-top: var(--space-2);
+}
+// Variante compacta, para un estado vacío dentro de un panel chico de
+// General (donde el alto de arriba dejaría un hueco desproporcionado).
+.empty--compacto {
+  padding: var(--space-5) var(--space-4);
+}
+.empty--compacto .empty__icono {
+  width: var(--space-10);
+  height: var(--space-10);
+  margin-bottom: 0;
+}
+
+// Columna del grid que apila varios bloques, con el mismo aire que el grid.
+// Sirve para columnas de verdad: sin esto los hijos del `.grid-12` se
+// acomodan fila a fila, y basta que un panel crezca (la dona, según cuántas
+// categorías haya) para que el de al lado deje de alinearse con él.
+.col-apilada {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .col-apilada {
+    gap: var(--space-5);
+  }
+}
+
+// ───────────────────────── grid de 12 columnas ─────────────────────────
+// Un solo grid para las pantallas de escritorio. En móvil no hay columnas:
+// todo hijo ocupa el ancho completo, que es lo que se quiere en 360-767px y
+// evita tener que escribir una clase por breakpoint para el caso común.
+// Desde 768px mandan las clases `.col-md-*`, y desde 1024px las `.col-lg-*`
+// si hacen falta. Las columnas son 12 siempre; lo que cambia es cuántas
+// toma cada bloque.
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+// `minmax(0, 1fr)` arriba + esto es lo que impide que un monto largo o una
+// tabla ancha estiren su columna más allá de lo disponible.
+.grid-12 > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .grid-12 {
+    gap: var(--space-5);
+  }
+  .col-md-3 {
+    grid-column: span 3;
+  }
+  .col-md-4 {
+    grid-column: span 4;
+  }
+  .col-md-5 {
+    grid-column: span 5;
+  }
+  .col-md-6 {
+    grid-column: span 6;
+  }
+  .col-md-7 {
+    grid-column: span 7;
+  }
+  .col-md-8 {
+    grid-column: span 8;
+  }
+  .col-md-12 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .col-lg-3 {
+    grid-column: span 3;
+  }
+  .col-lg-4 {
+    grid-column: span 4;
+  }
+  .col-lg-5 {
+    grid-column: span 5;
+  }
+  .col-lg-6 {
+    grid-column: span 6;
+  }
+  .col-lg-7 {
+    grid-column: span 7;
+  }
+  .col-lg-8 {
+    grid-column: span 8;
+  }
+  .col-lg-9 {
+    grid-column: span 9;
+  }
+  .col-lg-12 {
+    grid-column: 1 / -1;
+  }
+}
+
+// ─────────────────────── layout de columnas ───────────────────────
+// Base para móvil: una sola columna, todo apilado con el mismo `gap` que
+// después usa el grid de escritorio.
+.cols-2,
+.cols-3 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .cols-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+  }
+  .cols-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+  }
+  .kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  // Pantallas con solo dos indicadores (Cuentas, Créditos): sin esto
+  // heredan la grilla de cuatro columnas y las dos tarjetas quedan del
+  // ancho de un cuarto, con el monto partido en varias líneas.
+  .kpis--dos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .span-all {
+    grid-column: 1 / -1;
+  }
+  .form-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+// Material solo redondea la hoja inferior en tamaños medianos y grandes; en
+// móvil (el caso real) quedaba con las esquinas rectas.
+.mat-bottom-sheet-container {
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}

@@ -1,0 +1,20 @@
+:host {
+  display: contents;
+}
+
+// `fixed`, no `absolute`: no depende de que el formulario tenga un
+// ancestro con `position: relative` (frágil con `display: contents` de
+// por medio) y de paso cubre la pantalla completa, no solo el recuadro
+// del diálogo — que era el pedido original ("que bloquee toda la
+// pantalla como una cortina").
+.cortina {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  background: var(--bg-surface);
+}

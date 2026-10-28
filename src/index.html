@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <title>Finanzas personales</title>
+    <base href="/" />
+    <!--
+      Aplica el tema guardado (`ThemeService`, `data-theme` en `<html>`)
+      antes del primer pintado — de lo contrario se ve un parpadeo: la app
+      arranca con el tema del sistema (CSS puro, instantáneo) y recién
+      después de que Angular carga, `ThemeService` corrige al tema manual
+      guardado. Bloqueante a propósito, mínimo, sin dependencias.
+    -->
+    <script>
+      try {
+        // Login y bienvenida van siempre en claro (ver `ThemeService.soloClaro`).
+        var soloClaro = /^\/(login|bienvenida)(\/|$)/.test(location.pathname);
+        var tema = soloClaro ? 'claro' : localStorage.getItem('finanzas.tema');
+        if (tema === 'claro' || tema === 'oscuro')
+          document.documentElement.setAttribute('data-theme', tema);
+      } catch (e) {}
+    </script>
+    <!--
+      `viewport-fit=cover`: sin esto, `env(safe-area-inset-*)` (ya usado
+      en `.barra-inferior`/`.fab-nuevo`/`.contenido--movil`, ver
+      shell.scss) siempre vale 0 — el navegador no considera que haya
+      ninguna zona "seguridad" de la que protegerse, así que el contenido
+      fijo queda pegado a los bordes redondos/gestos del iPhone en vez de
+      respetarlos.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Modo standalone al agregar como ícono de inicio en iOS (Safari no lee el manifest de PWA para esto). -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Finanzas" />
+    <!--
+      Barra del navegador en Android (sin efecto directo en iOS, ahí manda
+      `apple-mobile-web-app-status-bar-style`). Uno por esquema para que
+      acompañe al tema: son los valores literales de `--bg-surface` en
+      `styles/tokens/_semanticos.scss` — un `<meta>` no puede leer una
+      variable CSS, así que si cambia la superficie hay que tocar acá.
+    -->
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121b1d" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfcfe" />
+    <!-- Ícono de la pantalla de inicio en iOS — Safari no lee `icons` del manifest para esto, necesita su propio `<link>`. -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!--
+      Las fuentes de Mi Semana (ver DESIGN.md y el `@font-face` de
+      `styles.scss`): se piden desde ya para que el primer pintado no salga
+      con la del sistema y salte al llegar.
+    -->
+    <link
+      rel="preload"
+      href="fonts/plus-jakarta-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin=""
+    />
+    <link rel="preload" href="fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin="" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@20..24,400&amp;display=block"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+  </head>
+  <body>
+    <app-root></app-root>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
+  </body>
+</html>

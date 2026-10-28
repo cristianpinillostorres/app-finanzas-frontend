@@ -1,0 +1,30 @@
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acciones {
+  display: flex;
+  gap: var(--space-1);
+  flex: none;
+}
+
+// Las ocultas van plegadas al final del panel: existen, pero no compiten
+// con las que se usan.
+.ocultas {
+  border-top: 1px solid var(--border);
+}
+
+.ocultas > summary {
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+}
+
+.ocultas[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.fila-oculta .t-row {
+  color: var(--text-secondary);
+}

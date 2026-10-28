@@ -1,0 +1,237 @@
+<div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
+  <app-page-head
+    class="col-md-12"
+    icono="account_balance_wallet"
+    titulo="Cuentas"
+    [detalle]="detalleCuentas()"
+  >
+    <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
+    @if (!listo() || !sinDatos()) {
+      <button class="btn btn-outline" type="button" (click)="agregarCuenta()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Agregar cuenta
+      </button>
+    }
+  </app-page-head>
+
+  @if (listo() && sinDatos()) {
+    <app-pantalla-vacia
+      class="col-md-12"
+      icono="account_balance_wallet"
+      titulo="Aquí vive tu plata"
+      descripcion="Agrega las cuentas donde tienes dinero: tu banco, tu billetera digital o el efectivo."
+      [puntos]="[
+        'El total y lo disponible para gastar, de un vistazo',
+        'Separa dinero en bolsillos, como en la app de tu banco',
+        'Cuadra el saldo con tu banco cuando quieras',
+      ]"
+    >
+      <button class="btn btn-primary" type="button" (click)="agregarCuenta()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Agregar cuenta
+      </button>
+    </app-pantalla-vacia>
+  } @else {
+    <!--
+    Columna izquierda: el total y, debajo, las cuentas. A la derecha, el
+    reparto, que es lectura de apoyo y no cambia de alto con el número de
+    cuentas — así no arrastra a la lista al crecer.
+  -->
+    <div class="col-apilada col-md-12 col-lg-7">
+      <section class="hero">
+        <span class="t-meta">Total en tus cuentas</span>
+        <span class="t-hero amt"
+          ><app-amount [valor]="totalEnCuentas()" [animar]="true" [cargando]="!listo()"
+        /></span>
+
+        <!--
+        Una barra con los dos tramos en vez de dos tarjetas sueltas: lo que
+        importa de "disponible" y "reservado" es la proporción entre ellos,
+        y eso una cifra al lado de otra no lo dice.
+      -->
+        <div class="bar bar--segmentos" aria-hidden="true">
+          <i class="seg-disponible" [style.flex-basis.%]="porcentajeDisponible()"></i>
+          <i class="seg-reservado" [style.flex-basis.%]="porcentajeReservado()"></i>
+        </div>
+
+        <div class="desglose desglose--columnas">
+          <div>
+            <span class="t-meta">
+              <span class="punto punto--disponible" aria-hidden="true"></span>
+              Disponible para gastar
+            </span>
+            <app-amount class="amt" [valor]="disponible()" [cargando]="!listo()" />
+          </div>
+          <div>
+            <span class="t-meta">
+              <span class="punto punto--reservado" aria-hidden="true"></span>
+              Reservado en bolsillos
+            </span>
+            <app-amount class="amt" [valor]="reservado()" [cargando]="!listo()" />
+          </div>
+        </div>
+      </section>
+
+      @if (!listo()) {
+        <div class="panel">
+          <app-skeleton-rows [filas]="3" />
+        </div>
+      }
+      @for (grupo of listo() ? gruposConCuentas() : []; track grupo.tipo) {
+        <section>
+          <div class="group-head">
+            <span class="t-meta">{{ grupo.etiqueta }}</span>
+            <span class="t-sec amt tnum"><app-amount [valor]="grupo.subtotal" /></span>
+          </div>
+
+          <div class="panel">
+            <div class="cuentas-lista" auto-animate>
+              @for (item of grupo.cuentas; track item.cuenta.id) {
+                <div
+                  class="cuenta"
+                  [class.cuenta--abierta]="expandida(item.cuenta.id)"
+                  auto-animate
+                >
+                  <button
+                    class="row fila-cuenta"
+                    type="button"
+                    [attr.aria-expanded]="expandida(item.cuenta.id)"
+                    (click)="alternarExpandida(item.cuenta.id)"
+                  >
+                    <span class="ico">
+                      <mat-icon aria-hidden="true">{{ iconoTipo(grupo.tipo) }}</mat-icon>
+                    </span>
+                    <span class="row-main">
+                      <span class="t-row">{{ item.cuenta.nombre }}</span>
+                      @if (item.bolsillos.length > 0) {
+                        <span class="t-meta">{{ item.bolsillos.length }} bolsillos</span>
+                      }
+                    </span>
+                    <span class="row-end">
+                      <span class="t-row amt"><app-amount [valor]="item.saldoTotal" /></span>
+                      <!-- Abierta, el reparto de abajo ya lo dice con más detalle. -->
+                      @if (item.bolsillos.length > 0 && !expandida(item.cuenta.id)) {
+                        <span class="t-meta"
+                          >Saldo libre <app-amount class="amt" [valor]="item.saldoLibre"
+                        /></span>
+                      }
+                    </span>
+                    <mat-icon class="fila-flecha" aria-hidden="true">expand_more</mat-icon>
+                  </button>
+
+                  @if (expandida(item.cuenta.id)) {
+                    <div class="cuenta__detalle">
+                      <!--
+                      Solo con bolsillos: sin ellos, el saldo libre es el mismo
+                      total de la fila y repetirlo no decía nada.
+                    -->
+                      @if (item.bolsillos.length > 0) {
+                        <div class="caja-detalle">
+                          <div class="caja-detalle__fila caja-detalle__fila--total">
+                            <span>Saldo libre</span>
+                            <app-amount class="amt" [valor]="item.saldoLibre" />
+                          </div>
+                          <span class="t-rotulo caja-detalle__titulo">Bolsillos</span>
+                          @for (bolsillo of item.bolsillos; track bolsillo.cuenta.id) {
+                            <div class="caja-detalle__fila">
+                              <span class="caja-detalle__nombre">
+                                <mat-icon aria-hidden="true">savings</mat-icon>
+                                {{ bolsillo.cuenta.nombre }}
+                                @if (bolsillo.cuenta.reservado) {
+                                  <span class="badge badge-neutral">Reservado</span>
+                                }
+                              </span>
+                              <app-amount class="amt" [valor]="bolsillo.saldo" />
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <div class="acciones-fila">
+                        <button class="chip" type="button" (click)="moverDinero(item.cuenta)">
+                          <mat-icon aria-hidden="true">swap_horiz</mat-icon>
+                          Mover dinero
+                        </button>
+                        <button class="chip" type="button" (click)="ajustarSaldo(item.cuenta)">
+                          <mat-icon aria-hidden="true">tune</mat-icon>
+                          Ajustar saldo
+                        </button>
+                        <button class="chip" type="button" (click)="agregarBolsillo(item.cuenta)">
+                          <mat-icon aria-hidden="true">add</mat-icon>
+                          Agregar bolsillo
+                        </button>
+                        <span class="acciones-fila__secundarias">
+                          <button
+                            class="btn btn-text btn-compacto"
+                            type="button"
+                            (click)="editar(item.cuenta)"
+                          >
+                            <mat-icon aria-hidden="true">edit</mat-icon>
+                            Editar
+                          </button>
+                          <button
+                            class="btn btn-text btn-compacto"
+                            type="button"
+                            (click)="archivar(item.cuenta)"
+                          >
+                            <mat-icon aria-hidden="true">inventory_2</mat-icon>
+                            Archivar
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      } @empty {
+        @if (listo()) {
+          <!--
+        Un solo estado vacío para toda la pantalla. Antes se dibujaba un panel
+        "Sin cuentas en este grupo" por cada tipo sin cuentas, así que alguien
+        que solo usa efectivo veía tres tarjetas vacías ("Billetera digital",
+        "Banco", "Otro") antes de llegar a lo suyo.
+      -->
+          <div class="panel">
+            <app-empty-state
+              icono="account_balance_wallet"
+              titulo="Todavía no tienes cuentas"
+              descripcion="Agrega tu banco, tu billetera digital o el efectivo que manejas para empezar a ver tu saldo."
+            >
+              <button class="btn btn-primary" type="button" (click)="agregarCuenta()">
+                <mat-icon aria-hidden="true">add</mat-icon>
+                Agregar cuenta
+              </button>
+            </app-empty-state>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="panel col-md-12 col-lg-5">
+      <div class="panel-head"><h2>Dónde está tu dinero</h2></div>
+      @if (!listo()) {
+        <app-skeleton-rows [filas]="3" [conIcono]="false" />
+      } @else {
+        <div class="reparto">
+          @for (item of reparto(); track item.etiqueta) {
+            <div class="reparto__fila">
+              <div class="reparto__cabecera">
+                <span class="t-row">{{ item.etiqueta }}</span>
+                <span class="reparto__cifra">
+                  <app-amount class="amt" [valor]="item.subtotal" />
+                  <span class="t-meta tnum">{{ item.porcentajeTexto }}</span>
+                </span>
+              </div>
+              <div class="bar"><i [style.--progreso]="item.porcentaje / 100"></i></div>
+            </div>
+          } @empty {
+            <span class="t-sec">Sin cuentas todavía.</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

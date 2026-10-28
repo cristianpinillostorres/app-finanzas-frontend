@@ -1,0 +1,86 @@
+<section
+  class="muestras"
+  aria-roledescription="carrusel"
+  aria-label="Lo que vas a ver en General"
+  (pointerdown)="detenerAutoavance()"
+  (focusin)="detenerAutoavance()"
+>
+  <div class="muestras__pista" #pista (scroll)="alDeslizar(pista)">
+    @for (q of preguntas; track q.titulo; let i = $index) {
+      <div
+        class="muestra"
+        role="group"
+        aria-roledescription="diapositiva"
+        [attr.aria-label]="i + 1 + ' de ' + preguntas.length + ': ' + q.titulo"
+      >
+        <div class="muestra__cabeza">
+          <strong>{{ q.titulo }}</strong>
+          <span class="chip-ejemplo">Ejemplo</span>
+        </div>
+
+        <div class="muestra__cuerpo">
+          @switch (i) {
+            @case (0) {
+              <span class="muestra__cifra"><app-amount [valor]="ejemplo.libre" /></span>
+              <div class="muestra__barra" aria-hidden="true">
+                <i class="c-libre" style="width: 40%"></i>
+                <i class="c-pagos" style="width: 42%"></i>
+                <i class="c-cuotas" style="width: 18%"></i>
+              </div>
+              <span class="muestra__nota">{{ q.texto }}</span>
+            }
+            @case (1) {
+              @for (p of ejemplo.pagos; track p.nombre) {
+                <div class="muestra__fila">
+                  <span>{{ p.nombre }} · día {{ p.dia }}</span>
+                  <app-amount [valor]="p.monto" />
+                  <span [class]="'estado estado--' + p.estado">{{ p.texto }}</span>
+                </div>
+              }
+            }
+            @case (2) {
+              <div class="muestra__fila muestra__fila--total">
+                <span class="muestra__rotulo">Deuda total</span>
+                <span class="muestra__cifra muestra__cifra--media"
+                  ><app-amount [valor]="ejemplo.deudaTotal"
+                /></span>
+              </div>
+              <div class="muestra__barra">
+                <i class="c-pagos" [style.width.%]="ejemplo.deudaPagada"></i>
+              </div>
+              <span class="muestra__nota"
+                >Llevas {{ ejemplo.deudaPagada }}% pagado. Te faltan
+                {{ ejemplo.cuotasFaltan }} cuotas.</span
+              >
+            }
+            @case (3) {
+              @for (c of ejemplo.categorias; track c.categoriaId) {
+                <div class="muestra__deuda">
+                  <div class="muestra__fila">
+                    <span>{{ c.nombre }}</span>
+                    <app-amount [valor]="c.monto" />
+                  </div>
+                  <div class="muestra__barra muestra__barra--fina">
+                    <i class="c-libre" [style.width.%]="c.porcentaje"></i>
+                  </div>
+                </div>
+              }
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="muestras__puntos">
+    @for (q of preguntas; track q.titulo; let i = $index) {
+      <button
+        type="button"
+        [class.activo]="muestra() === i"
+        [attr.aria-label]="'Ver ' + q.titulo"
+        [attr.aria-current]="muestra() === i || null"
+        (click)="irAMuestra(pista, i)"
+      ></button>
+    }
+  </div>
+</section>

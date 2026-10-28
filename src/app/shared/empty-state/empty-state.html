@@ -1,0 +1,12 @@
+<div class="empty" [class.empty--compacto]="compacto()">
+  <span class="empty__icono">
+    <mat-icon aria-hidden="true">{{ icono() }}</mat-icon>
+  </span>
+  <span class="empty__titulo">{{ titulo() }}</span>
+  @if (descripcion()) {
+    <span class="empty__texto">{{ descripcion() }}</span>
+  }
+  <span class="empty__accion">
+    <ng-content></ng-content>
+  </span>
+</div>

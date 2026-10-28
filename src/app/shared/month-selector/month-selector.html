@@ -1,0 +1,9 @@
+<div class="month span-all">
+  <button class="btn btn-icon" type="button" aria-label="Mes anterior" (click)="anterior.emit()">
+    <mat-icon aria-hidden="true">chevron_left</mat-icon>
+  </button>
+  <b>{{ etiqueta() }}</b>
+  <button class="btn btn-icon" type="button" aria-label="Mes siguiente" (click)="siguiente.emit()">
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+  </button>
+</div>

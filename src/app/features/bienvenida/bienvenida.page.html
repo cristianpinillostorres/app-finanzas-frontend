@@ -1,0 +1,831 @@
+<div class="bienvenida" [class.desde-login]="desdeLogin">
+  <!-- Panel en vivo: "Te queda libre" armándose con lo que se agrega. -->
+  <aside class="vivo" aria-label="Tu mes en vivo">
+    <div class="vivo__marca">
+      <span class="vivo__sello" aria-hidden="true"><mat-icon>savings</mat-icon></span>
+      Nexus Finanzas
+    </div>
+
+    <!-- Mismo bloque y misma altura que el lema y la lista del login. -->
+    <div class="vivo__cuerpo">
+      <div class="vivo__cifra">
+        <span class="vivo__etiqueta">Te queda libre este mes</span>
+        <span class="vivo__numero"><app-amount [valor]="libre()" [animar]="true" /></span>
+        <div class="vivo__barra" aria-hidden="true">
+          <i class="seg seg--libre" [style.width.%]="barra().libre"></i>
+          <i class="seg seg--pagos" [style.width.%]="barra().pagos"></i>
+          <i class="seg seg--cuotas" [style.width.%]="barra().cuotas"></i>
+        </div>
+        <span class="vivo__frase" aria-live="polite">{{ frase() }}</span>
+      </div>
+
+      <dl class="vivo__desglose">
+        <div>
+          <i class="punto c-libre" aria-hidden="true"></i>
+          <dt>En tus cuentas</dt>
+          <dd><app-amount [valor]="enCuentas()" /></dd>
+        </div>
+        <div>
+          <i class="punto c-pagos" aria-hidden="true"></i>
+          <dt>Pagos fijos del mes</dt>
+          <dd>−<app-amount [valor]="totalPagos()" /></dd>
+        </div>
+        <div>
+          <i class="punto c-cuotas" aria-hidden="true"></i>
+          <dt>Cuotas de créditos</dt>
+          <dd>−<app-amount [valor]="totalCuotas()" /></dd>
+        </div>
+      </dl>
+    </div>
+  </aside>
+
+  <main class="contenido" #contenido>
+    <div class="columna">
+      <!-- Encabezado fijo de los pasos 1 a 5: volver, progreso y título. -->
+      @if (cabeza(); as c) {
+        <header class="encabezado">
+          <div class="progreso__fila">
+            <button type="button" class="btn btn-text atras" (click)="atras()">
+              <mat-icon aria-hidden="true">arrow_back</mat-icon>
+              Atrás
+            </button>
+            <span class="etiqueta">Paso {{ paso() }} de 5</span>
+          </div>
+          <div class="progreso__segmentos" aria-hidden="true">
+            @for (s of segmentos; track s) {
+              <span><i [style.--progreso]="paso() > s ? 1 : paso() === s ? 0.5 : 0"></i></span>
+            }
+          </div>
+          <div class="cabeza">
+            <h2 class="titulo">
+              {{ c.antes }} <span class="acento">{{ c.acento }}</span>
+            </h2>
+            <p class="texto-sm">{{ c.texto }}</p>
+          </div>
+        </header>
+      }
+
+      <!-- Mientras llegan los datos, la forma del paso en gris (ver `listo`
+           y `preparando`). -->
+      @if ((!listo() || preparando()) && paso() >= 1 && paso() <= 5) {
+        <div class="paso esqueleto" aria-busy="true" aria-label="Cargando">
+          <div class="skeleton skeleton-text skeleton-text--corto"></div>
+          <div class="esqueleto__fila">
+            <div class="skeleton esqueleto__tarjeta"></div>
+            <div class="skeleton esqueleto__tarjeta"></div>
+            <div class="skeleton esqueleto__tarjeta"></div>
+            <div class="skeleton esqueleto__tarjeta"></div>
+          </div>
+          <div class="skeleton skeleton-text skeleton-text--corto"></div>
+          <div class="skeleton esqueleto__campo"></div>
+          <div class="skeleton skeleton-text skeleton-text--corto"></div>
+          <div class="skeleton esqueleto__campo"></div>
+          <!-- Donde va Continuar en el paso real: no salta al aparecer. -->
+          <div class="acciones acciones--pie">
+            <div class="skeleton esqueleto__boton"></div>
+          </div>
+        </div>
+      } @else {
+        @switch (paso()) {
+          @case (0) {
+            <section class="paso">
+              <div class="cabeza sube">
+                <span class="etiqueta">Hola</span>
+                <h1 class="titulo-grande">
+                  Mira cuánto te queda <span class="acento">libre este mes.</span>
+                </h1>
+              </div>
+              <app-muestras-general class="sube" style="animation-delay: 120ms" />
+              <div class="acciones sube" style="animation-delay: 420ms">
+                <button type="button" class="btn btn-primary boton-grande" (click)="siguiente()">
+                  Empezar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+                <span class="nota">
+                  <mat-icon aria-hidden="true">lock</mat-icon>
+                  5 pasos, unos 3 minutos. No nos conectamos a tus cuentas bancarias.
+                </span>
+                <button type="button" class="btn btn-text" (click)="saltarRecorrido()">
+                  Saltar recorrido
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (1) {
+            <section class="paso sube">
+              @if (cuenta(); as c) {
+                <div class="creado">
+                  <span class="creado__icono"><mat-icon aria-hidden="true">check</mat-icon></span>
+                  <span class="creado__texto"
+                    ><strong>{{ c.nombre }}</strong> ya está creada.</span
+                  >
+                </div>
+              } @else {
+                <fieldset class="grupo">
+                  <legend class="grupo__titulo">¿Dónde la tienes?</legend>
+                  <div class="tipos">
+                    @for (t of tiposCuenta; track t.valor) {
+                      <button
+                        type="button"
+                        class="tipo"
+                        [attr.aria-pressed]="tipoCuenta() === t.valor"
+                        (click)="tipoCuenta.set(t.valor)"
+                      >
+                        <mat-icon aria-hidden="true">{{ t.icono }}</mat-icon>
+                        {{ t.nombre }}
+                      </button>
+                    }
+                  </div>
+                </fieldset>
+
+                <div class="grupo">
+                  <label class="grupo__titulo" for="bv-cuenta">¿Cómo la llamas?</label>
+                  <input
+                    class="input input--grande"
+                    id="bv-cuenta"
+                    autocomplete="off"
+                    [placeholder]="ejemploCuenta()"
+                    [value]="nombreCuenta()"
+                    (input)="nombreCuenta.set($any($event.target).value)"
+                  />
+                </div>
+
+                <div class="grupo">
+                  <label class="grupo__titulo" for="bv-saldo">¿Cuánto tienes hoy?</label>
+                  <div class="moneda moneda--grande">
+                    <span aria-hidden="true">$</span>
+                    <input
+                      class="input input--monto"
+                      id="bv-saldo"
+                      inputmode="numeric"
+                      placeholder="0"
+                      [value]="miles(saldo())"
+                      (input)="leerMonto($event, saldo)"
+                    />
+                  </div>
+                  <div class="chips">
+                    @for (v of atajosSaldo; track v) {
+                      <button type="button" class="chip" (click)="saldo.set(v)">
+                        $ {{ miles(v) }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  [disabled]="(!cuenta() && saldo() <= 0) || guardando()"
+                  (click)="crearCuenta()"
+                >
+                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (2) {
+            <section class="paso sube">
+              <div class="grupo">
+                <div class="grupo__fila">
+                  <span class="grupo__titulo">Gastos</span>
+                  <span class="texto-xs">{{ activas() }} de {{ categorias().length }} activas</span>
+                </div>
+                <div class="categorias">
+                  @for (c of categoriasGasto(); track c.id) {
+                    <button
+                      type="button"
+                      class="categoria"
+                      [attr.aria-pressed]="!ocultas().has(c.id)"
+                      (click)="alternarCategoria(c.id)"
+                    >
+                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
+                      <span>{{ c.nombre }}</span>
+                      <mat-icon class="categoria__marca" aria-hidden="true">{{
+                        ocultas().has(c.id) ? 'add' : 'check'
+                      }}</mat-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="grupo">
+                <span class="grupo__titulo">Ingresos</span>
+                <div class="categorias">
+                  @for (c of categoriasIngreso(); track c.id) {
+                    <button
+                      type="button"
+                      class="categoria"
+                      [attr.aria-pressed]="!ocultas().has(c.id)"
+                      (click)="alternarCategoria(c.id)"
+                    >
+                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
+                      <span>{{ c.nombre }}</span>
+                      <mat-icon class="categoria__marca" aria-hidden="true">{{
+                        ocultas().has(c.id) ? 'add' : 'check'
+                      }}</mat-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  (click)="guardarCategorias()"
+                >
+                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+                <button type="button" class="btn btn-text" (click)="omitir('categorias')">
+                  Me sirven las que vienen
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (3) {
+            <section class="paso sube">
+              <fieldset class="grupo">
+                <legend class="grupo__titulo">¿Qué tipo de deuda?</legend>
+                <div class="tipos">
+                  @for (t of tiposCredito; track t.valor) {
+                    <button
+                      type="button"
+                      class="tipo"
+                      [attr.aria-pressed]="grupoCredito() === t.valor"
+                      (click)="grupoCredito.set(t.valor)"
+                    >
+                      <mat-icon aria-hidden="true">{{ t.icono }}</mat-icon>
+                      {{ t.nombre }}
+                    </button>
+                  }
+                </div>
+              </fieldset>
+
+              <!-- Los campos cambian con el tipo; entran con una transición para
+                 que se note el cambio. Dos filas como mucho: sin scroll. -->
+              @switch (grupoCredito()) {
+                @case ('BANCO') {
+                  <div class="campos sube">
+                    <div class="fila-dos">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito">Nombre</label>
+                        <input
+                          class="input"
+                          id="bv-credito"
+                          autocomplete="off"
+                          [placeholder]="ejemploCredito()"
+                          [value]="nombreCredito()"
+                          (input)="nombreCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-monto"
+                          >¿Cuánto te prestaron?</label
+                        >
+                        <div class="moneda">
+                          <span aria-hidden="true">$</span>
+                          <input
+                            class="input input--monto"
+                            id="bv-credito-monto"
+                            inputmode="numeric"
+                            placeholder="0"
+                            [value]="miles(montoCredito())"
+                            (input)="leerMonto($event, montoCredito)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="fila-cuatro">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-plazo">Meses</label>
+                        <input
+                          class="input"
+                          id="bv-credito-plazo"
+                          inputmode="numeric"
+                          [value]="plazoCredito()"
+                          (input)="plazoCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-pagadas">Ya pagadas</label>
+                        <input
+                          class="input"
+                          id="bv-credito-pagadas"
+                          inputmode="numeric"
+                          [value]="pagadasCredito()"
+                          (input)="pagadasCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-tasa">Tasa E.A. %</label>
+                        <input
+                          class="input"
+                          id="bv-credito-tasa"
+                          inputmode="decimal"
+                          placeholder="21,5"
+                          [value]="tasaCredito()"
+                          (input)="tasaCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
+                        <input
+                          class="input"
+                          id="bv-credito-dia"
+                          inputmode="numeric"
+                          maxlength="2"
+                          [value]="diaPagoCredito()"
+                          (input)="leerDia($event, diaPagoCredito)"
+                        />
+                      </div>
+                    </div>
+                    <span class="texto-xs">La tasa sale en tu extracto o en el contrato.</span>
+                  </div>
+                }
+                @case ('PERSONA') {
+                  <div class="campos sube">
+                    <div class="fila-dos">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito">¿A quién le debes?</label>
+                        <input
+                          class="input"
+                          id="bv-credito"
+                          autocomplete="off"
+                          [placeholder]="ejemploCredito()"
+                          [value]="nombreCredito()"
+                          (input)="nombreCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-monto"
+                          >¿Cuánto le debes?</label
+                        >
+                        <div class="moneda">
+                          <span aria-hidden="true">$</span>
+                          <input
+                            class="input input--monto"
+                            id="bv-credito-monto"
+                            inputmode="numeric"
+                            placeholder="0"
+                            [value]="miles(montoCredito())"
+                            (input)="leerMonto($event, montoCredito)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="fila-cuatro">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
+                        <input
+                          class="input"
+                          id="bv-credito-dia"
+                          inputmode="numeric"
+                          maxlength="2"
+                          [value]="diaPagoCredito()"
+                          (input)="leerDia($event, diaPagoCredito)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                }
+                @default {
+                  <div class="campos sube">
+                    <div class="fila-dos">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito">Nombre</label>
+                        <input
+                          class="input"
+                          id="bv-credito"
+                          autocomplete="off"
+                          [placeholder]="ejemploCredito()"
+                          [value]="nombreCredito()"
+                          (input)="nombreCredito.set($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-cupo">Cupo</label>
+                        <div class="moneda">
+                          <span aria-hidden="true">$</span>
+                          <input
+                            class="input input--monto"
+                            id="bv-credito-cupo"
+                            inputmode="numeric"
+                            placeholder="0"
+                            [value]="miles(cupoCredito())"
+                            (input)="leerMonto($event, cupoCredito)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="fila-cuatro">
+                      <div class="grupo">
+                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
+                        <input
+                          class="input"
+                          id="bv-credito-dia"
+                          inputmode="numeric"
+                          maxlength="2"
+                          [value]="diaPagoCredito()"
+                          (input)="leerDia($event, diaPagoCredito)"
+                        />
+                      </div>
+                      @if (grupoCredito() === 'TARJETA') {
+                        <div class="grupo">
+                          <label class="campo__titulo" for="bv-credito-corte">Día de corte</label>
+                          <input
+                            class="input"
+                            id="bv-credito-corte"
+                            inputmode="numeric"
+                            maxlength="2"
+                            [value]="diaCorteCredito()"
+                            (input)="leerDia($event, diaCorteCredito)"
+                          />
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+
+              <button
+                type="button"
+                class="btn btn-outline boton-grande"
+                [disabled]="!creditoListo() || guardando()"
+                (click)="agregarCredito()"
+              >
+                <mat-icon aria-hidden="true">add</mat-icon>
+                Agregar {{ nombreGrupo().toLowerCase() }}
+              </button>
+
+              @if (creditosAgregados().length > 0) {
+                <div class="grupo">
+                  <span class="grupo__titulo">Agregadas</span>
+                  @for (c of creditosAgregados(); track c.id) {
+                    <div class="item aparece">
+                      <span class="item__icono item__icono--deuda"
+                        ><mat-icon aria-hidden="true">credit_card</mat-icon></span
+                      >
+                      <span class="item__texto">
+                        <span>{{ c.nombre }}</span>
+                        <span class="texto-xs">{{
+                          c.cuota !== null ? 'Cuota de este mes' : c.tipo
+                        }}</span>
+                      </span>
+                      @if (c.cuota !== null) {
+                        <strong class="item__monto c-deuda"
+                          ><app-amount [valor]="c.cuota"
+                        /></strong>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  [disabled]="creditosAgregados().length === 0"
+                  (click)="siguiente()"
+                >
+                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+                <button type="button" class="btn btn-text" (click)="omitir('creditos')">
+                  No tengo deudas
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (4) {
+            <section class="paso sube">
+              <div class="grupo">
+                <label class="grupo__titulo" for="bv-pago">¿Qué pagas?</label>
+                <div class="chips">
+                  @for (s of sugerencias; track s.nombre) {
+                    <button
+                      type="button"
+                      class="chip"
+                      [attr.aria-pressed]="nombrePago() === s.nombre"
+                      (click)="nombrePago.set(s.nombre)"
+                    >
+                      <mat-icon aria-hidden="true">{{ s.icono }}</mat-icon
+                      >{{ s.nombre }}
+                    </button>
+                  }
+                </div>
+                <input
+                  class="input input--grande"
+                  id="bv-pago"
+                  autocomplete="off"
+                  placeholder="O escribe otro"
+                  [value]="nombrePago()"
+                  (input)="nombrePago.set($any($event.target).value)"
+                />
+              </div>
+
+              <div class="fila-monto-dia">
+                <div class="grupo">
+                  <label class="grupo__titulo" for="bv-pago-monto">¿Cuánto?</label>
+                  <div class="moneda moneda--grande">
+                    <span aria-hidden="true">$</span>
+                    <input
+                      class="input input--monto"
+                      id="bv-pago-monto"
+                      inputmode="numeric"
+                      placeholder="0"
+                      [value]="miles(montoPago())"
+                      (input)="leerMonto($event, montoPago)"
+                    />
+                  </div>
+                </div>
+                <div class="grupo">
+                  <label class="grupo__titulo" for="bv-pago-dia">¿Qué día?</label>
+                  <input
+                    class="input input--dia"
+                    id="bv-pago-dia"
+                    inputmode="numeric"
+                    placeholder="5"
+                    [value]="diaPago()"
+                    maxlength="2"
+                    (input)="leerDia($event, diaPago)"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-outline boton-grande"
+                [disabled]="!nombrePago().trim() || montoPago() <= 0 || guardando()"
+                (click)="agregarPago()"
+              >
+                <mat-icon aria-hidden="true">add</mat-icon>
+                Agregar pago
+              </button>
+
+              @if (pagosActivos().length > 0) {
+                <div class="grupo">
+                  <span class="grupo__titulo">Agregados</span>
+                  @for (p of pagosActivos(); track p.id) {
+                    <div class="item aparece">
+                      <span class="item__icono item__dia"
+                        ><strong>{{ p.diaLimite }}</strong></span
+                      >
+                      <span class="item__texto">
+                        <span>{{ p.nombre }}</span>
+                        <span class="texto-xs">Cada mes</span>
+                      </span>
+                      <strong class="item__monto c-gasto"><app-amount [valor]="p.monto" /></strong>
+                      <button
+                        type="button"
+                        class="btn btn-icon"
+                        [attr.aria-label]="'Quitar ' + p.nombre"
+                        (click)="quitarPago(p)"
+                      >
+                        <mat-icon aria-hidden="true">close</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  [disabled]="pagosActivos().length === 0"
+                  (click)="siguiente()"
+                >
+                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (5) {
+            <section class="paso sube">
+              <fieldset class="grupo">
+                <legend class="grupo__titulo">¿Qué fue?</legend>
+                <div class="tipos tipos--dos">
+                  <button
+                    type="button"
+                    class="tipo"
+                    [attr.aria-pressed]="tipoMovimiento() === 'GASTO'"
+                    (click)="elegirTipoMovimiento('GASTO')"
+                  >
+                    <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                    Un gasto
+                  </button>
+                  <button
+                    type="button"
+                    class="tipo"
+                    [attr.aria-pressed]="tipoMovimiento() === 'INGRESO'"
+                    (click)="elegirTipoMovimiento('INGRESO')"
+                  >
+                    <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                    Un ingreso
+                  </button>
+                </div>
+              </fieldset>
+
+              <div class="grupo">
+                <label class="grupo__titulo" for="bv-mov">¿Cuánto?</label>
+                <div class="moneda moneda--grande">
+                  <span aria-hidden="true">$</span>
+                  <input
+                    class="input input--monto"
+                    id="bv-mov"
+                    inputmode="numeric"
+                    placeholder="0"
+                    [value]="miles(montoMovimiento())"
+                    (input)="leerMonto($event, montoMovimiento)"
+                  />
+                </div>
+                <span class="texto-xs">
+                  {{ tipoMovimiento() === 'GASTO' ? 'Sale de' : 'Entra a' }}
+                  {{ cuenta()?.nombre }}.
+                </span>
+              </div>
+
+              <div class="grupo">
+                <span class="grupo__titulo" id="bv-mov-cat">
+                  {{ tipoMovimiento() === 'GASTO' ? '¿En qué?' : '¿De dónde?' }}
+                </span>
+                <div class="categorias" role="radiogroup" aria-labelledby="bv-mov-cat">
+                  @for (c of categoriasMovimiento(); track c.id) {
+                    <button
+                      type="button"
+                      class="categoria"
+                      role="radio"
+                      [attr.aria-checked]="categoriaMovimiento()?.id === c.id"
+                      (click)="elegirCategoria(c.id)"
+                    >
+                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
+                      <span>{{ c.nombre }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  [disabled]="montoMovimiento() <= 0 || !categoriaMovimiento() || guardando()"
+                  (click)="registrar()"
+                >
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                  Registrar
+                </button>
+                <!-- Opcional: sin registrar, queda pendiente en los primeros
+                   pasos de General (no se marca como omitido). -->
+                <button type="button" class="btn btn-text" (click)="siguiente()">
+                  Lo hago después
+                </button>
+              </div>
+            </section>
+          }
+
+          @case (6) {
+            @if (auth.anonimo()) {
+              <!-- Entró por "Regístrate": falta elegir con qué entrar. -->
+              <section class="paso">
+                <div class="cabeza sube">
+                  <span class="etiqueta">Último paso</span>
+                  <h2 class="titulo-grande">
+                    Guarda tu información,<br />
+                    <span class="acento">crea tu cuenta.</span>
+                  </h2>
+                  <p class="texto-sm">
+                    Lo que agregaste queda en tu cuenta y lo ves desde cualquier dispositivo.
+                  </p>
+                </div>
+
+                <form
+                  class="registro sube"
+                  style="animation-delay: 150ms"
+                  (submit)="$event.preventDefault(); crearConCorreo()"
+                >
+                  <div class="field">
+                    <label for="bv-correo">Correo</label>
+                    <input
+                      class="input"
+                      id="bv-correo"
+                      type="email"
+                      autocomplete="email"
+                      [value]="correo()"
+                      (input)="correo.set($any($event.target).value)"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="bv-clave">Contraseña</label>
+                    <input
+                      class="input"
+                      id="bv-clave"
+                      type="password"
+                      autocomplete="new-password"
+                      aria-describedby="bv-clave-ayuda"
+                      [value]="clave()"
+                      (input)="clave.set($any($event.target).value)"
+                    />
+                    <span class="texto-xs" id="bv-clave-ayuda">Mínimo 6 caracteres.</span>
+                  </div>
+                  <button
+                    type="submit"
+                    class="btn btn-primary boton-grande"
+                    [disabled]="!correo().trim() || clave().length < 6 || auth.iniciandoSesion()"
+                  >
+                    {{ auth.iniciandoCon() === 'correo' ? 'Creando…' : 'Crear cuenta' }}
+                  </button>
+                  @if (auth.error(); as error) {
+                    <p class="error-registro" role="alert">{{ error }}</p>
+                  }
+                </form>
+
+                <div class="separador sube" style="animation-delay: 220ms"><span>o</span></div>
+
+                <div class="acciones sube" style="animation-delay: 260ms">
+                  <button
+                    type="button"
+                    class="btn btn-outline boton-grande"
+                    [disabled]="auth.iniciandoSesion()"
+                    (click)="crearConGoogle()"
+                  >
+                    <svg class="logo-google" viewBox="0 0 48 48" aria-hidden="true">
+                      <path
+                        fill="#EA4335"
+                        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                      />
+                      <path
+                        fill="#4285F4"
+                        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                      />
+                    </svg>
+                    {{ auth.iniciandoCon() === 'google' ? 'Creando…' : 'Crear con Google' }}
+                  </button>
+                  @if (auth.errorGoogle(); as error) {
+                    <p class="error-registro" role="alert">{{ error }}</p>
+                  }
+                  <!-- Sin esto, quien ya tenía cuenta y tocó "Regístrate"
+                       quedaba atrapado en la sesión anónima. -->
+                  <button
+                    type="button"
+                    class="btn btn-text"
+                    [disabled]="auth.iniciandoSesion()"
+                    (click)="auth.cerrarSesion()"
+                  >
+                    ¿Ya tienes cuenta? Entra
+                  </button>
+                  <span class="nota">
+                    <mat-icon aria-hidden="true">lock</mat-icon>
+                    No nos conectamos a tus cuentas bancarias.
+                  </span>
+                </div>
+              </section>
+            } @else {
+              <section class="paso">
+                <div class="cabeza sube">
+                  <span class="etiqueta">Primeros pasos</span>
+                  <h2 class="titulo-grande">Terminaste los primeros pasos</h2>
+                  <p class="texto-sm">Ya puedes ver en General cuánto te queda libre este mes.</p>
+                </div>
+                <div class="lista-resumen">
+                  @for (r of resumen(); track r.titulo; let i = $index) {
+                    <div class="item item--plano sube" [style.animation-delay.ms]="150 + i * 110">
+                      <span class="item__icono item__icono--ok"
+                        ><mat-icon aria-hidden="true">check</mat-icon></span
+                      >
+                      <span class="item__texto">
+                        <span>{{ r.titulo }}</span>
+                        <span class="texto-xs">{{ r.detalle }}</span>
+                      </span>
+                    </div>
+                  }
+                </div>
+                <div class="acciones sube" style="animation-delay: 600ms">
+                  <button type="button" class="btn btn-primary boton-grande" (click)="irAGeneral()">
+                    Ir a General <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  </button>
+                  <span class="nota">
+                    Después, en «Sácale más provecho», encuentras lo que la app puede hacer además
+                    de llevar la cuenta.
+                  </span>
+                </div>
+              </section>
+            }
+          }
+        }
+      }
+    </div>
+  </main>
+</div>

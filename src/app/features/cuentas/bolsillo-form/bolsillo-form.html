@@ -1,0 +1,53 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">Agregar bolsillo</h2>
+  <button
+    mat-icon-button
+    type="button"
+    aria-label="Cerrar"
+    (click)="cerrar()"
+    [disabled]="guardando()"
+  >
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<p class="help">En {{ cuentaPadre.nombre }}, con {{ saldoLibre() | monedaCop }} de saldo libre.</p>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="field">
+    <label for="b-nombre">Nombre *</label>
+    <input class="input" id="b-nombre" placeholder="Viaje" formControlName="nombre" />
+    @if (invalido(form.controls.nombre)) {
+      <span class="err">Ponle un nombre al bolsillo.</span>
+    }
+  </div>
+
+  <div class="field">
+    <label for="b-monto">Monto inicial (opcional)</label>
+    <input
+      class="input"
+      id="b-monto"
+      type="number"
+      inputmode="numeric"
+      placeholder="0"
+      formControlName="montoInicial"
+    />
+    @if (errorSaldoInsuficiente(); as error) {
+      <span class="err">{{ error }}</span>
+    }
+  </div>
+
+  <label class="switch">
+    <input type="checkbox" formControlName="reservado" />
+    Reservado: no cuenta como plata para gastar
+  </label>
+  <p class="help help--switch">
+    Para metas o ahorros (un viaje, la prima). Lo reservado no se suma a "Te queda libre".
+  </p>
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    Crear bolsillo
+  </button>
+</form>
+
+<app-guardando-overlay [visible]="guardando()" />

@@ -1,0 +1,22 @@
+<section class="panel vacia">
+  <span class="vacia__icono">
+    <mat-icon aria-hidden="true">{{ icono() }}</mat-icon>
+  </span>
+  <h2 class="vacia__titulo">{{ titulo() }}</h2>
+  <p class="vacia__texto">{{ descripcion() }}</p>
+
+  @if (puntos().length > 0) {
+    <ul class="vacia__puntos">
+      @for (punto of puntos(); track punto) {
+        <li>
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          <span>{{ punto }}</span>
+        </li>
+      }
+    </ul>
+  }
+
+  <div class="vacia__accion">
+    <ng-content></ng-content>
+  </div>
+</section>

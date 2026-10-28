@@ -1,0 +1,24 @@
+// El host es el elemento del grid (no `display: contents`): así la página
+// que las coloca puede decidir que una tarjeta ocupe dos columnas —
+// `display: contents` deja fuera al host del grid y el hijo real queda
+// inalcanzable desde el CSS encapsulado del padre.
+// `min-width: 0` para que un monto largo no estire su columna.
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// Con el host como elemento del grid, `.stat-card` toma todo su alto: las
+// tarjetas de una fila quedan parejas aunque una tenga el monto en dos
+// líneas.
+.stat-card {
+  height: 100%;
+}
+
+// El ícono de la etiqueta va al tamaño del texto meta, no al de un ícono
+// de fila: acompaña a la palabra, no la encabeza.
+.t-meta mat-icon {
+  font-size: var(--text-base);
+  width: var(--text-base);
+  height: var(--text-base);
+}

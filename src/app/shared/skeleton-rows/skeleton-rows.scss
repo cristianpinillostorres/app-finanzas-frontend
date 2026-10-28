@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+// Las líneas de `.row-main` son porcentajes del ancho disponible; la del
+// monto no puede serlo (su columna se ajusta al contenido, que acá está
+// vacío), así que va con un ancho fijo del largo típico de un monto.
+.monto-falso {
+  width: 72px;
+}

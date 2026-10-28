@@ -1,0 +1,16 @@
+<div class="rows" aria-hidden="true">
+  @for (i of indices(); track i) {
+    <div class="row row--estatica">
+      @if (conIcono()) {
+        <span class="skeleton skeleton-circulo"></span>
+      }
+      <span class="row-main">
+        <span class="skeleton skeleton-text skeleton-text--medio"></span>
+        <span class="skeleton skeleton-text skeleton-text--corto"></span>
+      </span>
+      <span class="row-end">
+        <span class="skeleton skeleton-text monto-falso"></span>
+      </span>
+    </div>
+  }
+</div>

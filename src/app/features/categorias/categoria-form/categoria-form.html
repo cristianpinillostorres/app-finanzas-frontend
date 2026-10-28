@@ -1,0 +1,83 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">{{ editando ? 'Editar categoría' : 'Nueva categoría' }}</h2>
+  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  @if (!editando) {
+    <div class="field">
+      <span class="field__label" id="cat-tipo-label">Tipo</span>
+      <span class="seg" role="group" aria-labelledby="cat-tipo-label">
+        <button
+          type="button"
+          [attr.aria-pressed]="form.controls.tipo.value === 'GASTO'"
+          (click)="form.controls.tipo.setValue('GASTO')"
+        >
+          Gasto
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="form.controls.tipo.value === 'INGRESO'"
+          (click)="form.controls.tipo.setValue('INGRESO')"
+        >
+          Ingreso
+        </button>
+      </span>
+    </div>
+  }
+
+  <div class="field">
+    <label for="cat-nombre">Nombre</label>
+    <input
+      class="input"
+      id="cat-nombre"
+      placeholder="Mascotas"
+      maxlength="40"
+      autocomplete="off"
+      formControlName="nombre"
+    />
+  </div>
+
+  @if (form.controls.tipo.value === 'GASTO') {
+    <div class="field">
+      <label for="cat-tope">Tope mensual (opcional)</label>
+      <input
+        class="input"
+        id="cat-tope"
+        type="number"
+        inputmode="numeric"
+        min="0"
+        placeholder="Ej.: 300000"
+        formControlName="topeMensual"
+      />
+      <p class="help">Lo máximo que quieres gastar al mes aquí. Te avisamos al llegar al 80 %.</p>
+    </div>
+  }
+
+  <div class="field">
+    <span class="field__label" id="cat-icono-label">Ícono</span>
+    <div class="iconos" role="radiogroup" aria-labelledby="cat-icono-label">
+      @for (icono of iconos; track icono) {
+        <button
+          type="button"
+          class="icono"
+          role="radio"
+          [attr.aria-checked]="form.controls.icono.value === icono"
+          [attr.aria-label]="icono"
+          (click)="elegirIcono(icono)"
+        >
+          <mat-icon aria-hidden="true">{{ icono }}</mat-icon>
+        </button>
+      }
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    @if (guardando()) {
+      <span class="spinner" aria-hidden="true"></span>
+    }
+    {{ editando ? 'Guardar cambios' : 'Crear categoría' }}
+  </button>
+</form>

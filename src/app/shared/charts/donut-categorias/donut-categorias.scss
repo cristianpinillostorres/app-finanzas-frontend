@@ -1,0 +1,74 @@
+:host {
+  display: block;
+  padding: var(--space-4);
+}
+
+.dona {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dona__grafica {
+  position: relative;
+}
+
+.dona__centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  // Sin esto, el bloque del centro se come los eventos del agujero de la
+  // dona y el tooltip de las porciones deja de aparecer cerca del borde.
+  pointer-events: none;
+}
+
+// La leyenda es obligatoria, no decorativa: es lo que permite leer cada
+// porción sin depender del color (ver `paleta-graficas.ts`).
+.leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.leyenda__item {
+  display: grid;
+  // Muestra · nombre (se encoge) · porcentaje · monto (alineado a la derecha).
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.leyenda__muestra {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  flex: none;
+}
+
+.leyenda__nombre {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leyenda__porcentaje {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  min-width: 4ch;
+  text-align: right;
+}
+
+.leyenda__monto {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+  text-align: right;
+}

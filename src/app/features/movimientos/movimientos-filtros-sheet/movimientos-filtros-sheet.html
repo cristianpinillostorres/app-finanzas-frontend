@@ -1,0 +1,162 @@
+<div class="cuerpo">
+  <div class="sheet-hd">
+    <h2 class="screen-title">Filtros</h2>
+    <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
+      <mat-icon aria-hidden="true">close</mat-icon>
+    </button>
+  </div>
+
+  <div class="grupo-filtro">
+    <span class="t-sec">Tipo</span>
+    <div class="chips">
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().tipo === 'todos'"
+        (click)="fijarTipo('todos')"
+      >
+        Todos
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().tipo === 'GASTO'"
+        (click)="fijarTipo('GASTO')"
+      >
+        Gastos
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().tipo === 'INGRESO'"
+        (click)="fijarTipo('INGRESO')"
+      >
+        Ingresos
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().tipo === 'transferencia'"
+        (click)="fijarTipo('transferencia')"
+      >
+        Transferencias
+      </button>
+    </div>
+  </div>
+
+  <div class="grupo-filtro">
+    <span class="t-sec">Fecha</span>
+    <div class="chips">
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().fecha === 'todo-mes'"
+        (click)="fijarFecha('todo-mes')"
+      >
+        Todo el mes
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().fecha === 'hoy'"
+        (click)="fijarFecha('hoy')"
+      >
+        Hoy
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().fecha === '7-dias'"
+        (click)="fijarFecha('7-dias')"
+      >
+        Últimos 7 días
+      </button>
+      <button
+        class="chip"
+        type="button"
+        [attr.aria-pressed]="draft().fecha === 'rango'"
+        (click)="fijarFecha('rango')"
+      >
+        Rango
+      </button>
+    </div>
+    @if (draft().fecha === 'rango') {
+      <div class="form-2">
+        <div class="field">
+          <label for="f-desde">Desde</label>
+          <input
+            class="input"
+            id="f-desde"
+            type="date"
+            #campoDesde
+            [value]="draft().desde ?? data.minFecha"
+            [min]="data.minFecha"
+            [max]="draft().hasta ?? data.maxFecha"
+            (change)="fijarDesde(campoDesde.value)"
+          />
+        </div>
+        <div class="field">
+          <label for="f-hasta">Hasta</label>
+          <input
+            class="input"
+            id="f-hasta"
+            type="date"
+            #campoHasta
+            [value]="draft().hasta ?? data.maxFecha"
+            [min]="draft().desde ?? data.minFecha"
+            [max]="data.maxFecha"
+            (change)="fijarHasta(campoHasta.value)"
+          />
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="field">
+    <label for="s-cta">Cuenta o crédito</label>
+    <select
+      class="input"
+      id="s-cta"
+      #campoCuenta
+      (change)="fijarCuentaOCredito(campoCuenta.value || null)"
+    >
+      <option value="">Todas</option>
+      @for (opcion of data.opcionesCuentaOCredito; track opcion.id) {
+        <option [value]="opcion.id" [selected]="draft().cuentaOCreditoId === opcion.id">
+          {{ opcion.etiqueta }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="s-cat">Categoría</label>
+    <select
+      class="input"
+      id="s-cat"
+      #campoCategoria
+      (change)="fijarCategoria(campoCategoria.value || null)"
+    >
+      <option value="">Todas</option>
+      @for (categoria of data.categorias; track categoria.id) {
+        <option [value]="categoria.id" [selected]="draft().categoriaId === categoria.id">
+          {{ categoria.nombre }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <label class="switch">
+    <input
+      type="checkbox"
+      [checked]="draft().mostrarInternos"
+      (change)="fijarInternos($any($event.target).checked)"
+    />
+    Mostrar movimientos internos
+  </label>
+</div>
+
+<div class="sheet-ft">
+  <button class="btn btn-outline" type="button" (click)="limpiar()">Limpiar</button>
+  <button class="btn btn-primary" type="button" (click)="aplicar()">Aplicar</button>
+</div>

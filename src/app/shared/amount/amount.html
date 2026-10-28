@@ -1,0 +1,7 @@
+@if (cargando()) {
+  <span class="skeleton amount__esqueleto" aria-hidden="true"></span>
+} @else if (oculto()) {
+  <span aria-label="Monto oculto">$ ••••••</span>
+} @else if (partes(); as p) {
+  {{ p.signo }}<span class="amount__moneda">$</span>{{ p.cifra }}
+}

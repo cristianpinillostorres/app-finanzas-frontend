@@ -1,0 +1,250 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">{{ modoEdicion ? 'Editar movimiento' : 'Nuevo movimiento' }}</h2>
+  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
+  <!-- Botones de alternar (aria-pressed) dentro de un grupo: no son
+       pestañas, no hay paneles que controlen. -->
+  <div class="tipo">
+    <div class="seg" role="group" aria-label="Tipo de movimiento">
+      <button type="button" [attr.aria-pressed]="tipo() === 'gasto'" (click)="cambiarTipo('gasto')">
+        Gasto
+      </button>
+      <button
+        type="button"
+        [attr.aria-pressed]="tipo() === 'ingreso'"
+        (click)="cambiarTipo('ingreso')"
+      >
+        Ingreso
+      </button>
+      <button
+        type="button"
+        [attr.aria-pressed]="tipo() === 'transferencia'"
+        (click)="cambiarTipo('transferencia')"
+      >
+        Transferencia
+      </button>
+    </div>
+    <p class="help" aria-live="polite">{{ textoAyuda() }}</p>
+  </div>
+
+  <div class="form-2">
+    <div class="field">
+      <label for="m-monto">Monto</label>
+      <div class="input-monto">
+        <span class="input-monto__signo" aria-hidden="true">$</span>
+        <input
+          class="input"
+          id="m-monto"
+          appMonto
+          placeholder="0"
+          formControlName="monto"
+          [attr.aria-invalid]="invalido(form.controls.monto) || !!errorMontoCupo() || null"
+          [attr.aria-describedby]="
+            invalido(form.controls.monto) || errorMontoCupo() ? 'm-monto-err' : null
+          "
+        />
+      </div>
+      @if (invalido(form.controls.monto)) {
+        <span class="err" id="m-monto-err">Escribe cuánto fue.</span>
+      } @else if (errorMontoCupo(); as error) {
+        <span class="err" id="m-monto-err">{{ error }}</span>
+      }
+    </div>
+    <div class="field">
+      <label for="m-fecha">Fecha</label>
+      <input class="input" id="m-fecha" type="date" formControlName="fecha" />
+    </div>
+  </div>
+
+  @if (tipo() === 'gasto') {
+    <div class="field">
+      <label for="m-cat">Categoría</label>
+      <select
+        class="input"
+        id="m-cat"
+        formControlName="categoriaId"
+        [attr.aria-invalid]="invalido(form.controls.categoriaId) || null"
+        [attr.aria-describedby]="invalido(form.controls.categoriaId) ? 'm-cat-err' : null"
+      >
+        <option [ngValue]="null" disabled>Elige una categoría</option>
+        @for (categoria of categoriasGasto(); track categoria.id) {
+          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+      @if (invalido(form.controls.categoriaId)) {
+        <span class="err" id="m-cat-err">Elige en qué gastaste.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="m-pagar">Pagar con</label>
+      <select
+        class="input"
+        id="m-pagar"
+        formControlName="pagarConId"
+        [attr.aria-invalid]="invalido(form.controls.pagarConId) || null"
+        [attr.aria-describedby]="invalido(form.controls.pagarConId) ? 'm-pagar-err' : null"
+      >
+        <option [ngValue]="null" disabled>Elige una cuenta, tarjeta o plataforma</option>
+        @for (grupo of gruposPagarCon(); track grupo.etiqueta) {
+          <optgroup [label]="grupo.etiqueta">
+            @for (opcion of grupo.opciones; track opcion.id) {
+              <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
+            }
+          </optgroup>
+        }
+      </select>
+      @if (invalido(form.controls.pagarConId)) {
+        <span class="err" id="m-pagar-err">Elige con qué pagas.</span>
+      }
+    </div>
+
+    @if (opcionPagarCon()?.tipo === 'credito') {
+      <div class="form-2">
+        <div class="field">
+          <label for="m-cuotas">Cuotas</label>
+          <select class="input" id="m-cuotas" formControlName="cuotas">
+            @for (n of opcionesCuotas; track n) {
+              <option [ngValue]="n">{{ n }}</option>
+            }
+          </select>
+        </div>
+        @if (esPlataforma()) {
+          <div class="field">
+            <label for="m-vcuota">Valor de cada cuota</label>
+            <div class="input-monto">
+              <span class="input-monto__signo" aria-hidden="true">$</span>
+              <input
+                class="input"
+                id="m-vcuota"
+                appMonto
+                placeholder="0"
+                formControlName="valorCuota"
+              />
+            </div>
+          </div>
+        } @else {
+          <!-- Calculada, no editable: un texto, no un campo que parece llenable. -->
+          <div class="field">
+            <span class="field__rotulo" id="m-vcuota-rotulo">Cuota aproximada</span>
+            <output class="valor-calculado" aria-labelledby="m-vcuota-rotulo">{{
+              cuotaAproximada() | monedaCop
+            }}</output>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (tipo() === 'ingreso') {
+    <div class="field">
+      <label for="m-cati">Categoría de ingreso</label>
+      <select
+        class="input"
+        id="m-cati"
+        formControlName="categoriaId"
+        [attr.aria-invalid]="invalido(form.controls.categoriaId) || null"
+        [attr.aria-describedby]="invalido(form.controls.categoriaId) ? 'm-cati-err' : null"
+      >
+        <option [ngValue]="null" disabled>Elige una categoría</option>
+        @for (categoria of categoriasIngreso(); track categoria.id) {
+          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+      @if (invalido(form.controls.categoriaId)) {
+        <span class="err" id="m-cati-err">Elige de dónde viene.</span>
+      }
+    </div>
+    <div class="field">
+      <label for="m-dest">Entra a</label>
+      <select
+        class="input"
+        id="m-dest"
+        formControlName="destinoId"
+        [attr.aria-invalid]="invalido(form.controls.destinoId) || null"
+        [attr.aria-describedby]="invalido(form.controls.destinoId) ? 'm-dest-err' : null"
+      >
+        <option [ngValue]="null" disabled>Elige una cuenta o bolsillo</option>
+        @for (opcion of opcionesCuentas(); track opcion.id) {
+          <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
+        }
+      </select>
+      @if (invalido(form.controls.destinoId)) {
+        <span class="err" id="m-dest-err">Elige dónde entra la plata.</span>
+      }
+    </div>
+  }
+
+  @if (tipo() === 'gasto' || tipo() === 'ingreso') {
+    <!-- Opcional y al final: si queda vacía se usa el nombre de la
+         categoría, así registrar un gasto no obliga a escribir nada. -->
+    <div class="field">
+      <label for="m-desc">Descripción <span class="opcional">(opcional)</span></label>
+      <input
+        class="input"
+        id="m-desc"
+        [placeholder]="placeholderDescripcion()"
+        formControlName="descripcion"
+      />
+    </div>
+  }
+
+  @if (tipo() === 'transferencia') {
+    <div class="form-2">
+      <div class="field">
+        <label for="m-desde">Desde</label>
+        <select
+          class="input"
+          id="m-desde"
+          formControlName="desdeId"
+          [attr.aria-invalid]="invalido(form.controls.desdeId) || null"
+        >
+          <option [ngValue]="null" disabled>Elige una cuenta</option>
+          @for (opcion of opcionesCuentas(); track opcion.id) {
+            <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="m-hacia">Hacia</label>
+        <select
+          class="input"
+          id="m-hacia"
+          formControlName="haciaId"
+          [attr.aria-invalid]="invalido(form.controls.haciaId) || null"
+        >
+          <option [ngValue]="null" disabled>Elige un destino</option>
+          @for (grupo of gruposHacia(); track grupo.etiqueta) {
+            <optgroup [label]="grupo.etiqueta">
+              @for (opcion of grupo.opciones; track opcion.id) {
+                <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
+              }
+            </optgroup>
+          }
+        </select>
+      </div>
+    </div>
+    @if (invalido(form.controls.desdeId) || invalido(form.controls.haciaId)) {
+      <span class="err">Elige de dónde sale y a dónde va.</span>
+    } @else if (errorOrigenDestino(); as error) {
+      <span class="err">{{ error }}</span>
+    } @else if (errorSaldoInsuficiente(); as error) {
+      <span class="err">{{ error }}</span>
+    }
+  }
+
+  <!-- Pie fijo: el botón queda a la vista aunque el formulario sea más alto
+       que la hoja (con el teclado del celular abierto, casi siempre). -->
+  <div class="pie">
+    <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+      @if (guardando()) {
+        <span class="spinner" aria-hidden="true"></span>
+      }
+      {{ modoEdicion ? 'Guardar cambios' : 'Registrar' }}
+    </button>
+  </div>
+</form>

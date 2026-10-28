@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+.vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5);
+  text-align: center;
+}
+
+.vacia__icono {
+  display: grid;
+  place-items: center;
+  width: var(--space-14);
+  height: var(--space-14);
+  border-radius: var(--radius-lg);
+  background: var(--accent-bg);
+  color: var(--accent);
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.vacia__titulo {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-extrabold);
+}
+
+.vacia__texto {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--text-secondary);
+}
+
+// Lo que se verá acá: alineado a la izquierda aunque el bloque vaya
+// centrado, para que las frases se lean como lista y no como poema.
+.vacia__puntos {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  text-align: left;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  mat-icon {
+    flex: none;
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+    color: var(--color-ingreso);
+  }
+}
+
+.vacia__accion {
+  margin-top: var(--space-3);
+}
+
+.vacia__accion:empty {
+  display: none;
+}

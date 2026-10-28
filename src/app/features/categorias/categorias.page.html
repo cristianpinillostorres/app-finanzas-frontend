@@ -1,0 +1,89 @@
+<div class="grid-12" [attr.aria-busy]="!listo() || null">
+  <app-page-head class="col-md-12" icono="sell" titulo="Categorías" [detalle]="detalle()">
+    <button class="btn btn-outline" type="button" (click)="nueva()">
+      <mat-icon aria-hidden="true">add</mat-icon>
+      Nueva categoría
+    </button>
+  </app-page-head>
+
+  @for (grupo of grupos(); track grupo.tipo) {
+    <section class="panel col-md-12 col-lg-6" [attr.aria-labelledby]="'cat-' + grupo.tipo">
+      <div class="panel-head">
+        <h2 [id]="'cat-' + grupo.tipo">{{ grupo.titulo }}</h2>
+        <button class="btn btn-text" type="button" (click)="nueva(grupo.tipo)">Agregar</button>
+      </div>
+
+      @if (!listo()) {
+        <app-skeleton-rows [filas]="5" />
+      } @else {
+        <ul class="rows lista">
+          @for (categoria of grupo.activas; track categoria.id) {
+            <li class="row row--estatica">
+              <span
+                class="ico"
+                [class.ico--gasto]="grupo.tipo === 'GASTO'"
+                [class.ico--ingreso]="grupo.tipo === 'INGRESO'"
+              >
+                <mat-icon aria-hidden="true">{{ categoria.icono }}</mat-icon>
+              </span>
+              <span class="row-main">
+                <span class="t-row">{{ categoria.nombre }}</span>
+                @if (categoria.topeMensual) {
+                  <span class="t-meta"
+                    >Tope: <app-amount [valor]="categoria.topeMensual" /> al mes</span
+                  >
+                } @else if (categoria.personalizada) {
+                  <span class="t-meta">Creada por ti</span>
+                }
+              </span>
+              <span class="acciones">
+                <button
+                  type="button"
+                  class="btn btn-icon"
+                  [attr.aria-label]="'Editar ' + categoria.nombre"
+                  title="Editar"
+                  (click)="editar(categoria)"
+                >
+                  <mat-icon aria-hidden="true">edit</mat-icon>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-icon"
+                  [attr.aria-label]="'Ocultar ' + categoria.nombre"
+                  title="Ocultar al registrar"
+                  (click)="alternarOculta(categoria)"
+                >
+                  <mat-icon aria-hidden="true">visibility_off</mat-icon>
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+
+        @if (grupo.ocultas.length > 0) {
+          <details class="ocultas">
+            <summary class="t-meta">
+              {{ grupo.ocultas.length }}
+              {{ grupo.ocultas.length === 1 ? 'oculta' : 'ocultas' }} — no aparecen al registrar
+            </summary>
+            <ul class="rows lista">
+              @for (categoria of grupo.ocultas; track categoria.id) {
+                <li class="row row--estatica fila-oculta">
+                  <span class="ico">
+                    <mat-icon aria-hidden="true">{{ categoria.icono }}</mat-icon>
+                  </span>
+                  <span class="row-main">
+                    <span class="t-row">{{ categoria.nombre }}</span>
+                  </span>
+                  <button class="btn btn-text" type="button" (click)="alternarOculta(categoria)">
+                    Mostrar
+                  </button>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      }
+    </section>
+  }
+</div>

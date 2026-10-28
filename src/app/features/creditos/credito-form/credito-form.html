@@ -1,0 +1,222 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">{{ modoEdicion ? 'Editar crédito' : 'Agregar crédito' }}</h2>
+  <button
+    mat-icon-button
+    type="button"
+    aria-label="Cerrar"
+    (click)="cerrar()"
+    [disabled]="guardando()"
+  >
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="field">
+    <label for="cr-grupo">Tipo *</label>
+    <select class="input" id="cr-grupo" formControlName="grupo">
+      @for (opcion of opcionesGrupo; track opcion.valor) {
+        <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
+      }
+    </select>
+    @if (modoEdicion) {
+      <p class="help">El tipo no se puede cambiar después de crear el crédito.</p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="cr-nombre">Nombre *</label>
+    <input
+      class="input"
+      id="cr-nombre"
+      placeholder="Ej.: Crédito de vivienda"
+      formControlName="nombre"
+    />
+    @if (invalido(form.controls.nombre)) {
+      <span class="err">Ponle un nombre para reconocerlo.</span>
+    }
+  </div>
+
+  <div class="form-2">
+    @if (pideEntidad()) {
+      <div class="field">
+        <label for="cr-entidad">Entidad</label>
+        <input
+          class="input"
+          id="cr-entidad"
+          placeholder="Nombre de la entidad"
+          formControlName="entidad"
+        />
+      </div>
+    }
+    <div class="field">
+      <label for="cr-dia-pago">Día límite de pago</label>
+      <input
+        class="input"
+        id="cr-dia-pago"
+        type="number"
+        inputmode="numeric"
+        min="1"
+        max="31"
+        formControlName="diaPago"
+      />
+    </div>
+  </div>
+
+  @if (esTarjeta()) {
+    <div class="form-2">
+      <div class="field">
+        <label for="cr-ultimos4">Últimos 4 dígitos</label>
+        <input
+          class="input"
+          id="cr-ultimos4"
+          placeholder="9021"
+          maxlength="4"
+          formControlName="ultimos4"
+        />
+      </div>
+      <div class="field">
+        <label for="cr-dia-corte">Día de corte</label>
+        <input
+          class="input"
+          id="cr-dia-corte"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          max="31"
+          formControlName="diaCorte"
+        />
+      </div>
+    </div>
+  }
+
+  @if (pideCupo()) {
+    <div class="field">
+      <label for="cr-cupo">Cupo *</label>
+      <input
+        class="input"
+        id="cr-cupo"
+        type="number"
+        inputmode="numeric"
+        placeholder="0"
+        formControlName="cupo"
+      />
+      @if (invalido(form.controls.cupo)) {
+        <span class="err">Escribe el cupo total de la tarjeta.</span>
+      }
+    </div>
+  }
+
+  @if (esBanco()) {
+    <div class="form-2">
+      <div class="field">
+        <label for="cr-monto-banco">Monto prestado *</label>
+        <input
+          class="input"
+          id="cr-monto-banco"
+          type="number"
+          inputmode="numeric"
+          placeholder="0"
+          formControlName="monto"
+        />
+        @if (invalido(form.controls.monto)) {
+          <span class="err">Escribe cuánto te prestaron.</span>
+        }
+      </div>
+      <div class="field">
+        <label for="cr-plazo">Plazo (meses) *</label>
+        <input
+          class="input"
+          id="cr-plazo"
+          type="number"
+          inputmode="numeric"
+          formControlName="plazoMeses"
+        />
+      </div>
+    </div>
+
+    <div class="form-2">
+      <div class="field">
+        <label for="cr-tasa">Tasa efectiva anual, E.A. (%)</label>
+        <input
+          class="input"
+          id="cr-tasa"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
+          placeholder="21,50"
+          formControlName="tasaEaPorcentaje"
+          aria-describedby="cr-tasa-ayuda"
+        />
+        @if (invalido(form.controls.tasaEaPorcentaje)) {
+          <span class="err">Escribe la tasa del crédito.</span>
+        } @else {
+          <span class="help-campo" id="cr-tasa-ayuda"
+            >Sale en tu extracto o en el contrato, como "E.A." o "efectiva anual".</span
+          >
+        }
+      </div>
+      <div class="field">
+        <label for="cr-tipo-tasa">Tipo de tasa</label>
+        <select class="input" id="cr-tipo-tasa" formControlName="tipoTasa">
+          @for (opcion of opcionesTipoTasa; track opcion.valor) {
+            <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-2">
+      <div class="field">
+        <label for="cr-cuotas-iniciales">Cuotas ya pagadas</label>
+        <input
+          class="input"
+          id="cr-cuotas-iniciales"
+          type="number"
+          inputmode="numeric"
+          formControlName="cuotasPagadasIniciales"
+        />
+      </div>
+      <div class="field">
+        <label for="cr-seguro">Seguro mensual</label>
+        <input
+          class="input"
+          id="cr-seguro"
+          type="number"
+          inputmode="numeric"
+          placeholder="0"
+          formControlName="seguroMensual"
+        />
+      </div>
+    </div>
+  }
+
+  @if (esPersona()) {
+    <div class="form-2">
+      <div class="field">
+        <label for="cr-monto-persona">Monto acordado *</label>
+        <input
+          class="input"
+          id="cr-monto-persona"
+          type="number"
+          inputmode="numeric"
+          placeholder="0"
+          formControlName="monto"
+        />
+        @if (invalido(form.controls.monto)) {
+          <span class="err">Escribe cuánto le debes.</span>
+        }
+      </div>
+      <div class="field">
+        <label for="cr-fecha-acordada">Fecha acordada</label>
+        <input class="input" id="cr-fecha-acordada" type="date" formControlName="fechaAcordada" />
+      </div>
+    </div>
+  }
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    {{ modoEdicion ? 'Guardar cambios' : 'Crear crédito' }}
+  </button>
+</form>
+
+<app-guardando-overlay [visible]="guardando()" />

@@ -1,0 +1,11 @@
+<div class="stat-card" [class]="'stat-card--' + tono()">
+  <span class="t-meta">
+    @if (icono()) {
+      <mat-icon aria-hidden="true">{{ icono() }}</mat-icon>
+    }
+    {{ etiqueta() }}
+  </span>
+  <span class="t-kpi amt" [class]="claseMonto()">
+    <app-amount [valor]="valor()" [animar]="true" [cargando]="cargando()" />
+  </span>
+</div>

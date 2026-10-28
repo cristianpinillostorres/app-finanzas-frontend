@@ -1,0 +1,40 @@
+<!-- La pista es un resumen visual de la lista que la acompaña: para un
+     lector de pantalla basta el resumen en texto de abajo. -->
+<div class="franja" aria-hidden="true">
+  <div class="franja__pista">
+    @if (posicionHoy(); as hoy) {
+      <span class="franja__transcurrido" [style.--pos]="hoy"></span>
+    }
+    @for (dia of linea().dias; track dia.fecha.getTime()) {
+      <span
+        class="franja__marca"
+        [class]="'franja__marca--' + dia.tramo"
+        [class.franja__marca--varios]="cantidad(dia) > 1"
+        [style.--pos]="posicion(dia.fecha)"
+        >{{ cantidad(dia) > 1 ? cantidad(dia) : '' }}</span
+      >
+    }
+    @if (posicionHoy(); as hoy) {
+      <span class="franja__hoy" [style.--pos]="hoy"><span>Hoy</span></span>
+    }
+  </div>
+  <div class="franja__ejes">
+    <span>{{ etiquetaInicio() }}</span>
+    <span>{{ etiquetaFin() }}</span>
+  </div>
+</div>
+
+@if (resumen().length > 0) {
+  <p class="franja__resumen">
+    @for (parte of resumen(); track parte.tramo) {
+      <span class="franja__parte">
+        <span
+          class="franja__punto"
+          [class]="'franja__marca--' + parte.tramo"
+          aria-hidden="true"
+        ></span>
+        {{ parte.texto }}
+      </span>
+    }
+  </p>
+}

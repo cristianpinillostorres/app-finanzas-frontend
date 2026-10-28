@@ -1,0 +1,18 @@
+// El host ES el elemento del grid, no `display: contents`: la página le
+// pone su clase de columna (`col-md-12`) encima, y con `contents` el host
+// queda fuera del grid — la clase no aplica y el `.page-head` de adentro
+// cae como ítem suelto en la primera columna. Es el mismo motivo por el que
+// `StatCard` tampoco usa `contents`.
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// Solo escritorio. En móvil el header ya muestra el nombre de la pantalla y
+// su acción, así que repetirlos acá costaba una franja de alto que en 360px
+// se nota de inmediato — y con el título dos veces en la misma vista.
+@media (max-width: 767.98px) {
+  :host {
+    display: none;
+  }
+}

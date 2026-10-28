@@ -1,0 +1,293 @@
+<!-- La bienvenida ocupa toda la pantalla: sin menú, cabezote ni "+".
+     Tiene su propio marco, el mismo del login. -->
+@if (pantallaCompleta()) {
+  <router-outlet />
+} @else {
+  @if (!viewport.esMovil()) {
+    <!--
+    El esquema de Mi Semana: la marca en Anton arriba a la izquierda, las
+    acciones a la derecha, y debajo una barra lateral flotante con las
+    secciones y la cuenta junto al contenido. Es la misma navegación de
+    antes (los mismos cinco enlaces); solo cambia dónde se dibuja.
+  -->
+    <header class="cabezote">
+      <div class="cabezote__inner">
+        <span class="marca">Finanzas</span>
+
+        <!-- Quién tiene la sesión abierta, junto a la marca. El correo largo se
+           corta con elipsis y el `title` lo muestra completo. -->
+        @if (correoUsuario(); as correo) {
+          <div class="usuario" [title]="correo">
+            <span class="avatar__inicial" aria-hidden="true">{{ inicialUsuario() }}</span>
+            <span class="usuario__datos">
+              <span class="usuario__correo">{{ correo }}</span>
+              <span class="t-meta">Cuenta personal</span>
+            </span>
+          </div>
+        }
+
+        <span class="spacer"></span>
+
+        <button
+          mat-icon-button
+          type="button"
+          class="cabezote__icono"
+          [attr.aria-label]="tituloOjo()"
+          [title]="tituloOjo()"
+          (click)="montos.alternar()"
+        >
+          <mat-icon aria-hidden="true">{{
+            montos.oculto() ? 'visibility_off' : 'visibility'
+          }}</mat-icon>
+        </button>
+
+        <!-- El `theme-btn` de Mi Semana: la luna con el tema claro, el sol con
+           el oscuro — el ícono es a dónde lleva, no dónde estás. -->
+        <button
+          mat-icon-button
+          type="button"
+          class="cabezote__icono"
+          [attr.aria-label]="tituloTema()"
+          [title]="tituloTema()"
+          (click)="tema.alternar()"
+        >
+          <mat-icon aria-hidden="true">{{ tema.oscuro() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+
+        <button
+          mat-flat-button
+          type="button"
+          class="boton-nuevo"
+          [class.boton-nuevo--bloqueado]="bienvenida.faltaCuenta()"
+          [matTooltip]="bienvenida.faltaCuenta() ? bienvenida.motivoBloqueo : ''"
+          aria-label="Nuevo movimiento"
+          (click)="abrirNuevoMovimiento()"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>
+          <span class="boton-nuevo__texto">Nuevo movimiento</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="cuerpo">
+      <aside class="lateral">
+        <span class="lateral__titulo" aria-hidden="true">Secciones</span>
+        <!--
+        Cada ítem lleva el mismo ícono que la barra inferior de móvil, así
+        que la app se lee igual en los dos tamaños. Entre 768 y 1023px la
+        barra se queda en íconos: el nombre sigue anunciándose por
+        `aria-label` y aparece como `title` al pasar por encima.
+      -->
+        <nav class="nav" aria-label="Secciones">
+          @for (item of navItems; track item.path) {
+            <a
+              class="nav__item"
+              [class.nav__item--bloqueado]="bienvenida.seccionBloqueada(item.path)"
+              [attr.aria-disabled]="bienvenida.seccionBloqueada(item.path) || null"
+              [routerLink]="bienvenida.seccionBloqueada(item.path) ? null : ['/', item.path]"
+              (click)="alTocarSeccion(item.path)"
+              routerLinkActive="nav__item--activo"
+              #activo="routerLinkActive"
+              [attr.aria-current]="activo.isActive ? 'page' : null"
+              [attr.aria-label]="item.label"
+              [title]="bienvenida.seccionBloqueada(item.path) ? '' : item.label"
+              [matTooltip]="bienvenida.seccionBloqueada(item.path) ? bienvenida.motivoBloqueo : ''"
+              matTooltipPosition="right"
+            >
+              <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+              <span class="nav__texto">{{ item.label }}</span>
+            </a>
+          }
+        </nav>
+
+        <!-- Las acciones de la cuenta, al final de la barra como el bloque de
+           "Administrar" de Mi Semana (el correo va en el cabezote). -->
+        <hr class="lateral__divisor" />
+        <span class="lateral__titulo" aria-hidden="true">Cuenta</span>
+        <div class="cuenta" role="group" aria-label="Cuenta">
+          <a
+            class="nav__item"
+            routerLink="/categorias"
+            routerLinkActive="nav__item--activo"
+            #activoCategorias="routerLinkActive"
+            [attr.aria-current]="activoCategorias.isActive ? 'page' : null"
+            aria-label="Categorías"
+            title="Categorías"
+          >
+            <mat-icon aria-hidden="true">sell</mat-icon>
+            <span class="nav__texto">Categorías</span>
+          </a>
+          @if (!tieneGoogle()) {
+            <button
+              type="button"
+              class="nav__item"
+              aria-label="Vincular con Google"
+              title="Vincular con Google"
+              [disabled]="vinculando()"
+              (click)="vincularGoogle()"
+            >
+              <mat-icon aria-hidden="true">link</mat-icon>
+              <span class="nav__texto">Vincular con Google</span>
+            </button>
+          }
+        </div>
+
+        <!-- Solo "Cerrar sesión" va al fondo de la barra: queda siempre en el
+           mismo sitio, lejos de las secciones. -->
+        <button
+          type="button"
+          class="nav__item lateral__salir"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          (click)="cerrarSesion()"
+        >
+          <mat-icon aria-hidden="true">logout</mat-icon>
+          <span class="nav__texto">Cerrar sesión</span>
+        </button>
+      </aside>
+
+      <main class="contenido">
+        <app-guia-paso />
+        <router-outlet />
+      </main>
+    </div>
+  } @else {
+    @if (headerSearch.abierta()) {
+      <header class="topbar topbar--movil topbar--busqueda">
+        <mat-icon aria-hidden="true">search</mat-icon>
+        <input
+          #campoBusqueda
+          class="campo-busqueda"
+          type="text"
+          [placeholder]="headerSearch.placeholder() ?? ''"
+          [value]="headerSearch.termino()"
+          (input)="headerSearch.escribir($any($event.target).value)"
+        />
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Cerrar búsqueda"
+          (click)="headerSearch.cerrar()"
+        >
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </header>
+    } @else {
+      <header class="topbar topbar--movil">
+        <!--
+        Marca como ícono + nombre de la pantalla. `app-page-head` no se
+        dibuja en móvil (ver su `.scss`): repetir ahí el título y las
+        acciones costaba una franja de alto que en 360px se nota, y el
+        header ya las tenía.
+      -->
+        <span class="brand__marca" aria-hidden="true">
+          <mat-icon>savings</mat-icon>
+        </span>
+        <!-- h1 en móvil: `app-page-head`, que lleva el h1 de la pantalla, no se
+           dibuja bajo 768px, y sin esto la página no tenía título principal. -->
+        <h1 class="screen-title">{{ tituloPantalla() }}</h1>
+        <span class="spacer"></span>
+        @if (accionPantalla(); as accion) {
+          <button
+            mat-icon-button
+            type="button"
+            [attr.aria-label]="accion.etiqueta"
+            (click)="accion.accion()"
+          >
+            <mat-icon aria-hidden="true">{{ accion.icono }}</mat-icon>
+          </button>
+        }
+        <button
+          mat-icon-button
+          type="button"
+          [attr.aria-label]="tituloOjo()"
+          (click)="montos.alternar()"
+        >
+          <mat-icon aria-hidden="true">{{
+            montos.oculto() ? 'visibility_off' : 'visibility'
+          }}</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Más opciones"
+          [matMenuTriggerFor]="menuMovil"
+        >
+          <mat-icon aria-hidden="true">more_vert</mat-icon>
+        </button>
+        <mat-menu #menuMovil="matMenu" class="menu-cuenta">
+          <!-- En el teléfono no hay barra lateral ni sitio para otro ícono en
+             el header: tema y cuenta van acá, como en el cajón de Mi Semana.
+             Segmentado en vez de un ítem que alterna: con "Modo oscuro" como
+             acción no se sabía cuál está activo sin leerlo al revés. -->
+          <div class="menu-cuenta__tema">
+            <span class="t-sec">Tema</span>
+            <span class="seg seg--compacto">
+              <button type="button" [attr.aria-pressed]="!tema.oscuro()" (click)="fijarTema(false)">
+                Claro
+              </button>
+              <button type="button" [attr.aria-pressed]="tema.oscuro()" (click)="fijarTema(true)">
+                Oscuro
+              </button>
+            </span>
+          </div>
+          <a mat-menu-item routerLink="/categorias">
+            <mat-icon aria-hidden="true">sell</mat-icon>
+            <span>Categorías</span>
+          </a>
+          <ng-container *ngTemplateOutlet="vincular" />
+          <button mat-menu-item type="button" class="menu-cuenta__salir" (click)="cerrarSesion()">
+            <mat-icon aria-hidden="true">logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </mat-menu>
+      </header>
+    }
+
+    <main class="contenido contenido--movil">
+      <app-guia-paso />
+      <router-outlet />
+    </main>
+
+    <button
+      mat-fab
+      type="button"
+      class="fab-nuevo"
+      aria-label="Nuevo movimiento"
+      (click)="abrirNuevoMovimiento()"
+    >
+      <mat-icon aria-hidden="true">add</mat-icon>
+    </button>
+
+    <nav class="barra-inferior" aria-label="Navegación principal">
+      @for (item of navItems; track item.path) {
+        <a
+          [class.bloqueado]="bienvenida.seccionBloqueada(item.path)"
+          [matTooltip]="bienvenida.seccionBloqueada(item.path) ? bienvenida.motivoBloqueo : ''"
+          matTooltipPosition="above"
+          [attr.aria-disabled]="bienvenida.seccionBloqueada(item.path) || null"
+          [routerLink]="bienvenida.seccionBloqueada(item.path) ? null : ['/', item.path]"
+          (click)="alTocarSeccion(item.path)"
+          routerLinkActive="activo"
+          #activoMovil="routerLinkActive"
+          [attr.aria-current]="activoMovil.isActive ? 'page' : null"
+        >
+          <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  }
+}
+
+<!-- Para las cuentas de correo y contraseña (creadas a mano antes del
+     registro con Google): une Google al mismo usuario, con los mismos
+     datos. Con Google ya vinculado no hay nada que hacer y no se muestra. -->
+<ng-template #vincular>
+  @if (!tieneGoogle()) {
+    <button mat-menu-item type="button" [disabled]="vinculando()" (click)="vincularGoogle()">
+      <mat-icon aria-hidden="true">link</mat-icon>
+      <span>Vincular con Google</span>
+    </button>
+  }
+</ng-template>

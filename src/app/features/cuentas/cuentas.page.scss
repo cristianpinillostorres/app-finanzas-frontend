@@ -1,0 +1,60 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// Las cuentas de un grupo dentro de su `.panel`. Cada cuenta va separada de
+// la siguiente por una raya: con solo 8px de aire entre ellas, una cuenta
+// abierta se pegaba a la de abajo y no se sabía dónde terminaba cada una.
+.cuentas-lista {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-4);
+}
+
+.cuenta {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--space-2);
+}
+
+.cuenta + .cuenta {
+  border-top: 1px solid var(--border);
+}
+
+.cuenta--abierta {
+  padding-bottom: var(--space-4);
+}
+
+// La fila de cuenta es también el botón que abre/cierra el detalle. Se sale
+// 8px por cada lado para que el fondo al pasar por encima (y el aro de foco)
+// rodee el ícono con aire en vez de cortarlo al ras, sin mover el contenido
+// de su columna.
+.fila-cuenta {
+  width: calc(100% + 2 * var(--space-2));
+  min-height: var(--tap-min);
+  margin-inline: calc(-1 * var(--space-2));
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    border-radius: var(--radius-md);
+  }
+}
+
+// El desglose (`.caja-detalle`) y las acciones (`.acciones-fila`) son los
+// mismos de Créditos: ver `_componentes.scss`.
+.cuenta__detalle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+// El tope de 680px que había acá era la causa del desalineado reportado: la
+// lista quedaba en la mitad izquierda mientras el encabezado con "Agregar
+// cuenta" usaba los 1200px completos. Ahora el ancho lo decide el grid de
+// 12 columnas de la página (ver `cuentas.page.html`), que aplica por igual
+// al encabezado y a los grupos.

@@ -1,0 +1,33 @@
+<div class="tendencia">
+  <!--
+    Leyenda y etiqueta directa en una: nombra cada serie y muestra su
+    acumulado final. Así la identidad no depende solo del color y el valor
+    exacto se puede leer sin pasar el mouse (que en móvil no existe).
+  -->
+  <ul class="tendencia__leyenda">
+    <li>
+      <span class="tendencia__punto" [style.background]="colorIngreso()" aria-hidden="true"></span>
+      <span class="t-meta">Ingresos</span>
+      <span class="t-row amt mon-in"><app-amount [valor]="totalIngresos()" /></span>
+    </li>
+    <li>
+      <span class="tendencia__punto" [style.background]="colorGasto()" aria-hidden="true"></span>
+      <span class="t-meta">Gastos</span>
+      <span class="t-row amt mon-out"><app-amount [valor]="totalGastos()" /></span>
+    </li>
+  </ul>
+
+  <apx-chart
+    [series]="series()"
+    [colors]="colores()"
+    [chart]="chart()"
+    [stroke]="stroke()"
+    [markers]="markers()"
+    [grid]="grid()"
+    [xaxis]="xaxis()"
+    [yaxis]="yaxis()"
+    [tooltip]="tooltip()"
+    [dataLabels]="{ enabled: false }"
+    [legend]="{ show: false }"
+  />
+</div>

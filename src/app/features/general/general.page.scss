@@ -1,0 +1,87 @@
+// La pantalla arma su layout con `.grid-12` en la plantilla; acá solo lo
+// que es propio de General.
+
+// La fila de "Cuotas que faltan" apila nombre y barra en vez de alinearlos
+// en una línea, así que rompe el `display: flex` horizontal de `.row`.
+.fila-cuotas {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+}
+
+// Etiqueta, monto y frase van juntos arriba; en escritorio el desglose
+// queda anclado abajo (ver `.hero--libre`), sin una frase flotando en medio.
+.hero__cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+// La frase que explica de dónde sale el libre: secundaria, a la medida de
+// una línea de lectura.
+.hero__explica {
+  margin: 0;
+  max-width: 48ch;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+// La franja del mes va arriba de la lista, con el aire del panel y una
+// línea que la separa de las filas.
+.panel-franja {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+// En escritorio el héroe comparte fila con "Pagos del mes", que es más
+// alto: estirarlo y repartir su contenido evita el escalón bajo la tarjeta.
+// El desglose queda anclado abajo, alineado con el final del panel vecino.
+@media (min-width: 1024px) {
+  .hero--libre {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}
+
+// El orden del DOM es el de móvil: héroe, resumen, próximos pagos, y luego
+// las dos columnas. Es el orden que se lee de verdad en una sola columna, y
+// el que siguen los lectores de pantalla.
+//
+// En escritorio "Próximos pagos" tiene que volver a la primera fila, junto
+// al héroe: es lo que explica de qué se compone ese "falta por pagar". Se
+// recoloca con `order` en vez de reescribir el DOM porque el orden solo
+// puede coincidir con uno de los dos tamaños, y móvil es donde más pesa.
+@media (min-width: 1024px) {
+  .kpis {
+    order: 1;
+  }
+
+  .col-apilada,
+  .panel-categorias {
+    order: 2;
+  }
+}
+
+// Presupuesto: nombre y "gastado de tope" arriba, barra y lo que queda
+// abajo. El color de la barra es el semáforo (ver `presupuestosDelMes`).
+.fila-presupuesto {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+
+  .hd {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+}
+
+.bar--cerca > i {
+  background: var(--color-deuda);
+}
+
+.bar--pasado > i {
+  background: var(--color-gasto);
+}

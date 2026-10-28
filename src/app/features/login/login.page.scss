@@ -1,0 +1,381 @@
+:host {
+  display: block;
+}
+
+.login {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--bg-page);
+}
+
+// ───────────────────────────── panel de marca ─────────────────────────────
+
+.marca-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: calc(var(--space-4) + env(safe-area-inset-top)) var(--space-5) var(--space-4);
+  background: var(--bg-marca);
+  background: var(--bg-marca-degradado);
+  color: var(--text-on-marca);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--marca-textura);
+    opacity: 0.2;
+    // El encabezado del móvil es bajo: a `auto 100%` la textura quedaba
+    // diminuta. Se agranda y se recorta para que se siga leyendo el billete.
+    -webkit-mask: url('/textura-billete.svg') right -40px center / auto 420% no-repeat;
+    mask: url('/textura-billete.svg') right -40px center / auto 420% no-repeat;
+    pointer-events: none;
+  }
+}
+
+.marca-panel__nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.marca-panel__sello {
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--marca-textura) 40%, transparent);
+  color: var(--marca-textura);
+
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+
+.marca-panel__cuerpo {
+  display: none;
+}
+
+.marca-panel__lema {
+  // En el móvil el panel de marca es solo el encabezado: el lema grande
+  // se come la pantalla antes de llegar al formulario.
+  display: none;
+  margin: 0;
+  max-width: 100%;
+  // La tipografía de marca (la de los títulos), no la del texto.
+  font-family: var(--font-display);
+  font-size: clamp(40px, 15vw, 64px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  white-space: pre-line;
+}
+
+.marca-panel__lista {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-direction: column;
+  gap: var(--space-4);
+  color: var(--text-on-marca-secundario);
+  font-size: var(--text-md);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  mat-icon {
+    color: var(--marca-textura);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ───────────────────────────────── acceso ─────────────────────────────────
+
+/* Dejamos el fondo liso */
+.acceso {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) var(--space-5) calc(var(--space-8) + env(safe-area-inset-bottom));
+  background: var(--bg-page);
+}
+
+/* 1. Actualiza tu contenedor principal para agregar el borde superior */
+.acceso__contenido {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+
+  /* Una línea gruesa del color principal de la app (el teal de la casa) */
+  border-top: 6px solid var(--accent-solid);
+}
+
+/* 2. Actualiza la cabecera */
+.acceso__cabecera {
+  margin-bottom: 2rem;
+}
+
+.acceso__titulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+  text-transform: uppercase;
+
+  // Negro y el final en verde, igual que el título de la bienvenida.
+  .acento {
+    color: var(--accent);
+  }
+}
+
+/* Aumento de espaciado general entre formulario, separador y botón Google */
+.acceso__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* Aumento de espaciado interno del formulario */
+.acceso__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Nuevo: Clase para organizar etiqueta e input con espacio coherente */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.acceso__boton {
+  min-height: 48px;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  margin-top: 0.5rem; /* Separación extra antes del botón */
+  /* El login conserva sus formas: el resto de la app usa botones en
+     píldora con halo (ver `styles/componentes`), acá solo cambia el color. */
+  border-radius: var(--radius-control);
+  box-shadow: none;
+}
+
+.acceso .input {
+  border-radius: var(--radius-control);
+}
+
+.acceso__logo {
+  width: var(--text-lg);
+  height: var(--text-lg);
+  flex: none;
+}
+
+.acceso__separador {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+}
+
+.acceso__google-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Estilos organizados para los mensajes de error */
+.campo-error {
+  font-size: var(--text-sm);
+  color: var(--color-gasto);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-gasto);
+}
+
+.err {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background-color: var(--color-gasto-bg); /* Rojo muy claro */
+  color: var(--color-gasto); /* Texto rojo oscuro */
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-gasto) 35%, transparent);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-top: -0.5rem; /* Acerca el error un poco al botón que lo generó */
+
+  .err-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex: none;
+  }
+}
+
+.acceso__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 2.5rem 0 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+
+  mat-icon {
+    flex: none;
+    font-size: var(--text-base);
+    width: var(--text-base);
+    height: var(--text-base);
+    margin-top: 1px;
+  }
+}
+
+// ──────────────────────────── pantallas anchas ────────────────────────────
+
+@media (min-width: 960px) {
+  .login {
+    grid-template-rows: none;
+    /* Cambio: 60% para el panel izquierdo, 40% para el derecho */
+    grid-template-columns: 55% 45%;
+  }
+
+  .marca-panel {
+    justify-content: space-between;
+    padding: var(--space-10) var(--space-12);
+
+    &::before {
+      opacity: 0.3;
+      -webkit-mask-position: right bottom;
+      mask-position: right bottom;
+      -webkit-mask-size: auto 36%;
+      mask-size: auto 36%;
+    }
+  }
+
+  .marca-panel__cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-bottom: 30vh;
+  }
+
+  .marca-panel__lista {
+    display: flex;
+  }
+
+  .acceso {
+    align-items: center;
+    padding: var(--space-10);
+  }
+
+  .marca-panel__lema {
+    display: block;
+  }
+
+  .acceso__titulo {
+    font-size: 40px;
+  }
+
+  .acceso__contenido {
+    width: 100%;
+    max-width: 520px;
+    background: var(--bg-surface);
+    padding: 2.5rem;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    /* Sombra amplia y muy suave, estilo Apple/Stripe */
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.05),
+      0 0 10px rgba(0, 0, 0, 0.01);
+  }
+
+  // ──────────────────────────── Animación Máquina ────────────────────────────
+  .cursor {
+    display: inline-block;
+    width: 4px; /* Grosor del cursor */
+    height: 0.9em;
+    background-color: currentColor;
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: parpadeo 0.8s step-end infinite;
+    border-radius: 2px;
+  }
+
+  @keyframes parpadeo {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+// Bajo "¿No tienes cuenta?": el margen negativo de `.err` (pensado para
+// pegarse al botón que lo generó) acá lo montaba encima del texto.
+.err--registro {
+  margin-top: var(--space-3);
+}
+
+.acceso__registro {
+  margin: var(--space-6) 0 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.acceso__enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,489 @@
+// Layout del shell: en escritorio, cabezote + barra lateral + contenido
+// (el esquema de Mi Semana); en móvil, header, barra inferior y FAB.
+// Solo tokens semánticos, nada de hex ni px sueltos — ver `styles/tokens`.
+
+// ─────────────────────────── cabezote (escritorio) ───────────────────────────
+
+// Sobre el color de la página y sin borde, como el header de Mi Semana.
+// Sigue pegado arriba al hacer scroll: el fondo translúcido con desenfoque
+// deja que el contenido se insinúe detrás en vez de cortarse en seco. El
+// `background` sólido va primero como respaldo para navegadores sin
+// `color-mix` — con él, la barra simplemente queda opaca.
+.cabezote {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--bg-page);
+  background: color-mix(in srgb, var(--bg-page) 86%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+// Mismo ancho máximo y gutter que el cuerpo de abajo: sin esto, en 1920px
+// la marca queda contra el borde de la ventana y la barra lateral no.
+.cabezote__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: var(--layout-max);
+  min-height: var(--altura-cabezote);
+  margin: 0 auto;
+  padding: var(--space-3) var(--layout-gutter);
+}
+
+// La marca de la casa: Anton en mayúsculas, como "MI_SEMANA". Ocupa el
+// ancho de la barra lateral para que lo que viene después (el usuario)
+// arranque en la misma columna que las cards del contenido.
+.marca {
+  flex: none;
+  width: var(--ancho-lateral);
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+// Botones redondos con borde (el ojo de los montos y el tema): el
+// `theme-btn` de Mi Semana. Material los dibuja sin borde ni fondo.
+.cabezote__icono {
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  transition: border-color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--accent-brillo);
+  }
+}
+
+// ─────────────────────── cuerpo: barra lateral + contenido ───────────────────────
+
+.cuerpo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: 0 var(--layout-gutter) var(--space-8);
+}
+
+// Panel flotante de 28px con sombra larga, pegado bajo el cabezote al
+// hacer scroll: la `.sidebar` de Mi Semana. Con la cuenta al final ya no
+// cabe entera en una ventana baja (un portátil con la barra del navegador
+// abierta): ahí se desplaza sola en vez de cortar "Cerrar sesión".
+// Siempre mide lo mismo (el alto de la ventana, no el de su contenido) y la
+// cuenta queda anclada al fondo, así no cambia de tamaño entre pantallas.
+.lateral {
+  position: sticky;
+  top: calc(var(--altura-cabezote) + var(--space-1));
+  flex: none;
+  width: var(--ancho-lateral);
+  // Arranca 4px bajo el cabezote y abajo le sigue el relleno de `.cuerpo`
+  // (space-8): restando los dos cabe justo en la ventana, sin scroll.
+  height: calc(100dvh - var(--altura-cabezote) - var(--space-1) - var(--space-8));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.lateral__titulo {
+  margin: var(--space-1) var(--space-2) 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps-ancho);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// El `.divider` de Mi Semana entre grupos de la barra.
+// El margen automático empuja "Cerrar sesión" al fondo de la barra.
+.lateral__salir {
+  margin-top: auto;
+}
+
+.lateral__divisor {
+  width: 100%;
+  margin: var(--space-2) 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-page);
+  background: color-mix(in srgb, var(--bg-page) 86%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.topbar--movil {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  // `max()`: al menos el espacio normal del token, y más si el notch/isla
+  // dinámica del celular pide más (necesita `viewport-fit=cover` en
+  // `index.html`, si no `env()` siempre vale 0).
+  padding-top: max(var(--space-2), env(safe-area-inset-top, 0px));
+}
+
+.topbar--busqueda {
+  color: var(--text-secondary);
+}
+
+.campo-busqueda {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-min);
+  border: none;
+  background: none;
+  font: inherit;
+  // 16px: por debajo de eso Safari en iOS hace zoom automático al enfocar.
+  font-size: var(--text-md);
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+// Cuadrito de marca del header móvil: el teal de la casa con el ícono en
+// claro, el mismo sello que encabeza cada pantalla en escritorio.
+.brand__marca {
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  flex: none;
+  border-radius: var(--radius-control);
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+
+// ── navegación de la barra lateral ──
+// La sección activa va rellena de teal: la `.side-btn.active` de Mi Semana.
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+// También lo usan los botones de la cuenta: de ahí el reseteo de borde,
+// fondo y fuente que un `<a>` no necesita.
+.nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    background: var(--bg-subtle);
+    text-decoration: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+    flex: none;
+  }
+}
+
+.nav__item--activo {
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+
+  &:hover {
+    background: var(--accent-solid);
+  }
+}
+
+// ── cuenta (al final de la barra lateral) ──
+.cuenta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+// ── usuario (junto a la marca, en el cabezote) ──
+// Alineado con el borde izquierdo de las cards: el `gap` del cabezote más
+// este margen suman el `gap` de `.cuerpo`. Cede ancho antes que los
+// botones de la derecha.
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  margin-left: calc(var(--space-4) - var(--space-2));
+}
+
+.usuario__datos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.usuario__correo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.avatar__inicial {
+  display: grid;
+  place-items: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+// Fila de tema del menú "⋮" del móvil. El `mat-menu` se dibuja en el
+// overlay, pero su contenido está declarado en esta plantilla y por eso
+// estos estilos encapsulados lo alcanzan.
+.menu-cuenta__tema {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+// La acción principal, con el halo teal (`#newBtn` de Mi Semana).
+.boton-nuevo {
+  flex-shrink: 0;
+  height: var(--tap-min);
+  margin-left: var(--space-2);
+  padding-inline: var(--space-4);
+  box-shadow: var(--glow-md);
+}
+
+// ───────────────────────────── contenido ─────────────────────────────
+
+.contenido {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.contenido--movil {
+  padding: var(--space-4) var(--space-4);
+  // Deja pasar la barra inferior, el área segura del gesto de inicio, y el
+  // FAB que flota encima — si no, la última fila de cualquier lista queda
+  // tapada y no hay forma de llegar a ella.
+  padding-bottom: calc(
+    var(--altura-barra-inferior) + env(safe-area-inset-bottom, 0px) + var(--altura-fab) +
+      var(--space-6)
+  );
+}
+
+// ─────────────────────────────── FAB ───────────────────────────────
+
+.fab-nuevo {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--altura-barra-inferior) + env(safe-area-inset-bottom, 0px) + var(--space-4));
+  z-index: var(--z-fab);
+  box-shadow: var(--shadow-md), var(--glow-md);
+}
+
+// ─────────────────────── barra inferior (móvil) ───────────────────────
+
+.barra-inferior {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--altura-barra-inferior) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  backdrop-filter: blur(12px);
+
+  a {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: var(--tap-min);
+    text-decoration: none;
+    color: var(--text-muted);
+    // 11px porque "Movimientos" y "Pagos fijos" tienen que caber enteros en
+    // un quinto de 360px sin cortarse.
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--text-secondary);
+    }
+
+    // Etiqueta con espacio para respirar aunque el nombre sea largo.
+    span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-inline: 2px;
+    }
+
+    mat-icon {
+      font-size: var(--space-6);
+      width: var(--space-6);
+      height: var(--space-6);
+    }
+
+    &.activo {
+      color: var(--accent);
+      font-weight: var(--weight-bold);
+
+      // Pastilla teal rellena detrás del ícono de la sección activa (lo
+      // seleccionado en Mi Semana va así): el color solo no alcanza para
+      // marcar dónde estás de un vistazo, sobre todo con brillo bajo.
+      mat-icon {
+        position: relative;
+        color: var(--text-on-accent);
+        // El fondo va en un pseudo-elemento para no deformar el ícono.
+        &::after {
+          content: '';
+          position: absolute;
+          inset: -4px -12px;
+          border-radius: var(--radius-pill);
+          background: var(--accent-solid);
+          z-index: -1;
+        }
+      }
+    }
+  }
+}
+
+// El header del móvil lleva el nombre de la pantalla en Anton, como el de
+// Mi Semana en el teléfono, pero en el color del texto: el teal queda para
+// los títulos dentro del contenido.
+.topbar--movil .screen-title {
+  min-width: 0;
+  // Con el interlineado apretado de Anton y el `overflow` de la elipsis,
+  // la tilde de "CRÉDITOS" quedaba cortada por arriba.
+  line-height: var(--leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+// ──────────── barra lateral en anchos intermedios ────────────
+// Entre 768 y 1023px (tablet en vertical) la barra lateral completa le
+// quitaba al contenido el sitio de dos columnas: se queda en íconos. El
+// nombre de cada sección sigue anunciándose por `aria-label`, aparece como
+// `title` al pasar por encima, y el título de la pantalla lo repite.
+@media (max-width: 1023.98px) {
+  .lateral {
+    width: var(--ancho-lateral-iconos);
+    padding: var(--space-3);
+  }
+
+  .lateral__titulo,
+  .nav__texto {
+    display: none;
+  }
+
+  .nav__item {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  // "FINANZAS" no cabe en los 76px de la barra de íconos: la marca vuelve
+  // a su ancho y una raya la separa del correo, que si no se leía como
+  // parte del título.
+  .marca {
+    width: auto;
+  }
+
+  .usuario {
+    margin-left: var(--space-2);
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--border);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cabezote__inner,
+  .cuerpo {
+    padding-inline: var(--space-8);
+  }
+}
+
+// Sección bloqueada por el recorrido de bienvenida (ver
+// `BienvenidaService.faltaCuenta`): se ve apagada, y el tooltip dice por
+// qué. Sigue siendo tocable: al tocarla explica qué falta.
+.nav__item--bloqueado,
+.barra-inferior a.bloqueado,
+.boton-nuevo--bloqueado {
+  opacity: 0.5;
+  cursor: help;
+}

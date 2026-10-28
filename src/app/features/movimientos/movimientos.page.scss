@@ -1,0 +1,135 @@
+// El layout lo arma `.grid-12` en la plantilla; acá solo lo propio de
+// Movimientos.
+
+// En móvil, tres tarjetas en fila dejan ~110px cada una y un monto como
+// "$12.345.678.900" se parte en tres líneas. Van dos arriba y el Balance
+// ancho completo abajo, que además es el que conviene destacar. Desde
+// 768px sí entran las tres en línea.
+.kpis--movimientos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kpis--movimientos app-stat-card:last-child {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .kpis--movimientos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .kpis--movimientos app-stat-card:last-child {
+    grid-column: auto;
+  }
+}
+
+// Buscador y chips de tipo, sin tarjeta alrededor: apilados en móvil; en
+// escritorio, el buscador a la izquierda y los filtros pegados a la derecha.
+.filtros-base {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .filtros-base {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .campo-buscador {
+    flex: 0 1 320px;
+  }
+}
+
+// Sin tarjeta detrás, el campo hundido se perdía en el fondo: va con el
+// color de las tarjetas, como los chips.
+.campo-buscador .input {
+  background: var(--bg-surface);
+}
+
+.chips-tipo {
+  // Filtros pegados a la derecha también en móvil, donde es el único chip.
+  justify-content: flex-end;
+  // En 360px los cinco chips no entran en una línea; se deja que envuelvan
+  // en vez de scrollear, para que ninguno quede escondido fuera de vista.
+  flex-wrap: wrap;
+}
+
+.chip-filtros {
+  .ms,
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+
+.badge-contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--text-lg);
+  height: var(--text-lg);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent-solid);
+  color: var(--text-on-accent);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+}
+
+// Panel de filtros avanzados (solo escritorio).
+.filtros-avanzados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4);
+  align-items: end;
+}
+
+@media (min-width: 1024px) {
+  .filtros-avanzados {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.filtros-avanzados .switch,
+.filtros-avanzados .limpiar {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+// Cada día es un bloque con aire arriba y filas más altas.
+.daysep {
+  padding: var(--space-5) var(--space-4) var(--space-2);
+}
+.rows {
+  gap: 0;
+  padding: 0 var(--space-4) var(--space-2);
+}
+.rows .stack {
+  gap: 0;
+}
+// La línea separa un día del siguiente, no cada fila de la de al lado.
+.rows + .daysep {
+  margin: 0 var(--space-4);
+  padding-inline: 0;
+  border-top: 1px solid var(--border);
+}
+.fila-movimiento {
+  padding: var(--space-3) var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  width: calc(100% + var(--space-4));
+  min-height: 64px;
+  gap: var(--space-4);
+  border: 0;
+}
+.fila-movimiento .row-main {
+  gap: var(--space-1);
+}
+.fila-movimiento .row-end {
+  gap: var(--space-1);
+}
+.rows .detalle {
+  border-top: 0;
+  padding: 0 0 var(--space-3);
+}

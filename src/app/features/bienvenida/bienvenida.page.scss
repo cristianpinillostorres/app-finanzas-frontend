@@ -1,0 +1,937 @@
+// El mismo marco del login (panel de marca + contenido), ver `login.page.scss`.
+// En el celular el panel en vivo queda pegado arriba; desde 960px es la
+// columna izquierda a toda la altura.
+
+:host {
+  display: block;
+}
+
+.bienvenida {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100dvh;
+  background: var(--bg-page);
+}
+
+// ───────────────────────────── panel en vivo ─────────────────────────────
+
+.vivo {
+  // El panel es siempre oscuro (color de marca), en tema claro y oscuro:
+  // sus acentos son los del tema oscuro.
+  --vivo-libre: var(--marca-textura);
+  --vivo-pagos: #e6b84e;
+  --vivo-cuotas: #f28b82;
+  --vivo-suave: #b4e0e3;
+
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: calc(var(--space-3) + env(safe-area-inset-top)) var(--space-5) var(--space-4);
+  background: var(--bg-marca);
+  background: var(--bg-marca-degradado);
+  color: var(--text-on-marca);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--marca-textura);
+    opacity: 0.2;
+    -webkit-mask: url('/textura-billete.svg') right -30px top / auto 260px no-repeat;
+    mask: url('/textura-billete.svg') right -30px top / auto 260px no-repeat;
+    pointer-events: none;
+  }
+}
+
+.vivo__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.vivo__sello {
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--marca-textura) 40%, transparent);
+  color: var(--marca-textura);
+
+  mat-icon {
+    font-size: var(--text-lg);
+    width: var(--text-lg);
+    height: var(--text-lg);
+  }
+}
+
+.vivo__cifra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vivo__etiqueta {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--vivo-suave);
+}
+
+.vivo__numero {
+  font-size: clamp(30px, 9vw, 40px);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  // Halo teal: la cifra es lo que se mira, que brille sobre el panel.
+  text-shadow: 0 0 32px rgb(127 208 213 / 45%);
+}
+
+.vivo__barra {
+  display: flex;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 16%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  overflow: hidden;
+
+  .seg {
+    height: 100%;
+    transition: width 0.7s var(--ease-out);
+  }
+  .seg--libre {
+    background: var(--vivo-libre);
+  }
+  .seg--pagos {
+    background: var(--vivo-pagos);
+  }
+  .seg--cuotas {
+    background: var(--vivo-cuotas);
+  }
+}
+
+.vivo__frase {
+  min-height: 20px;
+  font-size: var(--text-sm);
+  color: var(--vivo-suave);
+}
+
+// El desglose solo cabe en la columna de escritorio. Sin caja: es la
+// leyenda de la barra de arriba (mismo punto de color que cada segmento),
+// alineada al ancho de la cifra para que se lea como parte de ella.
+// En móvil el envoltorio no existe para el layout; en escritorio replica
+// `.marca-panel__cuerpo` del login (mismo hueco y mismo margen inferior),
+// así la cifra cae donde estaba el lema y el desglose donde la lista.
+.vivo__cuerpo {
+  display: contents;
+}
+
+.vivo__desglose {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 420px;
+  // Mismo tamaño que la lista del login (`.marca-panel__lista`): misma
+  // letra, mismo espacio entre filas, y el punto en un hueco del ancho de
+  // sus íconos para que el texto arranque en la misma columna.
+  font-size: var(--text-md);
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .punto {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-inline: 6px;
+    border-radius: 50%;
+  }
+
+  dt {
+    flex: 1;
+    color: var(--text-on-marca-secundario);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+  }
+
+  .c-libre {
+    background: var(--vivo-libre);
+  }
+  .c-pagos {
+    background: var(--vivo-pagos);
+  }
+  .c-cuotas {
+    background: var(--vivo-cuotas);
+  }
+}
+
+// ─────────────────────────────── contenido ───────────────────────────────
+
+.contenido {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5) var(--space-5) var(--space-10);
+}
+
+.columna {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  // La entrada de cada paso (`sube`) lo baja 14px: sin recortar, ese
+  // pedacito asomaba debajo y aparecía un scroll que luego se iba.
+  overflow-y: clip;
+}
+
+// Encabezado de los pasos 1 a 5: fila de volver/paso, barra y título.
+// Fijo arriba en escritorio (ver más abajo).
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  .cabeza {
+    margin-top: var(--space-3);
+  }
+}
+
+.progreso__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap-min);
+}
+
+.atras {
+  padding-left: var(--space-1);
+}
+
+.progreso__segmentos {
+  display: flex;
+  gap: 6px;
+
+  span {
+    flex: 1;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-subtle);
+    overflow: hidden;
+  }
+
+  i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(var(--progreso, 0));
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-out);
+  }
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.etiqueta {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.titulo-grande,
+.titulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+
+  // La parte que importa va en verde; el resto en negro, para que el
+  // título tenga contraste propio y no sea un bloque de un solo color.
+  .acento {
+    color: var(--accent);
+  }
+}
+
+.titulo-grande {
+  font-size: clamp(40px, 9vw, 52px);
+}
+
+.titulo {
+  font-size: 28px;
+}
+
+.texto {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.texto-sm {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.texto-xs {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+// Esqueleto de un paso: rótulo, cuatro opciones, dos campos y el botón.
+.esqueleto__fila {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.esqueleto__tarjeta {
+  height: 80px;
+  border-radius: var(--radius-card);
+}
+
+.esqueleto__campo {
+  height: 52px;
+  border-radius: var(--radius-md);
+}
+
+.esqueleto__boton {
+  height: 48px;
+  border-radius: var(--radius-pill);
+}
+
+// "Continuar" y su alternativa, pegados abajo: siempre a mano aunque el
+// paso sea largo, y en el mismo sitio de un paso al otro.
+.acciones--pie {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: auto;
+  padding: var(--space-6) 0 var(--space-10);
+  background: linear-gradient(to top, var(--bg-page) 70%, transparent);
+
+  // Sin texto de salida ("Me sirven las que vienen"…), su alto queda
+  // reservado: Continuar está a la misma altura en todos los pasos.
+  &:not(:has(.btn-text))::after {
+    content: '';
+    height: var(--tap-min);
+  }
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  // "Saltar recorrido" es un enlace discreto: del ancho de su texto y sin
+  // la píldora de fondo al pasar el mouse, solo subrayado.
+  .btn-text {
+    align-self: center;
+
+    &:hover:not(:disabled) {
+      background: none;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}
+
+// Último paso con sesión anónima: crear la cuenta.
+.registro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.error-registro {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-gasto);
+}
+
+.separador {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+}
+
+.logo-google {
+  width: 18px;
+  height: 18px;
+}
+
+.boton-grande {
+  width: 100%;
+  min-height: 48px;
+  border-radius: var(--radius-pill);
+}
+
+.nota {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+
+  mat-icon {
+    flex: none;
+    font-size: var(--text-base);
+    width: var(--text-base);
+    height: var(--text-base);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+// Campo de plata: el "$" fijo adentro, a la izquierda.
+
+// Paso 1: cada pregunta es un grupo con su rótulo arriba; sin tarjeta
+// alrededor, el aire entre grupos hace de separación.
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.grupo__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+// En un `fieldset` la `legend` no es parte del flex y no recibe el `gap`:
+// el mismo espacio va como margen.
+legend.grupo__titulo {
+  margin-bottom: var(--space-3);
+}
+
+.grupo__titulo {
+  padding: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+// Tipo de cuenta: cuatro opciones del mismo tamaño, ícono arriba.
+.tipos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.tipo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-out),
+    background-color 0.2s var(--ease-out);
+
+  mat-icon {
+    color: var(--text-muted);
+  }
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: var(--weight-bold);
+
+    mat-icon {
+      color: var(--accent);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.input--grande,
+.input--dia {
+  min-height: 52px;
+  font-size: var(--text-md);
+}
+
+.input--dia {
+  min-height: 60px;
+  font-size: 22px;
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.moneda--grande {
+  > span {
+    left: var(--space-4);
+    font-size: 22px;
+  }
+
+  .input--monto {
+    min-height: 60px;
+    padding-left: 36px;
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 420px) {
+  .tipos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.moneda {
+  position: relative;
+
+  > span {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: var(--weight-bold);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+}
+
+.input--monto {
+  padding-left: 28px;
+  font-weight: var(--weight-extrabold);
+  font-variant-numeric: tabular-nums;
+}
+
+.fila-dos,
+.fila-cuatro {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-3);
+}
+
+@media (min-width: 600px) {
+  .fila-cuatro {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+// Paso 3: campos en filas, con rótulos cortos (más chicos que las
+// preguntas de los otros pasos, porque van de a dos y de a cuatro).
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  .grupo {
+    gap: var(--space-2);
+  }
+}
+
+.campo__titulo {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+}
+
+// Paso 2: cada categoría es una tarjetita que se prende o se apaga.
+.categorias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2);
+}
+
+.categoria {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-out),
+    background-color 0.2s var(--ease-out),
+    color 0.2s var(--ease-out);
+
+  mat-icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .categoria__marca {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  // Quitada: tenue y con borde punteado; el "+" dice que se puede volver
+  // a activar.
+  &[aria-pressed='false'] {
+    border-style: dashed;
+    background: transparent;
+    color: var(--text-muted);
+
+    mat-icon {
+      color: var(--text-muted);
+    }
+  }
+
+  // Paso 5: se elige una sola, como en los tipos.
+  &[aria-checked='true'] {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: var(--weight-bold);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.tipos--dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fila-monto-dia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: var(--space-3);
+}
+
+.creado,
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+}
+
+.creado__icono,
+.item__icono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.creado__icono,
+.item__icono--ok {
+  background: var(--color-ingreso-bg);
+  color: var(--color-ingreso);
+}
+
+.item__icono--deuda {
+  background: var(--color-deuda-bg);
+  color: var(--color-deuda);
+}
+
+.item__texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-sm);
+}
+
+.item__monto {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.c-deuda {
+  color: var(--color-deuda);
+}
+
+.c-gasto {
+  color: var(--color-gasto);
+}
+
+.lista-resumen {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+  overflow: hidden;
+
+  .item--plano {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: var(--space-3) var(--space-4);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+// ─────────────────────────────── movimiento ───────────────────────────────
+
+@keyframes sube {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes aparece {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sube {
+  animation: sube 0.4s var(--ease-out) both;
+}
+
+.aparece {
+  animation: aparece 0.45s var(--ease-out) both;
+}
+
+@keyframes abre-puerta {
+  from {
+    grid-template-columns: minmax(380px, 55%) minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bienvenida,
+  .bienvenida .vivo__cifra,
+  .bienvenida .vivo__desglose {
+    animation: none !important;
+  }
+
+  .sube,
+  .aparece {
+    animation: none;
+  }
+
+  .vivo__barra .seg,
+  .progreso__segmentos i {
+    transition: none;
+  }
+}
+
+// ──────────────────────────── pantallas anchas ────────────────────────────
+
+@media (min-width: 960px) {
+  // Arranca con el panel al 55 % del login y se encoge al 42 %: la puerta
+  // se abre para dejarle sitio al recorrido, en vez de saltar de un ancho
+  // al otro al entrar.
+  .bienvenida {
+    grid-template-columns: minmax(380px, 42%) minmax(0, 1fr);
+  }
+
+  // Solo al venir del login: al recargar, el panel ya está en su sitio.
+  // Primero se encoge el panel (la marca no se mueve, igual que en el
+  // login); la cifra y el desglose aparecen cuando ya terminó, para que
+  // nada cambie de ancho mientras se está mostrando.
+  .bienvenida.desde-login {
+    animation: abre-puerta 0.45s var(--ease-out) both;
+
+    .vivo__cifra,
+    .vivo__desglose {
+      animation: sube 0.3s var(--ease-out) 0.35s both;
+    }
+  }
+
+  .vivo {
+    height: 100dvh;
+    justify-content: space-between;
+    gap: var(--space-7);
+    padding: var(--space-10) var(--space-12);
+  }
+
+  // La textura donde la deja el login (abajo a la derecha): el panel
+  // cambia de ancho, pero el billete no se mueve de sitio.
+  .vivo::before {
+    opacity: 0.3;
+    -webkit-mask-position: right bottom;
+    mask-position: right bottom;
+    -webkit-mask-size: auto 36%;
+    mask-size: auto 36%;
+  }
+
+  .vivo__numero {
+    font-size: clamp(44px, 5vw, 64px);
+  }
+
+  .vivo__cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-bottom: 30vh;
+  }
+
+  .vivo__desglose {
+    display: flex;
+  }
+
+  // Arriba, no centrado: con el encabezado fijo, centrar dejaba un hueco
+  // que cambiaba de alto en cada paso.
+  // La página no se mueve: solo la columna derecha tiene scroll, con el
+  // espacio de la barra siempre reservado. Antes, al aparecer la barra de
+  // la página, todo se corría unos píxeles a la izquierda.
+  .bienvenida {
+    grid-template-rows: minmax(0, 1fr);
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .contenido {
+    align-items: flex-start;
+    // Sin aire abajo: lo pone el pie de acciones, y la columna ya mide
+    // la pantalla completa (si no, siempre sobraba un poco de scroll).
+    padding: 0 var(--space-12);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  .encabezado {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: var(--space-10) 0 var(--space-6);
+    background: var(--bg-page);
+  }
+
+  // La presentación y el final no tienen encabezado: el aire de arriba lo
+  // pone la sección.
+  .columna > .paso:first-child {
+    padding-top: var(--space-10);
+  }
+
+  .paso {
+    flex: 1;
+    gap: var(--space-10);
+  }
+
+  // La columna ocupa todo el alto: así el paso puede empujar sus acciones
+  // al fondo aunque tenga poco contenido.
+  .columna {
+    min-height: 100dvh;
+  }
+
+  // La columna llena la mitad derecha en vez de quedar como una tira
+  // angosta en el centro, y el ejemplo crece con ella.
+  .columna {
+    max-width: 640px;
+  }
+
+  .titulo-grande {
+    font-size: 64px;
+  }
+}

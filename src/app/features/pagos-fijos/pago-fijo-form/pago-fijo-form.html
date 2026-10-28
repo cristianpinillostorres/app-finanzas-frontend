@@ -1,0 +1,100 @@
+<div class="sheet-hd">
+  <h2 class="screen-title">{{ editando ? 'Editar pago fijo' : 'Nuevo pago fijo' }}</h2>
+  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="field">
+    <label for="pf-nombre">Nombre</label>
+    <input class="input" id="pf-nombre" placeholder="Arriendo" formControlName="nombre" />
+  </div>
+
+  <div class="form-2">
+    <div class="field">
+      <label for="pf-categoria">Categoría</label>
+      <select class="input" id="pf-categoria" formControlName="categoriaId">
+        <option [ngValue]="null" disabled>Elige una categoría</option>
+        @for (categoria of categoriasGasto(); track categoria.id) {
+          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="pf-cuenta">Cuenta con la que se paga</label>
+      <select class="input" id="pf-cuenta" formControlName="cuentaDefaultId">
+        <option [ngValue]="null" disabled>Elige una cuenta</option>
+        @for (opcion of opcionesCuentas(); track opcion.id) {
+          <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="form-2">
+    <div class="field">
+      <label for="pf-dia">Día límite de pago</label>
+      <input
+        class="input"
+        id="pf-dia"
+        type="number"
+        inputmode="numeric"
+        min="1"
+        max="31"
+        formControlName="diaLimite"
+      />
+    </div>
+    <div class="field">
+      <label for="pf-monto">{{
+        form.controls.esVariable.value ? 'Monto estimado' : 'Monto'
+      }}</label>
+      <input
+        class="input"
+        id="pf-monto"
+        type="number"
+        inputmode="numeric"
+        placeholder="0"
+        formControlName="monto"
+      />
+    </div>
+  </div>
+
+  <label class="switch">
+    <input type="checkbox" formControlName="esVariable" />
+    Monto variable (luz, agua, gas...)
+  </label>
+  @if (form.controls.esVariable.value) {
+    <p class="help">Al pagar se anota el valor real; mientras tanto se muestra el estimado.</p>
+  }
+
+  <div class="form-2">
+    <div class="field">
+      <label for="pf-frecuencia">Frecuencia</label>
+      <select class="input" id="pf-frecuencia" formControlName="frecuencia">
+        @for (opcion of frecuencias; track opcion.valor) {
+          <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    @if (mostrarMesInicio()) {
+      <div class="field">
+        <label for="pf-mes">{{
+          form.controls.frecuencia.value === 'ANUAL' ? 'Mes en que aplica' : 'Primer mes'
+        }}</label>
+        <select class="input" id="pf-mes" formControlName="mesInicio">
+          @for (mes of meses; track mes.valor) {
+            <option [value]="mes.valor">{{ mes.etiqueta }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    @if (guardando()) {
+      <span class="spinner" aria-hidden="true"></span>
+    }
+    {{ editando ? 'Guardar cambios' : 'Crear pago fijo' }}
+  </button>
+</form>

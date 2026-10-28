@@ -1,0 +1,198 @@
+// El layout lo arma `.grid-12` en la plantilla; acá solo lo propio de
+// Pagos fijos.
+
+.progreso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.progreso__rotulos {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+// El semáforo y el badge "Crédito" van en la misma línea bajo el nombre.
+.fila-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+// "Pagar" vive dentro de `.row-end`, que alinea a la derecha: sin esto el
+// botón hereda el ancho de la columna y su área táctil se desalinea del
+// monto que tiene encima.
+.boton-pagar {
+  align-self: flex-end;
+  padding-inline: var(--space-2);
+  min-height: var(--space-8);
+}
+
+// Pago fijo propio: la parte izquierda de la fila (sello, nombre y
+// chevron) es el botón que despliega el detalle; "Pagar" queda afuera,
+// como hermano, porque un botón no puede ir dentro de otro.
+.fila-pago__abrir {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+// El chevron dice "esto se despliega"; gira al abrir.
+.fila-pago__chevron {
+  flex: none;
+  color: var(--text-muted);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.fila-pago__abrir[aria-expanded='true'] .fila-pago__chevron {
+  transform: rotate(180deg);
+}
+
+.detalle .help {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+// Un pago ya hecho es contexto, no acción pendiente: baja de peso visual
+// pero sin perder contraste (`--text-secondary` cumple AA).
+.fila-pagada .t-row {
+  color: var(--text-secondary);
+}
+
+// En escritorio el héroe acompaña al mes mientras se recorre: lo que falta
+// sigue a la vista aunque la línea sea larga.
+@media (min-width: 1024px) {
+  .hero {
+    position: sticky;
+    top: calc(var(--altura-topbar) + var(--space-4));
+    align-self: start;
+  }
+}
+
+// ───────────────────────── línea del mes ─────────────────────────
+.linea__dias {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2) 0;
+}
+// El riel: une los sellos de día de arriba abajo por el centro de su
+// columna; cada sello lo tapa con su fondo, como una cuenta en un hilo.
+.linea__dias::before {
+  content: '';
+  position: absolute;
+  top: var(--space-6);
+  bottom: var(--space-6);
+  left: calc(var(--space-4) + var(--space-10) / 2 - 1px);
+  width: 2px;
+  background: var(--border);
+}
+
+.linea__dia {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+}
+.linea__sello {
+  position: relative;
+  margin-top: var(--space-4);
+  padding-block: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.linea__dia--vencido .linea__sello {
+  background: var(--semaforo-rojo-bg);
+  box-shadow: none;
+}
+.linea__dia--vencido .linea__sello * {
+  color: var(--semaforo-rojo-text);
+}
+.linea__dia--pagado .linea__sello {
+  background: var(--bg-subtle);
+  box-shadow: none;
+}
+.linea__dia--pagado .sello-fecha__dia {
+  color: var(--text-secondary);
+}
+
+.linea__pagos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+}
+// La línea separa un día del siguiente, no cada pago del de al lado; tras
+// la marca "Hoy" no hace falta, la marca ya hace de corte.
+.linea__dia + .linea__dia .linea__pagos {
+  border-top: 1px solid var(--border);
+}
+.linea__hoy + .linea__dia .linea__pagos {
+  border-top: 0;
+}
+.linea__pagos > .stack {
+  gap: 0;
+}
+// El aire a los lados es parte de la fila (con margen negativo para que el
+// texto siga alineado): así el resaltado del hover no pega con el texto.
+.linea__pagos .row {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  border-bottom: 0;
+}
+// Ancho fijo para la columna del monto: así los chevrons de todas las
+// filas quedan en la misma vertical, sin bailar según el largo del monto.
+.linea__pagos .row-end {
+  min-width: 6.5rem;
+}
+.linea__pagos .detalle {
+  padding-bottom: var(--space-3);
+}
+
+// Hoy: un punto sobre el riel y una línea de acento que cruza el panel.
+.linea__hoy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.linea__hoy::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+.linea__hoy-punto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--space-10);
+  flex: none;
+}
+.linea__hoy-punto::before {
+  content: '';
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
