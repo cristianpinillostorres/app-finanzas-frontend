@@ -7,6 +7,6 @@
  */
 export const environment = {
   production: false,
-  supabaseUrl: 'https://PENDIENTE.supabase.co',
-  supabaseKey: 'PENDIENTE',
+  supabaseUrl: 'https://emdrqmnmbzngmudqzaor.supabase.co',
+  supabaseKey: 'sb_publishable_W0cjmTLmZy3lTmcH7-FQEQ_pL1KMzVv',
 };
