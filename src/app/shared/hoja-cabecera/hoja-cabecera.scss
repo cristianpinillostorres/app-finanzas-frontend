@@ -1,0 +1,83 @@
+// Se queda arriba al hacer scroll dentro de la hoja (el que hace scroll es
+// el contenedor de Material, que va del color de la página).
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: block;
+  margin-bottom: var(--space-2);
+  background: var(--bg-page);
+}
+
+// Tres columnas: los lados iguales (1fr) dejan el título en el centro
+// exacto de la hoja. El título crece hasta su ancho natural antes que los
+// lados; si no cabe centrado, el lado de "Cancelar" no baja de su ancho y
+// el título se corre, y si tampoco cabe así, se corta con "…".
+.barra {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, max-content) 1fr;
+  align-items: center;
+  column-gap: var(--space-2);
+  min-height: 52px;
+  padding-top: var(--space-2);
+  border-bottom: 1px solid transparent;
+}
+
+// Texto en el color de acento, sin caja, como en iOS. El relleno agranda
+// la zona de toque sin mover el texto del borde.
+.barra__cerrar {
+  justify-self: start;
+  min-height: var(--tap-min);
+  margin-left: calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    opacity: 0.5;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.barra__titulo {
+  margin: 0;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+// La raya de abajo solo cuando el contenido ya pasa por debajo de la
+// barra. Donde el navegador no anima con el scroll, no hay raya.
+@supports (animation-timeline: scroll()) {
+  .barra {
+    animation: barra-con-raya linear both;
+    animation-timeline: scroll(nearest);
+    animation-range: 0 16px;
+  }
+}
+@keyframes barra-con-raya {
+  to {
+    border-bottom-color: var(--border);
+  }
+}

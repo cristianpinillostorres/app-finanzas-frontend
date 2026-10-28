@@ -42,7 +42,9 @@ export class StatCard {
   /** Mientras la pantalla espera sus datos: esqueleto en vez del monto. */
   cargando = input(false);
 
+  /** En cero no hay nada que señalar: "$0" en ámbar parecía una alerta. */
   protected claseMonto(): string {
+    if (!this.valor()) return '';
     return CLASE_MONTO[this.tono()];
   }
 }

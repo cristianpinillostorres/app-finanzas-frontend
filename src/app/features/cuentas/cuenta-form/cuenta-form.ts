@@ -13,6 +13,8 @@ import { campoInvalido } from '../../../shared/forms/campo.util';
 import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
 import { GuardandoOverlay } from '../../../shared/guardando-overlay/guardando-overlay';
 import type { CuentaFormData } from './cuenta-form-data';
+import { Selector } from '../../../shared/forms/selector';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 interface OpcionTipo {
   valor: TipoCuenta;
@@ -26,7 +28,7 @@ interface OpcionTipo {
  */
 @Component({
   selector: 'app-cuenta-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule, GuardandoOverlay],
+  imports: [HojaCabecera, Selector, ReactiveFormsModule, MatIconModule, MatButtonModule, GuardandoOverlay],
   templateUrl: './cuenta-form.html',
   styleUrl: './cuenta-form.scss',
 })

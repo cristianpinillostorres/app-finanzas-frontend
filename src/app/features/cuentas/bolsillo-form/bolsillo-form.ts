@@ -17,6 +17,7 @@ import { mostrarErrorGuardado } from '../../../shared/guardado/guardado.util';
 import { GuardandoOverlay } from '../../../shared/guardando-overlay/guardando-overlay';
 import { MonedaCopPipe } from '../../../shared/pipes/moneda-cop.pipe';
 import type { BolsilloFormData } from './bolsillo-form-data';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 /**
  * Crea un bolsillo dentro de una cuenta. El monto inicial (si hay) sale del
@@ -27,7 +28,7 @@ import type { BolsilloFormData } from './bolsillo-form-data';
  */
 @Component({
   selector: 'app-bolsillo-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule, MonedaCopPipe, GuardandoOverlay],
+  imports: [HojaCabecera, ReactiveFormsModule, MatIconModule, MatButtonModule, MonedaCopPipe, GuardandoOverlay],
   templateUrl: './bolsillo-form.html',
   styleUrl: './bolsillo-form.scss',
 })

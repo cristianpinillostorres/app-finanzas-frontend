@@ -13,7 +13,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
 import { GuiaPaso } from '../../shared/bienvenida/guia-paso';
 import { MontosVisibilityService } from '../../core/montos-visibility.service';
-import { ThemeService } from '../../core/theme.service';
+import { OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
 import { HeaderActionService } from '../header-action.service';
 import { HeaderSearchService } from '../header-search.service';
 import { NAV_ITEMS } from '../nav/nav-items';
@@ -82,9 +82,7 @@ export class Shell {
     this.montos.oculto() ? 'Mostrar montos' : 'Ocultar montos',
   );
 
-  protected readonly tituloTema = computed(() =>
-    this.tema.oscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
-  );
+  protected readonly opcionesTema = OPCIONES_TEMA;
 
   /** Correo de la sesión, para el bloque de usuario junto a la marca. */
   protected readonly correoUsuario = this.auth.email;
@@ -156,13 +154,4 @@ export class Shell {
     this.auth.vincularGoogle();
   }
 
-  /**
-   * Elige tema por opción en vez de alternar, para el segmentado del menú
-   * móvil (en escritorio el botón del cabezote llama a `alternar()`).
-   * Pulsar la opción que ya está activa no hace nada — que es justo el
-   * comportamiento correcto de un segmentado.
-   */
-  fijarTema(oscuro: boolean): void {
-    if (this.tema.oscuro() !== oscuro) this.tema.alternar();
-  }
 }

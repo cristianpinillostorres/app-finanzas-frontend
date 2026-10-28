@@ -1,9 +1,9 @@
 import { AparicionEscalonada } from '../../shared/motion/aparicion-escalonada';
-import { AutoAnimar } from '../../shared/motion/auto-animar';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { CUENTAS_API } from '../../core/api/cuentas/cuentas-api';
@@ -14,6 +14,7 @@ import {
   reservado as reservadoTotal,
 } from '../../core/domain';
 import type { Cuenta, Movimiento, TipoCuenta } from '../../core/models';
+import { SincronizacionService } from '../../core/sync/sincronizador';
 import { HeaderActionService } from '../../layout/header-action.service';
 import { NuevoMovimientoService } from '../../layout/nuevo-movimiento/nuevo-movimiento.service';
 import { Amount } from '../../shared/amount/amount';
@@ -46,11 +47,11 @@ const ICONO_TIPO: Record<TipoCuenta, string> = {
   imports: [
     PantallaVacia,
     MatIconModule,
+    MatMenuModule,
     Amount,
     EmptyState,
     PageHead,
     SkeletonRows,
-    AutoAnimar,
     AparicionEscalonada,
   ],
   templateUrl: './cuentas.page.html',
@@ -63,6 +64,7 @@ export class CuentasPage {
   private readonly headerAction = inject(HeaderActionService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly nuevoMovimiento = inject(NuevoMovimientoService);
+  private readonly sincronizacion = inject(SincronizacionService);
 
   private readonly cuentas = toSignal(this.cuentasApi.listar(), { initialValue: [] as Cuenta[] });
   private readonly movimientos = toSignal(this.movimientosApi.listar(), {
@@ -73,6 +75,11 @@ export class CuentasPage {
 
   /** Sin ninguna cuenta: la pantalla muestra solo su presentación (ver `PantallaVacia`). */
   protected readonly sinDatos = computed(() => this.cuentas().length === 0);
+  /** Las cuentas nunca llegaron del servidor: vacío es "no se pudo traer", no "no hay". */
+  protected readonly sinTraer = toSignal(this.sincronizacion.sinTraer('cuentas'), {
+    initialValue: false,
+  });
+  protected readonly reintentando = signal(false);
 
   constructor() {
     // La misma acción que en escritorio ofrece `app-page-head`, que en
@@ -82,6 +89,7 @@ export class CuentasPage {
       icono: 'add',
       etiqueta: 'Agregar cuenta',
       accion: () => this.agregarCuenta(),
+      ocultaNuevoMovimiento: true,
     });
     inject(DestroyRef).onDestroy(() => this.headerAction.limpiar());
   }
@@ -118,22 +126,26 @@ export class CuentasPage {
   protected readonly porcentajeReservado = computed(() => this.porcentajeDe(this.reservado()));
 
   /**
-   * Dónde está el dinero, por tipo de cuenta. Reusa el subtotal que ya trae
-   * cada grupo; el porcentaje es solo ese subtotal contra el total.
+   * Los grupos con lo que dice su cabecera: el subtotal solo con dos cuentas
+   * o más (con una, es la cifra de la fila de abajo) y el porcentaje del
+   * total solo con dos grupos o más (con uno, siempre sería 100 %).
    */
-  protected readonly reparto = computed(() =>
-    this.gruposConCuentas().map((grupo) => {
+  protected readonly gruposVista = computed(() => {
+    const grupos = this.gruposConCuentas();
+    return grupos.map((grupo) => {
       const porcentaje = this.porcentajeDe(grupo.subtotal);
       return {
-        etiqueta: grupo.etiqueta,
-        subtotal: grupo.subtotal,
-        porcentaje,
-        // Un decimal solo por debajo del 10%: "0,5%" dice algo, "88,5%" no
-        // más que "88%" y alarga la línea.
-        porcentajeTexto: `${porcentaje.toFixed(porcentaje < 10 ? 1 : 0)}%`,
+        ...grupo,
+        mostrarSubtotal: grupo.cuentas.length > 1,
+        // Un decimal solo por debajo del 10%: "0,5 %" dice algo, "88,5 %"
+        // no más que "88 %" y alarga la línea.
+        porcentajeTexto:
+          grupos.length > 1
+            ? `${porcentaje.toFixed(porcentaje < 10 ? 1 : 0).replace('.', ',')} %`
+            : null,
       };
-    }),
-  );
+    });
+  });
 
   private porcentajeDe(valor: number): number {
     const total = this.totalEnCuentas();
@@ -150,28 +162,34 @@ export class CuentasPage {
   protected readonly detalleCuentas = computed(() => {
     // Mientras carga, sin conteo: un "0" se leería como dato real.
     if (!this.listo()) return '';
-    const cuentas = `${this.totalCuentasActivas()} cuentas activas`;
+    const total = this.totalCuentasActivas();
+    const cuentas = total === 1 ? '1 cuenta activa' : `${total} cuentas activas`;
     const bolsillos = this.totalBolsillos();
-    return bolsillos > 0 ? `${cuentas} · ${bolsillos} bolsillos` : cuentas;
+    return bolsillos > 0 ? `${cuentas} · ${this.textoBolsillos(bolsillos)}` : cuentas;
   });
 
-  private readonly expandidas = signal<ReadonlySet<string>>(new Set());
+  protected textoBolsillos(cantidad: number): string {
+    return cantidad === 1 ? '1 bolsillo' : `${cantidad} bolsillos`;
+  }
+
+  protected reintentar(): void {
+    this.reintentando.set(true);
+    void this.sincronizacion.reintentar().finally(() => this.reintentando.set(false));
+  }
+
+  /** La que está abierta: una a la vez, abrir otra cierra la anterior. */
+  private readonly abierta = signal<string | null>(null);
 
   protected iconoTipo(tipo: TipoCuenta): string {
     return ICONO_TIPO[tipo];
   }
 
   protected expandida(cuentaId: string): boolean {
-    return this.expandidas().has(cuentaId);
+    return this.abierta() === cuentaId;
   }
 
   protected alternarExpandida(cuentaId: string): void {
-    this.expandidas.update((actual) => {
-      const siguiente = new Set(actual);
-      if (siguiente.has(cuentaId)) siguiente.delete(cuentaId);
-      else siguiente.add(cuentaId);
-      return siguiente;
-    });
+    this.abierta.update((actual) => (actual === cuentaId ? null : cuentaId));
   }
 
   // Sin `maxWidth`: Angular Material ya lo acota solo por debajo de 599px

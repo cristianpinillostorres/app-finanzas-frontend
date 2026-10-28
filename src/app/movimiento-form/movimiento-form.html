@@ -1,240 +1,173 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">{{ modoEdicion ? 'Editar movimiento' : 'Nuevo movimiento' }}</h2>
-  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera [titulo]="modoEdicion ? 'Editar movimiento' : 'Nuevo movimiento'" (cerrar)="cerrar()" />
 
 <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
   <!-- Botones de alternar (aria-pressed) dentro de un grupo: no son
        pestañas, no hay paneles que controlen. -->
-  <div class="tipo">
-    <div class="seg" role="group" aria-label="Tipo de movimiento">
-      <button type="button" [attr.aria-pressed]="tipo() === 'gasto'" (click)="cambiarTipo('gasto')">
-        Gasto
-      </button>
+  <div class="segmentado" role="group" aria-label="Tipo de movimiento">
+    <button type="button" [attr.aria-pressed]="tipo() === 'gasto'" (click)="cambiarTipo('gasto')">
+      Gasto
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="tipo() === 'ingreso'"
+      (click)="cambiarTipo('ingreso')"
+    >
+      Ingreso
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="tipo() === 'transferencia'"
+      (click)="cambiarTipo('transferencia')"
+    >
+      Transferencia
+    </button>
+  </div>
+  <p class="ayuda" aria-live="polite">{{ textoAyuda() }}</p>
+
+  <!-- El monto manda: grande y centrado, con el foco al abrir. -->
+  <div class="monto">
+    <label class="sr-only" for="m-monto">Monto</label>
+    <span class="monto__signo" aria-hidden="true">$</span>
+    <input
+      id="m-monto"
+      appMonto
+      placeholder="0"
+      formControlName="monto"
+      [style.--cifras]="cifrasMonto()"
+      [attr.aria-invalid]="invalido(form.controls.monto) || !!errorMontoCupo() || null"
+      [attr.aria-describedby]="
+        invalido(form.controls.monto) || errorMontoCupo() ? 'm-monto-err' : null
+      "
+    />
+  </div>
+  @if (invalido(form.controls.monto)) {
+    <span class="err err--centro" id="m-monto-err">Escribe cuánto fue.</span>
+  } @else if (errorMontoCupo(); as error) {
+    <span class="err err--centro" id="m-monto-err">{{ error }}</span>
+  }
+
+  <!-- Lista agrupada de iOS: rótulo a la izquierda, valor a la derecha.
+       Cada fila abre su menú de opciones (definidos al final). -->
+  <div class="ios-grupo">
+    <label class="ios-fila" for="m-fecha">
+      <span class="ios-fila__rotulo">Fecha</span>
+      <input class="ios-fila__valor" id="m-fecha" type="date" formControlName="fecha" />
+    </label>
+
+    @if (tipo() === 'gasto' || tipo() === 'ingreso') {
       <button
         type="button"
-        [attr.aria-pressed]="tipo() === 'ingreso'"
-        (click)="cambiarTipo('ingreso')"
-      >
-        Ingreso
-      </button>
-      <button
-        type="button"
-        [attr.aria-pressed]="tipo() === 'transferencia'"
-        (click)="cambiarTipo('transferencia')"
-      >
-        Transferencia
-      </button>
-    </div>
-    <p class="help" aria-live="polite">{{ textoAyuda() }}</p>
-  </div>
-
-  <div class="form-2">
-    <div class="field">
-      <label for="m-monto">Monto</label>
-      <div class="input-monto">
-        <span class="input-monto__signo" aria-hidden="true">$</span>
-        <input
-          class="input"
-          id="m-monto"
-          appMonto
-          placeholder="0"
-          formControlName="monto"
-          [attr.aria-invalid]="invalido(form.controls.monto) || !!errorMontoCupo() || null"
-          [attr.aria-describedby]="
-            invalido(form.controls.monto) || errorMontoCupo() ? 'm-monto-err' : null
-          "
-        />
-      </div>
-      @if (invalido(form.controls.monto)) {
-        <span class="err" id="m-monto-err">Escribe cuánto fue.</span>
-      } @else if (errorMontoCupo(); as error) {
-        <span class="err" id="m-monto-err">{{ error }}</span>
-      }
-    </div>
-    <div class="field">
-      <label for="m-fecha">Fecha</label>
-      <input class="input" id="m-fecha" type="date" formControlName="fecha" />
-    </div>
-  </div>
-
-  @if (tipo() === 'gasto') {
-    <div class="field">
-      <label for="m-cat">Categoría</label>
-      <select
-        class="input"
-        id="m-cat"
-        formControlName="categoriaId"
+        class="ios-fila"
+        [matMenuTriggerFor]="menuCategoria"
         [attr.aria-invalid]="invalido(form.controls.categoriaId) || null"
-        [attr.aria-describedby]="invalido(form.controls.categoriaId) ? 'm-cat-err' : null"
       >
-        <option [ngValue]="null" disabled>Elige una categoría</option>
-        @for (categoria of categoriasGasto(); track categoria.id) {
-          <option [value]="categoria.id">{{ categoria.nombre }}</option>
-        }
-      </select>
-      @if (invalido(form.controls.categoriaId)) {
-        <span class="err" id="m-cat-err">Elige en qué gastaste.</span>
-      }
-    </div>
+        <span class="ios-fila__rotulo">Categoría</span>
+        <span class="ios-fila__valor">{{ etiquetaCategoria() ?? 'Elegir' }}</span>
+        <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    }
 
-    <div class="field">
-      <label for="m-pagar">Pagar con</label>
-      <select
-        class="input"
-        id="m-pagar"
-        formControlName="pagarConId"
+    @if (tipo() === 'gasto') {
+      <button
+        type="button"
+        class="ios-fila"
+        [matMenuTriggerFor]="menuPagarCon"
         [attr.aria-invalid]="invalido(form.controls.pagarConId) || null"
-        [attr.aria-describedby]="invalido(form.controls.pagarConId) ? 'm-pagar-err' : null"
       >
-        <option [ngValue]="null" disabled>Elige una cuenta, tarjeta o plataforma</option>
-        @for (grupo of gruposPagarCon(); track grupo.etiqueta) {
-          <optgroup [label]="grupo.etiqueta">
-            @for (opcion of grupo.opciones; track opcion.id) {
-              <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
-            }
-          </optgroup>
-        }
-      </select>
-      @if (invalido(form.controls.pagarConId)) {
-        <span class="err" id="m-pagar-err">Elige con qué pagas.</span>
-      }
-    </div>
+        <span class="ios-fila__rotulo">Pagar con</span>
+        <span class="ios-fila__valor">{{ opcionPagarCon()?.etiqueta ?? 'Elegir' }}</span>
+        <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+      </button>
 
-    @if (opcionPagarCon()?.tipo === 'credito') {
-      <div class="form-2">
-        <div class="field">
-          <label for="m-cuotas">Cuotas</label>
-          <select class="input" id="m-cuotas" formControlName="cuotas">
-            @for (n of opcionesCuotas; track n) {
-              <option [ngValue]="n">{{ n }}</option>
-            }
-          </select>
-        </div>
+      @if (opcionPagarCon()?.tipo === 'credito') {
+        <button
+          type="button"
+          class="ios-fila"
+          [matMenuTriggerFor]="menuCuotas"
+        >
+          <span class="ios-fila__rotulo">Cuotas</span>
+          <span class="ios-fila__valor">{{ valorCuotas() }}</span>
+          <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+        </button>
         @if (esPlataforma()) {
-          <div class="field">
-            <label for="m-vcuota">Valor de cada cuota</label>
-            <div class="input-monto">
-              <span class="input-monto__signo" aria-hidden="true">$</span>
-              <input
-                class="input"
-                id="m-vcuota"
-                appMonto
-                placeholder="0"
-                formControlName="valorCuota"
-              />
-            </div>
-          </div>
+          <label class="ios-fila" for="m-vcuota">
+            <span class="ios-fila__rotulo">Valor de cada cuota</span>
+            <input
+              class="ios-fila__valor"
+              id="m-vcuota"
+              appMonto
+              placeholder="$ 0"
+              formControlName="valorCuota"
+            />
+          </label>
         } @else {
           <!-- Calculada, no editable: un texto, no un campo que parece llenable. -->
-          <div class="field">
-            <span class="field__rotulo" id="m-vcuota-rotulo">Cuota aproximada</span>
-            <output class="valor-calculado" aria-labelledby="m-vcuota-rotulo">{{
+          <div class="ios-fila">
+            <span class="ios-fila__rotulo" id="m-vcuota-rotulo">Cuota aproximada</span>
+            <output class="ios-fila__valor" aria-labelledby="m-vcuota-rotulo">{{
               cuotaAproximada() | monedaCop
             }}</output>
           </div>
         }
-      </div>
+      }
     }
-  }
 
-  @if (tipo() === 'ingreso') {
-    <div class="field">
-      <label for="m-cati">Categoría de ingreso</label>
-      <select
-        class="input"
-        id="m-cati"
-        formControlName="categoriaId"
-        [attr.aria-invalid]="invalido(form.controls.categoriaId) || null"
-        [attr.aria-describedby]="invalido(form.controls.categoriaId) ? 'm-cati-err' : null"
-      >
-        <option [ngValue]="null" disabled>Elige una categoría</option>
-        @for (categoria of categoriasIngreso(); track categoria.id) {
-          <option [value]="categoria.id">{{ categoria.nombre }}</option>
-        }
-      </select>
-      @if (invalido(form.controls.categoriaId)) {
-        <span class="err" id="m-cati-err">Elige de dónde viene.</span>
-      }
-    </div>
-    <div class="field">
-      <label for="m-dest">Entra a</label>
-      <select
-        class="input"
-        id="m-dest"
-        formControlName="destinoId"
+    @if (tipo() === 'ingreso') {
+      <button
+        type="button"
+        class="ios-fila"
+        [matMenuTriggerFor]="menuDestino"
         [attr.aria-invalid]="invalido(form.controls.destinoId) || null"
-        [attr.aria-describedby]="invalido(form.controls.destinoId) ? 'm-dest-err' : null"
       >
-        <option [ngValue]="null" disabled>Elige una cuenta o bolsillo</option>
-        @for (opcion of opcionesCuentas(); track opcion.id) {
-          <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
-        }
-      </select>
-      @if (invalido(form.controls.destinoId)) {
-        <span class="err" id="m-dest-err">Elige dónde entra la plata.</span>
-      }
-    </div>
+        <span class="ios-fila__rotulo">Entra a</span>
+        <span class="ios-fila__valor">{{ etiquetaCuenta(valorDestino()) ?? 'Elegir' }}</span>
+        <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    }
+
+    @if (tipo() === 'transferencia') {
+      <button
+        type="button"
+        class="ios-fila"
+        [matMenuTriggerFor]="menuDesde"
+        [attr.aria-invalid]="invalido(form.controls.desdeId) || null"
+      >
+        <span class="ios-fila__rotulo">Desde</span>
+        <span class="ios-fila__valor">{{ etiquetaCuenta(valorDesde()) ?? 'Elegir' }}</span>
+        <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="ios-fila"
+        [matMenuTriggerFor]="menuHacia"
+        [attr.aria-invalid]="invalido(form.controls.haciaId) || null"
+      >
+        <span class="ios-fila__rotulo">Hacia</span>
+        <span class="ios-fila__valor">{{ opcionHacia()?.etiqueta ?? 'Elegir' }}</span>
+        <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Un solo aviso bajo la lista, solo después de tocar "Registrar". -->
+  @if (errorGrupo(); as error) {
+    <span class="err" role="alert">{{ error }}</span>
+  } @else if (errorOrigenDestino(); as error) {
+    <span class="err">{{ error }}</span>
+  } @else if (errorSaldoInsuficiente(); as error) {
+    <span class="err">{{ error }}</span>
   }
 
   @if (tipo() === 'gasto' || tipo() === 'ingreso') {
     <!-- Opcional y al final: si queda vacía se usa el nombre de la
          categoría, así registrar un gasto no obliga a escribir nada. -->
-    <div class="field">
-      <label for="m-desc">Descripción <span class="opcional">(opcional)</span></label>
-      <input
-        class="input"
-        id="m-desc"
-        [placeholder]="placeholderDescripcion()"
-        formControlName="descripcion"
-      />
-    </div>
-  }
-
-  @if (tipo() === 'transferencia') {
-    <div class="form-2">
-      <div class="field">
-        <label for="m-desde">Desde</label>
-        <select
-          class="input"
-          id="m-desde"
-          formControlName="desdeId"
-          [attr.aria-invalid]="invalido(form.controls.desdeId) || null"
-        >
-          <option [ngValue]="null" disabled>Elige una cuenta</option>
-          @for (opcion of opcionesCuentas(); track opcion.id) {
-            <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
-          }
-        </select>
-      </div>
-      <div class="field">
-        <label for="m-hacia">Hacia</label>
-        <select
-          class="input"
-          id="m-hacia"
-          formControlName="haciaId"
-          [attr.aria-invalid]="invalido(form.controls.haciaId) || null"
-        >
-          <option [ngValue]="null" disabled>Elige un destino</option>
-          @for (grupo of gruposHacia(); track grupo.etiqueta) {
-            <optgroup [label]="grupo.etiqueta">
-              @for (opcion of grupo.opciones; track opcion.id) {
-                <option [value]="opcion.id">{{ opcion.etiqueta }}</option>
-              }
-            </optgroup>
-          }
-        </select>
-      </div>
-    </div>
-    @if (invalido(form.controls.desdeId) || invalido(form.controls.haciaId)) {
-      <span class="err">Elige de dónde sale y a dónde va.</span>
-    } @else if (errorOrigenDestino(); as error) {
-      <span class="err">{{ error }}</span>
-    } @else if (errorSaldoInsuficiente(); as error) {
-      <span class="err">{{ error }}</span>
-    }
+    <label class="sr-only" for="m-desc">Descripción (opcional)</label>
+    <input
+      class="descripcion"
+      id="m-desc"
+      [placeholder]="placeholderDescripcion()"
+      formControlName="descripcion"
+    />
   }
 
   <!-- Pie fijo: el botón queda a la vista aunque el formulario sea más alto
@@ -248,3 +181,129 @@
     </button>
   </div>
 </form>
+
+<!-- Menús de las filas: listas propias en vez del desplegable del navegador,
+     que en escritorio se veía como una caja gris sin estilo. -->
+<mat-menu #menuCategoria="matMenu" class="menu-opciones" xPosition="before">
+  @for (
+    categoria of tipo() === 'gasto' ? categoriasGasto() : categoriasIngreso();
+    track categoria.id
+  ) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="categoria.id === valorCategoria()"
+      (click)="elegir('categoriaId', categoria.id)"
+    >
+      <mat-icon aria-hidden="true">{{ categoria.icono }}</mat-icon>
+      <span class="menu-opciones__fila">
+        {{ categoria.nombre }}
+        @if (categoria.id === valorCategoria()) {
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+</mat-menu>
+
+<mat-menu #menuPagarCon="matMenu" class="menu-opciones" xPosition="before">
+  @for (grupo of gruposPagarCon(); track grupo.etiqueta) {
+    <div class="menu-opciones__grupo" aria-hidden="true">{{ grupo.etiqueta }}</div>
+    @for (opcion of grupo.opciones; track opcion.id) {
+      <button
+        mat-menu-item
+        type="button"
+        role="menuitemradio"
+        [attr.aria-checked]="opcion.id === valorPagarCon()"
+        (click)="elegir('pagarConId', opcion.id)"
+      >
+        <span class="menu-opciones__fila">
+          {{ opcion.etiqueta }}
+          @if (opcion.id === valorPagarCon()) {
+            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          }
+        </span>
+      </button>
+    }
+  }
+</mat-menu>
+
+<mat-menu #menuHacia="matMenu" class="menu-opciones" xPosition="before">
+  @for (grupo of gruposHacia(); track grupo.etiqueta) {
+    <div class="menu-opciones__grupo" aria-hidden="true">{{ grupo.etiqueta }}</div>
+    @for (opcion of grupo.opciones; track opcion.id) {
+      <button
+        mat-menu-item
+        type="button"
+        role="menuitemradio"
+        [attr.aria-checked]="opcion.id === valorHacia()"
+        (click)="elegir('haciaId', opcion.id)"
+      >
+        <span class="menu-opciones__fila">
+          {{ opcion.etiqueta }}
+          @if (opcion.id === valorHacia()) {
+            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          }
+        </span>
+      </button>
+    }
+  }
+</mat-menu>
+
+<mat-menu #menuDestino="matMenu" class="menu-opciones" xPosition="before">
+  @for (opcion of opcionesCuentas(); track opcion.id) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="opcion.id === valorDestino()"
+      (click)="elegir('destinoId', opcion.id)"
+    >
+      <span class="menu-opciones__fila">
+        {{ opcion.etiqueta }}
+        @if (opcion.id === valorDestino()) {
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+</mat-menu>
+
+<mat-menu #menuDesde="matMenu" class="menu-opciones" xPosition="before">
+  @for (opcion of opcionesCuentas(); track opcion.id) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="opcion.id === valorDesde()"
+      (click)="elegir('desdeId', opcion.id)"
+    >
+      <span class="menu-opciones__fila">
+        {{ opcion.etiqueta }}
+        @if (opcion.id === valorDesde()) {
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+</mat-menu>
+
+<mat-menu #menuCuotas="matMenu" class="menu-opciones" xPosition="before">
+  @for (n of opcionesCuotas; track n) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="n === valorCuotas()"
+      (click)="elegir('cuotas', n)"
+    >
+      <span class="menu-opciones__fila">
+        {{ n === 1 ? '1 cuota' : n + ' cuotas' }}
+        @if (n === valorCuotas()) {
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+</mat-menu>

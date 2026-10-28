@@ -11,6 +11,8 @@ import {
   type OpcionMovimiento,
 } from '../../../core/domain';
 import type { Categoria } from '../../../core/models';
+import { Selector } from '../../../shared/forms/selector';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 export interface MovimientosFiltrosSheetData {
   filtros: FiltrosMovimientos;
@@ -32,7 +34,7 @@ export interface MovimientosFiltrosSheetData {
  */
 @Component({
   selector: 'app-movimientos-filtros-sheet',
-  imports: [MatIconModule, MatButtonModule],
+  imports: [HojaCabecera, Selector, MatIconModule, MatButtonModule],
   templateUrl: './movimientos-filtros-sheet.html',
   styleUrl: './movimientos-filtros-sheet.scss',
 })

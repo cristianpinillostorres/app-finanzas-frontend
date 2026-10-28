@@ -1,50 +1,39 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">{{ modoEdicion ? 'Editar cuenta' : 'Agregar cuenta' }}</h2>
-  <button
-    mat-icon-button
-    type="button"
-    aria-label="Cerrar"
-    (click)="cerrar()"
-    [disabled]="guardando()"
-  >
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera [titulo]="modoEdicion ? 'Editar cuenta' : 'Agregar cuenta'" [cerrarDeshabilitado]="guardando()" (cerrar)="cerrar()" />
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <div class="field">
-    <label for="c-tipo">Tipo *</label>
-    <select class="input" id="c-tipo" formControlName="tipo">
-      @for (opcion of tipos; track opcion.valor) {
-        <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
-      }
-    </select>
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="c-tipo">Tipo</label>
+      <app-selector inputId="c-tipo" formControlName="tipo" [opciones]="tipos" />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="c-nombre">Nombre</label>
+      <input
+        class="input"
+        id="c-nombre"
+        placeholder="Nombre de la cuenta"
+        formControlName="nombre"
+        [attr.aria-invalid]="invalido(form.controls.nombre) || null"
+      />
+    </div>
   </div>
-
-  <div class="field">
-    <label for="c-nombre">Nombre *</label>
-    <input class="input" id="c-nombre" placeholder="Nombre de la cuenta" formControlName="nombre" />
-    @if (invalido(form.controls.nombre)) {
-      <span class="err">Ponle un nombre a la cuenta.</span>
-    }
-  </div>
+  @if (invalido(form.controls.nombre)) {
+    <p class="ios-nota err">Ponle un nombre a la cuenta.</p>
+  }
 
   @if (pideEntidad()) {
-    <div class="form-2">
-      <div class="field">
-        <label for="c-entidad">Entidad</label>
-        <input
-          class="input"
-          id="c-entidad"
-          placeholder="Nombre de la entidad"
-          formControlName="entidad"
-        />
+    <h3 class="ios-seccion">Entidad</h3>
+    <div class="ios-grupo">
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="c-entidad">Nombre</label>
+        <input class="input" id="c-entidad" placeholder="Bancolombia" formControlName="entidad" />
       </div>
-      <div class="field">
-        <label for="c-ultimos4">Últimos 4 dígitos</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="c-ultimos4">Últimos 4 dígitos</label>
         <input
           class="input"
           id="c-ultimos4"
+          inputmode="numeric"
           placeholder="4521"
           maxlength="4"
           formControlName="ultimos4"
@@ -53,38 +42,45 @@
     </div>
   }
 
-  <div class="form-2">
-    <div class="field">
-      <label for="c-color">Color</label>
-      <input class="input" id="c-color" type="color" formControlName="color" />
-    </div>
+  <h3 class="ios-seccion">{{ modoEdicion ? 'Apariencia' : 'Saldo y apariencia' }}</h3>
+  <div class="ios-grupo">
     @if (!modoEdicion) {
-      <div class="field">
-        <label for="c-saldo">Saldo inicial *</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="c-saldo">Saldo inicial</label>
         <input
           class="input"
           id="c-saldo"
           type="number"
           inputmode="numeric"
-          placeholder="0"
+          placeholder="$ 0"
           formControlName="saldoInicial"
+          [attr.aria-invalid]="invalido(form.controls.saldoInicial) || null"
         />
-        @if (invalido(form.controls.saldoInicial)) {
-          <span class="err">Escribe cuánto tiene hoy la cuenta.</span>
-        }
       </div>
     }
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="c-color">Color</label>
+      <input class="ios-color" id="c-color" type="color" formControlName="color" />
+    </div>
   </div>
-
-  @if (modoEdicion) {
-    <p class="help">El saldo se corrige desde "Ajustar saldo", no aquí.</p>
+  @if (!modoEdicion && invalido(form.controls.saldoInicial)) {
+    <p class="ios-nota err">Escribe cuánto tiene hoy la cuenta.</p>
+  } @else if (modoEdicion) {
+    <p class="ios-nota">El saldo se corrige desde "Ajustar saldo", no aquí.</p>
   }
 
-  <label class="switch">
-    <input type="checkbox" formControlName="sumaEnDisponible" />
-    Cuenta como plata disponible para gastar
-  </label>
-  <p class="help help--switch">
+  <div class="ios-grupo">
+    <label class="ios-fila" for="c-disponible">
+      <span class="ios-fila__rotulo">Disponible para gastar</span>
+      <input
+        class="ios-interruptor"
+        id="c-disponible"
+        type="checkbox"
+        formControlName="sumaEnDisponible"
+      />
+    </label>
+  </div>
+  <p class="ios-nota">
     Apágalo para ahorros o plata que no quieres tocar: no se suma a "Te queda libre".
   </p>
 

@@ -1,7 +1,7 @@
 <div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
   <app-page-head
-    class="col-md-12"
     icono="event_repeat"
+    class="col-md-12"
     titulo="Pagos fijos"
     [detalle]="detallePagos()"
   >
@@ -92,132 +92,160 @@
     Reemplaza las dos columnas Por pagar / Pagados, que obligaban a cruzar
     dos listas para saber qué venía primero.
   -->
-    <section class="panel linea col-md-12 col-lg-8" aria-labelledby="titulo-linea">
-      <div class="panel-head">
-        <h2 id="titulo-linea">Tu mes, día por día</h2>
+    <section class="seccion-linea col-md-12 col-lg-8" aria-labelledby="titulo-linea">
+      <div class="group-head">
+        <h2 class="group-head__titulo" id="titulo-linea">Tu mes, día por día</h2>
         @if (listo()) {
           <span class="t-meta">{{ resumen().pagados.length }} de {{ totalPagos() }} pagados</span>
         }
       </div>
-
-      @if (!listo()) {
-        <app-skeleton-rows [filas]="4" [conIcono]="false" />
-      } @else if (linea().dias.length === 0) {
-        <!-- Sin ningún pago en el mes, "todo al día" sería una tranquilidad
+      <div class="panel linea">
+        @if (!listo()) {
+          <app-skeleton-rows [filas]="4" [conIcono]="false" />
+        } @else if (linea().dias.length === 0) {
+          <!-- Sin ningún pago en el mes, "todo al día" sería una tranquilidad
            falsa: lo más probable es que todavía no haya nada creado. -->
-        <app-empty-state
-          icono="event_repeat"
-          titulo="Todavía no tienes pagos fijos"
-          descripcion="Agrega lo que pagas cada mes, como el arriendo, los servicios o las suscripciones, para saber cuánto te queda libre."
-        >
-          <button class="btn btn-outline" type="button" (click)="agregarPagoFijo()">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Nuevo pago fijo
-          </button>
-        </app-empty-state>
-      } @else {
-        <ol class="linea__dias">
-          @for (dia of linea().dias; track dia.fecha.getTime(); let i = $index) {
-            @if (linea().indiceHoy === i) {
-              <ng-container *ngTemplateOutlet="marcaHoy" />
-            }
-            <li class="linea__dia" [class]="'linea__dia--' + dia.tramo">
-              <span class="sello-fecha linea__sello" aria-hidden="true">
-                <span class="sello-fecha__dia tnum">{{ dia.fecha.getDate() }}</span>
-                <span class="sello-fecha__mes">{{ mesCorto(dia.fecha) }}</span>
-              </span>
-              <span class="sr-only">{{ fechaLarga(dia.fecha) }}</span>
-              <div class="linea__pagos" auto-animate>
-                @for (item of dia.items; track item.id) {
-                  <div class="stack" auto-animate>
-                    <div
-                      class="row fila-pago"
-                      [class.row--estatica]="item.esCredito"
-                      [class.fila-pagada]="item.pagado"
-                    >
-                      @if (item.esCredito) {
-                        <ng-container *ngTemplateOutlet="infoPago; context: { $implicit: item }" />
-                      } @else {
-                        <button
-                          class="fila-pago__abrir"
-                          type="button"
-                          [attr.aria-expanded]="expandido(item.id)"
-                          [attr.aria-controls]="'detalle-' + item.id"
-                          (click)="alternarExpandido(item.id)"
-                        >
+          <app-empty-state
+            icono="event_repeat"
+            titulo="Todavía no tienes pagos fijos"
+            descripcion="Agrega lo que pagas cada mes, como el arriendo, los servicios o las suscripciones, para saber cuánto te queda libre."
+          >
+            <button class="btn btn-outline" type="button" (click)="agregarPagoFijo()">
+              <mat-icon aria-hidden="true">add</mat-icon>
+              Nuevo pago fijo
+            </button>
+          </app-empty-state>
+        } @else {
+          <ol class="linea__dias">
+            @for (dia of linea().dias; track dia.fecha.getTime(); let i = $index) {
+              @if (linea().indiceHoy === i) {
+                <ng-container *ngTemplateOutlet="marcaHoy" />
+              }
+              <li class="linea__dia" [class]="'linea__dia--' + dia.tramo">
+                <span class="sello-fecha linea__sello" aria-hidden="true">
+                  <span class="sello-fecha__dia tnum">{{ dia.fecha.getDate() }}</span>
+                  <span class="sello-fecha__mes">{{ mesCorto(dia.fecha) }}</span>
+                </span>
+                <span class="sr-only">{{ fechaLarga(dia.fecha) }}</span>
+                <div class="linea__pagos" auto-animate>
+                  @for (item of dia.items; track item.id) {
+                    <div class="stack" auto-animate>
+                      <div
+                        class="row fila-pago"
+                        [class.row--estatica]="item.esCredito"
+                        [class.fila-pagada]="item.pagado"
+                      >
+                        @if (item.esCredito) {
                           <ng-container
                             *ngTemplateOutlet="infoPago; context: { $implicit: item }"
                           />
-                          <mat-icon class="fila-pago__chevron" aria-hidden="true"
-                            >expand_more</mat-icon
-                          >
-                        </button>
-                      }
-                      <span class="row-end">
-                        <span class="t-row amt">
-                          @if (item.esEstimado) {
-                            <span aria-hidden="true">~</span
-                            ><span class="sr-only">aproximadamente </span>
-                          }
-                          <app-amount [valor]="item.monto"
-                        /></span>
-                        @if (!item.pagado) {
+                        } @else {
                           <button
-                            class="btn btn-text boton-pagar"
+                            class="fila-pago__abrir"
                             type="button"
-                            (click)="pagar(item)"
+                            [attr.aria-expanded]="expandido(item.id)"
+                            [attr.aria-controls]="'detalle-' + item.id"
+                            (click)="alternarExpandido(item.id)"
                           >
-                            Pagar<span class="sr-only"> {{ item.nombre }}</span>
+                            <ng-container
+                              *ngTemplateOutlet="infoPago; context: { $implicit: item }"
+                            />
+                            <mat-icon class="fila-pago__chevron" aria-hidden="true"
+                              >expand_more</mat-icon
+                            >
                           </button>
                         }
-                      </span>
-                    </div>
-                    @if (expandido(item.id)) {
-                      <div class="detalle" [id]="'detalle-' + item.id">
-                        <div class="kv">
-                          <span>Se paga</span>
-                          <b>{{ cuandoSePaga(item) }}</b>
-                        </div>
-                        @if (cuentaDe(item); as cuenta) {
-                          <div class="kv">
-                            <span>Desde</span>
-                            <b>{{ cuenta }}</b>
-                          </div>
-                        }
-                        @if (!item.pagado) {
-                          <p class="help">
-                            ¿Ya lo pagaste antes de empezar a usar la app? Márcalo sin registrar un
-                            gasto, para no contarlo dos veces.
-                          </p>
-                        }
-                        <div class="chips">
+                        <span class="row-end">
+                          <span class="t-row amt">
+                            @if (item.esEstimado) {
+                              <span aria-hidden="true">~</span
+                              ><span class="sr-only">aproximadamente </span>
+                            }
+                            <app-amount [valor]="item.monto"
+                          /></span>
                           @if (!item.pagado) {
-                            <button class="chip" type="button" (click)="marcarPagado(item)">
-                              <mat-icon aria-hidden="true">check</mat-icon>
-                              Ya lo pagué
-                            </button>
-                          } @else if (item.marcadoSinMovimiento) {
-                            <button class="chip" type="button" (click)="desmarcar(item)">
-                              Desmarcar
+                            <button
+                              class="btn btn-text boton-pagar"
+                              type="button"
+                              (click)="pagar(item)"
+                            >
+                              Pagar<span class="sr-only"> {{ item.nombre }}</span>
                             </button>
                           }
-                          <button class="chip" type="button" (click)="editar(item)">Editar</button>
-                          <button class="chip chip--peligro" type="button" (click)="eliminar(item)">
-                            Eliminar
-                          </button>
-                        </div>
+                        </span>
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </li>
-          }
-          @if (linea().indiceHoy === linea().dias.length) {
-            <ng-container *ngTemplateOutlet="marcaHoy" />
-          }
-        </ol>
-      }
+                      @if (expandido(item.id)) {
+                        <!-- La misma caja y las mismas acciones redondas que una
+                           cuenta, un crédito o un movimiento abierto. -->
+                        <div class="detalle-pago detalle-aparece" [id]="'detalle-' + item.id">
+                          <div class="caja-detalle">
+                            <div class="caja-detalle__fila">
+                              <span>Se paga</span>
+                              <span>{{ cuandoSePaga(item) }}</span>
+                            </div>
+                            @if (cuentaDe(item); as cuenta) {
+                              <div class="caja-detalle__fila">
+                                <span>Desde</span>
+                                <span>{{ cuenta }}</span>
+                              </div>
+                            }
+                          </div>
+                          <div class="acciones-redondas">
+                            @if (!item.pagado) {
+                              <button
+                                class="accion-redonda"
+                                type="button"
+                                (click)="marcarPagado(item)"
+                              >
+                                <span class="accion-redonda__circulo">
+                                  <mat-icon aria-hidden="true">check</mat-icon>
+                                </span>
+                                Ya lo<br />pagué
+                              </button>
+                            } @else if (item.marcadoSinMovimiento) {
+                              <button
+                                class="accion-redonda"
+                                type="button"
+                                (click)="desmarcar(item)"
+                              >
+                                <span class="accion-redonda__circulo">
+                                  <mat-icon aria-hidden="true">undo</mat-icon>
+                                </span>
+                                Desmarcar
+                              </button>
+                            }
+                            <button class="accion-redonda" type="button" (click)="editar(item)">
+                              <span class="accion-redonda__circulo">
+                                <mat-icon aria-hidden="true">edit</mat-icon>
+                              </span>
+                              Editar
+                            </button>
+                            <button class="accion-redonda" type="button" (click)="eliminar(item)">
+                              <span class="accion-redonda__circulo">
+                                <mat-icon aria-hidden="true">delete</mat-icon>
+                              </span>
+                              Eliminar
+                            </button>
+                          </div>
+                          @if (!item.pagado) {
+                            <p class="t-meta detalle-pago__nota">
+                              "Ya lo pagué" es para lo que pagaste antes de usar la app: lo marca
+                              sin registrar un gasto, para no contarlo dos veces.
+                            </p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </li>
+            }
+            @if (linea().indiceHoy === linea().dias.length) {
+              <ng-container *ngTemplateOutlet="marcaHoy" />
+            }
+          </ol>
+        }
+      </div>
     </section>
   }
 </div>

@@ -1,56 +1,82 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">{{ modoEdicion ? 'Editar crédito' : 'Agregar crédito' }}</h2>
-  <button
-    mat-icon-button
-    type="button"
-    aria-label="Cerrar"
-    (click)="cerrar()"
-    [disabled]="guardando()"
-  >
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera
+  [titulo]="modoEdicion ? 'Editar crédito' : 'Agregar crédito'"
+  [cerrarDeshabilitado]="guardando()"
+  (cerrar)="cerrar()"
+/>
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <div class="field">
-    <label for="cr-grupo">Tipo *</label>
-    <select class="input" id="cr-grupo" formControlName="grupo">
-      @for (opcion of opcionesGrupo; track opcion.valor) {
-        <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
-      }
-    </select>
-    @if (modoEdicion) {
-      <p class="help">El tipo no se puede cambiar después de crear el crédito.</p>
-    }
-  </div>
-
-  <div class="field">
-    <label for="cr-nombre">Nombre *</label>
-    <input
-      class="input"
-      id="cr-nombre"
-      placeholder="Ej.: Crédito de vivienda"
-      formControlName="nombre"
-    />
-    @if (invalido(form.controls.nombre)) {
-      <span class="err">Ponle un nombre para reconocerlo.</span>
-    }
-  </div>
-
-  <div class="form-2">
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="cr-grupo">Tipo</label>
+      <app-selector inputId="cr-grupo" formControlName="grupo" [opciones]="opcionesGrupo" />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="cr-nombre">Nombre</label>
+      <input
+        class="input"
+        id="cr-nombre"
+        [placeholder]="ejemploNombre()"
+        formControlName="nombre"
+        [attr.aria-invalid]="invalido(form.controls.nombre) || null"
+      />
+    </div>
     @if (pideEntidad()) {
-      <div class="field">
-        <label for="cr-entidad">Entidad</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-entidad">Entidad</label>
         <input
           class="input"
           id="cr-entidad"
-          placeholder="Nombre de la entidad"
+          [placeholder]="ejemploEntidad()"
           formControlName="entidad"
         />
       </div>
     }
-    <div class="field">
-      <label for="cr-dia-pago">Día límite de pago</label>
+  </div>
+  @if (invalido(form.controls.nombre)) {
+    <p class="ios-nota err">Ponle un nombre para reconocerlo.</p>
+  } @else if (modoEdicion) {
+    <p class="ios-nota">El tipo no se puede cambiar después de crear el crédito.</p>
+  }
+
+  @if (esTarjeta() || pideCupo()) {
+    <h3 class="ios-seccion">{{ esTarjeta() ? 'Tarjeta' : 'Cupo' }}</h3>
+    <div class="ios-grupo">
+      @if (esTarjeta()) {
+        <div class="ios-fila">
+          <label class="ios-fila__rotulo" for="cr-ultimos4">Últimos 4 dígitos</label>
+          <input
+            class="input"
+            id="cr-ultimos4"
+            inputmode="numeric"
+            placeholder="9021"
+            maxlength="4"
+            formControlName="ultimos4"
+          />
+        </div>
+      }
+      @if (pideCupo()) {
+        <div class="ios-fila">
+          <label class="ios-fila__rotulo" for="cr-cupo">Cupo total</label>
+          <input
+            class="input"
+            id="cr-cupo"
+            appMonto
+            placeholder="$ 0"
+            formControlName="cupo"
+            [attr.aria-invalid]="invalido(form.controls.cupo) || null"
+          />
+        </div>
+      }
+    </div>
+    @if (pideCupo() && invalido(form.controls.cupo)) {
+      <p class="ios-nota err">Escribe el cupo total de la tarjeta.</p>
+    }
+  }
+
+  <h3 class="ios-seccion">Fechas</h3>
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="cr-dia-pago">Día límite de pago</label>
       <input
         class="input"
         id="cr-dia-pago"
@@ -61,22 +87,9 @@
         formControlName="diaPago"
       />
     </div>
-  </div>
-
-  @if (esTarjeta()) {
-    <div class="form-2">
-      <div class="field">
-        <label for="cr-ultimos4">Últimos 4 dígitos</label>
-        <input
-          class="input"
-          id="cr-ultimos4"
-          placeholder="9021"
-          maxlength="4"
-          formControlName="ultimos4"
-        />
-      </div>
-      <div class="field">
-        <label for="cr-dia-corte">Día de corte</label>
+    @if (esTarjeta()) {
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-dia-corte">Día de corte</label>
         <input
           class="input"
           id="cr-dia-corte"
@@ -87,44 +100,25 @@
           formControlName="diaCorte"
         />
       </div>
-    </div>
-  }
-
-  @if (pideCupo()) {
-    <div class="field">
-      <label for="cr-cupo">Cupo *</label>
-      <input
-        class="input"
-        id="cr-cupo"
-        type="number"
-        inputmode="numeric"
-        placeholder="0"
-        formControlName="cupo"
-      />
-      @if (invalido(form.controls.cupo)) {
-        <span class="err">Escribe el cupo total de la tarjeta.</span>
-      }
-    </div>
-  }
+    }
+  </div>
 
   @if (esBanco()) {
-    <div class="form-2">
-      <div class="field">
-        <label for="cr-monto-banco">Monto prestado *</label>
+    <h3 class="ios-seccion">Préstamo</h3>
+    <div class="ios-grupo">
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-monto-banco">Monto prestado</label>
         <input
           class="input"
           id="cr-monto-banco"
-          type="number"
-          inputmode="numeric"
-          placeholder="0"
+          appMonto
+          placeholder="$ 0"
           formControlName="monto"
+          [attr.aria-invalid]="invalido(form.controls.monto) || null"
         />
-        @if (invalido(form.controls.monto)) {
-          <span class="err">Escribe cuánto te prestaron.</span>
-        }
       </div>
-      <div class="field">
-        <label for="cr-plazo">Plazo (meses) *</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-plazo">Plazo (meses)</label>
         <input
           class="input"
           id="cr-plazo"
@@ -133,11 +127,8 @@
           formControlName="plazoMeses"
         />
       </div>
-    </div>
-
-    <div class="form-2">
-      <div class="field">
-        <label for="cr-tasa">Tasa efectiva anual, E.A. (%)</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-tasa">Tasa E.A. (%)</label>
         <input
           class="input"
           id="cr-tasa"
@@ -147,28 +138,32 @@
           placeholder="21,50"
           formControlName="tasaEaPorcentaje"
           aria-describedby="cr-tasa-ayuda"
+          [attr.aria-invalid]="invalido(form.controls.tasaEaPorcentaje) || null"
         />
-        @if (invalido(form.controls.tasaEaPorcentaje)) {
-          <span class="err">Escribe la tasa del crédito.</span>
-        } @else {
-          <span class="help-campo" id="cr-tasa-ayuda"
-            >Sale en tu extracto o en el contrato, como "E.A." o "efectiva anual".</span
-          >
-        }
       </div>
-      <div class="field">
-        <label for="cr-tipo-tasa">Tipo de tasa</label>
-        <select class="input" id="cr-tipo-tasa" formControlName="tipoTasa">
-          @for (opcion of opcionesTipoTasa; track opcion.valor) {
-            <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
-          }
-        </select>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-tipo-tasa">Tipo de tasa</label>
+        <app-selector
+          inputId="cr-tipo-tasa"
+          formControlName="tipoTasa"
+          [opciones]="opcionesTipoTasa"
+        />
       </div>
     </div>
+    @if (invalido(form.controls.monto)) {
+      <p class="ios-nota err">Escribe cuánto te prestaron.</p>
+    } @else if (invalido(form.controls.tasaEaPorcentaje)) {
+      <p class="ios-nota err">Escribe la tasa del crédito.</p>
+    } @else {
+      <p class="ios-nota" id="cr-tasa-ayuda">
+        La tasa sale en tu extracto o en el contrato, como "E.A." o "efectiva anual".
+      </p>
+    }
 
-    <div class="form-2">
-      <div class="field">
-        <label for="cr-cuotas-iniciales">Cuotas ya pagadas</label>
+    <h3 class="ios-seccion">Lo que llevas</h3>
+    <div class="ios-grupo">
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-cuotas-iniciales">Cuotas ya pagadas</label>
         <input
           class="input"
           id="cr-cuotas-iniciales"
@@ -177,14 +172,13 @@
           formControlName="cuotasPagadasIniciales"
         />
       </div>
-      <div class="field">
-        <label for="cr-seguro">Seguro mensual</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-seguro">Seguro mensual</label>
         <input
           class="input"
           id="cr-seguro"
-          type="number"
-          inputmode="numeric"
-          placeholder="0"
+          appMonto
+          placeholder="$ 0"
           formControlName="seguroMensual"
         />
       </div>
@@ -192,26 +186,27 @@
   }
 
   @if (esPersona()) {
-    <div class="form-2">
-      <div class="field">
-        <label for="cr-monto-persona">Monto acordado *</label>
+    <h3 class="ios-seccion">Lo acordado</h3>
+    <div class="ios-grupo">
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-monto-persona">Monto acordado</label>
         <input
           class="input"
           id="cr-monto-persona"
-          type="number"
-          inputmode="numeric"
-          placeholder="0"
+          appMonto
+          placeholder="$ 0"
           formControlName="monto"
+          [attr.aria-invalid]="invalido(form.controls.monto) || null"
         />
-        @if (invalido(form.controls.monto)) {
-          <span class="err">Escribe cuánto le debes.</span>
-        }
       </div>
-      <div class="field">
-        <label for="cr-fecha-acordada">Fecha acordada</label>
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cr-fecha-acordada">Fecha acordada</label>
         <input class="input" id="cr-fecha-acordada" type="date" formControlName="fechaAcordada" />
       </div>
     </div>
+    @if (invalido(form.controls.monto)) {
+      <p class="ios-nota err">Escribe cuánto le debes.</p>
+    }
   }
 
   <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">

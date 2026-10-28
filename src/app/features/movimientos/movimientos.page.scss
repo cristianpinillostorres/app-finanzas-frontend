@@ -1,28 +1,31 @@
 // El layout lo arma `.grid-12` en la plantilla; acá solo lo propio de
 // Movimientos.
 
-// En móvil, tres tarjetas en fila dejan ~110px cada una y un monto como
-// "$12.345.678.900" se parte en tres líneas. Van dos arriba y el Balance
-// ancho completo abajo, que además es el que conviene destacar. Desde
-// 768px sí entran las tres en línea.
-.kpis--movimientos {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.kpis--movimientos app-stat-card:last-child {
-  grid-column: 1 / -1;
-}
-
-@media (min-width: 768px) {
-  .kpis--movimientos {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .kpis--movimientos app-stat-card:last-child {
-    grid-column: auto;
-  }
+// El mes ocupa lo que sobra y "Filtros" (solo celular) va a su derecha. En
+// grid y no en flex: el selector se dibuja con `display: contents`, así que
+// su `.month` es el que cae en la primera columna.
+.barra-mes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
 }
 
-// Buscador y chips de tipo, sin tarjeta alrededor: apilados en móvil; en
-// escritorio, el buscador a la izquierda y los filtros pegados a la derecha.
+// Círculo del color de las tarjetas, como los botones de la barra de arriba.
+.boton-filtros {
+  position: relative;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+
+  .badge-contador {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}
+
+// Buscador y chips de tipo (solo escritorio), sin tarjeta alrededor: el
+// buscador a la izquierda y los filtros pegados a la derecha.
 .filtros-base {
   display: flex;
   flex-direction: column;
@@ -47,10 +50,9 @@
 }
 
 .chips-tipo {
-  // Filtros pegados a la derecha también en móvil, donde es el único chip.
   justify-content: flex-end;
-  // En 360px los cinco chips no entran en una línea; se deja que envuelvan
-  // en vez de scrollear, para que ninguno quede escondido fuera de vista.
+  // Si la ventana es angosta, los chips envuelven en vez de scrollear, para
+  // que ninguno quede escondido fuera de vista.
   flex-wrap: wrap;
 }
 
@@ -98,21 +100,18 @@
   justify-self: start;
 }
 
-// Cada día es un bloque con aire arriba y filas más altas.
-.daysep {
-  padding: var(--space-5) var(--space-4) var(--space-2);
+// Un grupo por día, con el aire de los grupos de Cuentas y Créditos.
+.dias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 .rows {
-  gap: 0;
-  padding: 0 var(--space-4) var(--space-2);
+  padding: 0 var(--space-4);
 }
-.rows .stack {
-  gap: 0;
-}
-// La línea separa un día del siguiente, no cada fila de la de al lado.
-.rows + .daysep {
-  margin: 0 var(--space-4);
-  padding-inline: 0;
+// Cada movimiento envuelve su fila y su detalle, así que la raya de `.row`
+// (que se quita en el último hijo) no aparecía: va entre movimientos.
+.movimiento + .movimiento {
   border-top: 1px solid var(--border);
 }
 .fila-movimiento {
@@ -129,7 +128,9 @@
 .fila-movimiento .row-end {
   gap: var(--space-1);
 }
-.rows .detalle {
-  border-top: 0;
-  padding: 0 0 var(--space-3);
+.detalle-movimiento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
 }

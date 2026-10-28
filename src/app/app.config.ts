@@ -9,6 +9,11 @@ import {
   isDevMode,
 } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import {
+  MAT_BOTTOM_SHEET_DEFAULT_OPTIONS,
+  MatBottomSheetConfig,
+} from '@angular/material/bottom-sheet';
+import { MAT_DIALOG_DEFAULT_OPTIONS, MatDialogConfig } from '@angular/material/dialog';
 import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
 import { provideRouter, withViewTransitions } from '@angular/router';
 
@@ -36,6 +41,17 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'es-CO' },
     { provide: MAT_ICON_DEFAULT_OPTIONS, useValue: { fontSet: 'material-symbols-outlined' } },
+    // Al abrir una hoja el foco va a la hoja misma, no a "Cancelar" (el
+    // primer botón): si no, "Cancelar" aparecía recuadrado sin haberlo
+    // tocado. Quien quiere el foco en un campo lo pide al abrir (el "+").
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: { ...new MatDialogConfig(), autoFocus: 'dialog' },
+    },
+    {
+      provide: MAT_BOTTOM_SHEET_DEFAULT_OPTIONS,
+      useValue: { ...new MatBottomSheetConfig(), autoFocus: 'dialog' },
+    },
     ...SUPABASE_PROVIDERS,
     ...API_PROVIDERS,
     provideServiceWorker('ngsw-worker.js', {

@@ -56,10 +56,10 @@ import {
 import { claseIconoDeMovimiento, iconoDeMovimiento } from '../../shared/format/icono-categoria';
 import { MonthSelector } from '../../shared/month-selector/month-selector';
 import { PageHead } from '../../shared/page-head/page-head';
-import { StatCard } from '../../shared/stat-card/stat-card';
 import { MovimientosFiltrosSheet } from './movimientos-filtros-sheet/movimientos-filtros-sheet';
 import { primeraCarga } from '../../shared/carga/primera-carga';
 import { SkeletonRows } from '../../shared/skeleton-rows/skeleton-rows';
+import { Selector } from '../../shared/forms/selector';
 
 const ETIQUETA_TIPO: Record<TipoMovimiento, string> = {
   GASTO: 'Gasto',
@@ -81,12 +81,12 @@ const ETIQUETA_TIPO: Record<TipoMovimiento, string> = {
 @Component({
   selector: 'app-movimientos-page',
   imports: [
+    Selector,
     PantallaVacia,
     MatIconModule,
     Amount,
     EmptyState,
     MonthSelector,
-    StatCard,
     PageHead,
     SkeletonRows,
     AutoAnimar,
@@ -363,7 +363,18 @@ export class MovimientosPage {
     return 'mon-tr'; // TRANSFERENCIA e INTERNO comparten color (ver notas-app-finanzas.md).
   }
 
+  /**
+   * La línea de abajo sin repetir el título: un gasto sin descripción se
+   * llama como su categoría, y una transferencia sin descripción se llama
+   * "Transferencia"; decirlo dos veces en la misma fila era ruido.
+   */
   protected metaTextoDe(movimiento: Movimiento): string {
+    const partes = this.partesMetaDe(movimiento);
+    const sinTitulo = partes[0] === movimiento.descripcion ? partes.slice(1) : partes;
+    return sinTitulo.join(' · ');
+  }
+
+  private partesMetaDe(movimiento: Movimiento): string[] {
     const categoria = movimiento.categoriaId
       ? this.categorias().find((c) => c.id === movimiento.categoriaId)?.nombre
       : undefined;
@@ -376,16 +387,18 @@ export class MovimientosPage {
       const cuotas = this.compras().find((c) => c.movimientoId === movimiento.id)?.numCuotas;
       const partes = [categoria, origen];
       if (cuotas) partes.push(`${cuotas} cuotas`);
-      return partes.filter(Boolean).join(' · ');
+      return partes.filter((p): p is string => !!p);
     }
 
     if (movimiento.tipo === 'INGRESO') {
-      return [categoria, this.nombreCuenta(movimiento.cuentaDestinoId)].filter(Boolean).join(' · ');
+      return [categoria, this.nombreCuenta(movimiento.cuentaDestinoId)].filter(
+        (p): p is string => !!p,
+      );
     }
 
     if (movimiento.tipo === 'AJUSTE') {
       const cuenta = this.nombreCuenta(movimiento.cuentaDestinoId ?? movimiento.cuentaOrigenId);
-      return ['Ajuste', cuenta].filter(Boolean).join(' · ');
+      return ['Ajuste', cuenta].filter(Boolean);
     }
 
     // TRANSFERENCIA / INTERNO: "Transferencia · origen → destino".
@@ -394,7 +407,7 @@ export class MovimientosPage {
       ? this.creditos().find((c) => c.id === movimiento.creditoDestinoId)?.nombre
       : this.nombreCuenta(movimiento.cuentaDestinoId);
     const etiquetaTipo = movimiento.tipo === 'INTERNO' ? 'Interno' : 'Transferencia';
-    return `${etiquetaTipo} · ${origen} → ${destino}`;
+    return [etiquetaTipo, `${origen} → ${destino}`];
   }
 
   private nombreCuenta(cuentaId: string | undefined): string {

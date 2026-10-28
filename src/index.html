@@ -16,7 +16,7 @@
         // Login y bienvenida van siempre en claro (ver `ThemeService.soloClaro`).
         var soloClaro = /^\/(login|bienvenida)(\/|$)/.test(location.pathname);
         var tema = soloClaro ? 'claro' : localStorage.getItem('finanzas.tema');
-        if (tema === 'claro' || tema === 'oscuro')
+        if (tema === 'claro' || tema === 'neutro' || tema === 'oscuro')
           document.documentElement.setAttribute('data-theme', tema);
       } catch (e) {}
     </script>
@@ -28,20 +28,17 @@
       fijo queda pegado a los bordes redondos/gestos del iPhone en vez de
       respetarlos.
     -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <!-- Modo standalone al agregar como ícono de inicio en iOS (Safari no lee el manifest de PWA para esto). -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Finanzas" />
     <!--
       Barra del navegador en Android (sin efecto directo en iOS, ahí manda
-      `apple-mobile-web-app-status-bar-style`). Uno por esquema para que
-      acompañe al tema: son los valores literales de `--bg-surface` en
-      `styles/tokens/_semanticos.scss` — un `<meta>` no puede leer una
-      variable CSS, así que si cambia la superficie hay que tocar acá.
+      `apple-mobile-web-app-status-bar-style`). Arranca con la página de
+      Teal; `ThemeService` lo cambia al tema elegido (ver `COLOR_BARRA`).
     -->
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121b1d" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfcfe" />
+    <meta name="theme-color" content="#f6f8f9" />
     <!-- Ícono de la pantalla de inicio en iOS — Safari no lee `icons` del manifest para esto, necesita su propio `<link>`. -->
     <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -61,7 +58,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght@20..24,400&amp;display=block"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@20..24,400,0..1&amp;display=block"
       rel="stylesheet"
     />
     <link rel="manifest" href="manifest.webmanifest" />

@@ -30,32 +30,28 @@
   padding: var(--space-3) var(--layout-gutter);
 }
 
-// La marca de la casa: Anton en mayúsculas, como "MI_SEMANA". Ocupa el
-// ancho de la barra lateral para que lo que viene después (el usuario)
-// arranque en la misma columna que las cards del contenido.
+// La marca: el cuadrito del header del teléfono y el nombre en la sans de
+// la app. Ocupa el ancho de la barra lateral para que lo que viene después
+// (el usuario) arranque en la misma columna que el contenido.
 .marca {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   width: var(--ancho-lateral);
-  font-family: var(--font-display);
-  font-size: var(--text-display-lg);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-display);
-  letter-spacing: var(--tracking-display);
-  text-transform: uppercase;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: var(--tracking-hero);
   color: var(--text-primary);
   white-space: nowrap;
 }
 
-// Botones redondos con borde (el ojo de los montos y el tema): el
-// `theme-btn` de Mi Semana. Material los dibuja sin borde ni fondo.
+// Botones redondos sobre la página (el ojo de los montos y el tema): los
+// mismos `topbar__boton` del teléfono.
 .cabezote__icono {
-  border: 1px solid var(--border);
   background: var(--bg-surface);
-  transition: border-color var(--dur-fast) var(--ease-out);
-
-  &:hover {
-    border-color: var(--accent-brillo);
-  }
+  color: var(--accent);
+  box-shadow: var(--shadow-xs);
 }
 
 // ─────────────────────── cuerpo: barra lateral + contenido ───────────────────────
@@ -91,17 +87,16 @@
   gap: var(--space-2);
   padding: var(--space-4);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xs);
 }
 
+// Como los encabezados de sección del teléfono (`.ios-seccion`): en caja
+// normal y gris, sin mayúsculas espaciadas.
 .lateral__titulo {
-  margin: var(--space-1) var(--space-2) 0;
-  font-size: var(--text-xs);
+  margin: var(--space-1) var(--space-3) 0;
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-caps-ancho);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -128,15 +123,36 @@
   backdrop-filter: blur(12px);
 }
 
+// Barra de navegación de iOS: sin raya, sobre el color de la página, con
+// el título grande a la izquierda y botones redondos a la derecha.
 .topbar--movil {
   display: flex;
   align-items: center;
+  // Apretado a propósito: con tres botones, "Pagos fijos" y "Movimientos"
+  // tienen que caber enteros en 360px.
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-4);
+  border-bottom: 0;
+  padding: var(--space-3) var(--space-4) var(--space-2);
   // `max()`: al menos el espacio normal del token, y más si el notch/isla
   // dinámica del celular pide más (necesita `viewport-fit=cover` en
   // `index.html`, si no `env()` siempre vale 0).
-  padding-top: max(var(--space-2), env(safe-area-inset-top, 0px));
+  padding-top: max(var(--space-3), env(safe-area-inset-top, 0px));
+}
+
+// Botones de 40px (Material los dibuja de 48): con tres, el título cabe
+// entero. Material conserva el área táctil de 48px por fuera del círculo.
+.topbar--movil .mat-mdc-icon-button {
+  --mat-icon-button-state-layer-size: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+
+.topbar__boton {
+  flex: none;
+  background: var(--bg-surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-xs);
 }
 
 .topbar--busqueda {
@@ -166,6 +182,7 @@
 // Cuadrito de marca del header móvil: el teal de la casa con el ícono en
 // claro, el mismo sello que encabeza cada pantalla en escritorio.
 .brand__marca {
+  margin-right: var(--space-1);
   display: grid;
   place-items: center;
   width: var(--space-8);
@@ -183,7 +200,9 @@
 }
 
 // ── navegación de la barra lateral ──
-// La sección activa va rellena de teal: la `.side-btn.active` de Mi Semana.
+// La sección activa, como en la barra de pestañas del teléfono: en el
+// acento y con el ícono relleno, sobre un tinte suave en vez de un bloque
+// sólido.
 .nav {
   display: flex;
   flex-direction: column;
@@ -234,11 +253,15 @@
 }
 
 .nav__item--activo {
-  background: var(--accent-solid);
-  color: var(--text-on-accent);
+  background: var(--accent-bg);
+  color: var(--accent);
 
   &:hover {
-    background: var(--accent-solid);
+    background: var(--accent-bg);
+  }
+
+  mat-icon {
+    font-variation-settings: 'FILL' 1;
   }
 }
 
@@ -291,16 +314,39 @@
   line-height: 1;
 }
 
-// Fila de tema del menú "⋮" del móvil. El `mat-menu` se dibuja en el
-// overlay, pero su contenido está declarado en esta plantilla y por eso
-// estos estilos encapsulados lo alcanzan.
-.menu-cuenta__tema {
+// Menú de tema. El `mat-menu` se dibuja en el overlay, pero su contenido
+// está declarado en esta plantilla y por eso estos estilos encapsulados lo
+// alcanzan. La muestra es el acento de cada tema, fijo (no el del tema
+// activo): por eso sale de las primitivas.
+.muestra-tema {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px rgb(127 127 127 / 35%);
+
+  &[data-tema='claro'] {
+    background: var(--p-teal-700);
+  }
+  &[data-tema='neutro'] {
+    background: var(--p-gris-950);
+  }
+  &[data-tema='oscuro'] {
+    background: var(--p-azul-500);
+  }
+}
+
+.menu-tema__fila {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border);
+  gap: var(--space-4);
+  min-width: 120px;
+}
+
+.menu-tema__check {
+  font-size: 20px;
+  color: var(--accent);
 }
 
 .spacer {
@@ -342,7 +388,7 @@
   right: var(--space-4);
   bottom: calc(var(--altura-barra-inferior) + env(safe-area-inset-bottom, 0px) + var(--space-4));
   z-index: var(--z-fab);
-  box-shadow: var(--shadow-md), var(--glow-md);
+  box-shadow: var(--shadow-md);
 }
 
 // ─────────────────────── barra inferior (móvil) ───────────────────────
@@ -398,38 +444,28 @@
       height: var(--space-6);
     }
 
+    // Como la barra de pestañas de iOS: la activa en el acento, con el
+    // ícono relleno; el resto en gris, con el ícono de línea.
     &.activo {
       color: var(--accent);
       font-weight: var(--weight-bold);
 
-      // Pastilla teal rellena detrás del ícono de la sección activa (lo
-      // seleccionado en Mi Semana va así): el color solo no alcanza para
-      // marcar dónde estás de un vistazo, sobre todo con brillo bajo.
       mat-icon {
-        position: relative;
-        color: var(--text-on-accent);
-        // El fondo va en un pseudo-elemento para no deformar el ícono.
-        &::after {
-          content: '';
-          position: absolute;
-          inset: -4px -12px;
-          border-radius: var(--radius-pill);
-          background: var(--accent-solid);
-          z-index: -1;
-        }
+        font-variation-settings: 'FILL' 1;
       }
     }
   }
 }
 
-// El header del móvil lleva el nombre de la pantalla en Anton, como el de
-// Mi Semana en el teléfono, pero en el color del texto: el teal queda para
-// los títulos dentro del contenido.
-.topbar--movil .screen-title {
+// Título grande de iOS: la sans de la app en extra negrita, en caja normal.
+.topbar--movil .titulo-grande {
   min-width: 0;
-  // Con el interlineado apretado de Anton y el `overflow` de la elipsis,
-  // la tilde de "CRÉDITOS" quedaba cortada por arriba.
-  line-height: var(--leading-tight);
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-titulo-grande);
+  font-weight: var(--weight-extrabold);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -457,7 +493,7 @@
     padding-inline: 0;
   }
 
-  // "FINANZAS" no cabe en los 76px de la barra de íconos: la marca vuelve
+  // "Finanzas" no cabe en los 76px de la barra de íconos: la marca vuelve
   // a su ancho y una raya la separa del correo, que si no se leía como
   // parte del título.
   .marca {

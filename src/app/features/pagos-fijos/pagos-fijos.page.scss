@@ -49,9 +49,24 @@
   text-align: left;
   cursor: pointer;
 }
-// El chevron dice "esto se despliega"; gira al abrir.
+// El chevron dice "esto se despliega"; gira al abrir. Va al borde derecho
+// de la fila, como en Cuentas y Créditos: dentro del botón quedaba flotando
+// entre el nombre y el monto. Sigue siendo parte del botón, así que tocarlo
+// también abre el detalle.
+// (Más específico que `.linea__pagos .row`, que fija el relleno lateral.)
+.linea__pagos .row.fila-pago {
+  position: relative;
+  padding-right: calc(var(--space-2) + 24px + var(--space-1));
+}
+// Con el monto y la flecha a la derecha, el nombre tiene poco ancho: en
+// esta lista va en dos líneas si hace falta, en vez de "Libre inversi…".
+.fila-pago .row-main .t-row {
+  white-space: normal;
+}
 .fila-pago__chevron {
-  flex: none;
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-2);
   color: var(--text-muted);
   transition: transform var(--dur-fast) var(--ease-out);
 }
@@ -59,9 +74,14 @@
   transform: rotate(180deg);
 }
 
-.detalle .help {
+.detalle-pago {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+.detalle-pago__nota {
   margin: 0;
-  font-size: var(--text-sm);
 }
 
 // Un pago ya hecho es contexto, no acción pendiente: baja de peso visual
@@ -71,9 +91,11 @@
 }
 
 // En escritorio el héroe acompaña al mes mientras se recorre: lo que falta
-// sigue a la vista aunque la línea sea larga.
+// sigue a la vista aunque la línea sea larga. Baja lo que mide la cabecera
+// de la línea para que las dos tarjetas empiecen a la misma altura.
 @media (min-width: 1024px) {
   .hero {
+    margin-top: calc(var(--alto-group-head) + var(--space-2));
     position: sticky;
     top: calc(var(--altura-topbar) + var(--space-4));
     align-self: start;
@@ -160,9 +182,7 @@
 .linea__pagos .row-end {
   min-width: 6.5rem;
 }
-.linea__pagos .detalle {
-  padding-bottom: var(--space-3);
-}
+
 
 // Hoy: un punto sobre el riel y una línea de acento que cruza el panel.
 .linea__hoy {

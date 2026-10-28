@@ -1,7 +1,7 @@
 <div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
   <app-page-head
-    class="col-md-12"
     icono="credit_card"
+    class="col-md-12"
     titulo="Créditos"
     [detalle]="detalleCreditos()"
   >
@@ -39,7 +39,7 @@
   -->
     <section class="hero col-md-12">
       <span class="t-meta">Deuda total</span>
-      <span class="t-hero amt mon-deuda"
+      <span class="t-hero amt" [class.mon-deuda]="deudaTotal() > 0"
         ><app-amount [valor]="deudaTotal()" [animar]="true" [cargando]="!listo()"
       /></span>
       <div class="desglose desglose--columnas">
@@ -58,7 +58,7 @@
           } @else if (proxima.fecha) {
             <div>
               <span class="t-meta">Próxima cuota</span>
-              <span class="amt">{{ fechaCortaDe(proxima.fecha) }}</span>
+              <span class="amt">{{ fechaHeroDe(proxima.fecha) }}</span>
             </div>
           }
         }
@@ -66,20 +66,20 @@
     </section>
 
     @if (!listo()) {
-      <section class="stack col-md-6 col-lg-4">
+      <section class="stack col-md-12">
         <div class="panel">
           <app-skeleton-rows [filas]="3" [conIcono]="false" />
         </div>
       </section>
     }
     @for (grupo of listo() ? grupos() : []; track grupo.grupo) {
-      <section class="stack col-md-6 col-lg-4" auto-animate>
+      <section class="stack col-md-12">
         <div class="group-head">
-          <span class="t-meta">{{ grupo.etiqueta }}</span>
+          <h2 class="group-head__titulo">{{ grupo.etiqueta }}</h2>
         </div>
 
         @for (item of grupo.creditos; track item.credito.id) {
-          <div class="credito" auto-animate>
+          <div class="credito">
             <button
               class="row fila-credito"
               type="button"
@@ -88,10 +88,14 @@
             >
               <span class="row-main">
                 <span class="t-row">{{ item.credito.nombre }}</span>
-                @if (item.estadoPago) {
+                <!-- Sin cuota no hay vencimiento que vigilar: "Vence en 18 días"
+                     sobre una tarjeta en $0 parecía una deuda. -->
+                @if (item.estadoPago && item.cuota > 0) {
                   <span class="badge" [class]="claseBadge(item)">{{
                     textoFecha(item.estadoPago.fechaLimite)
                   }}</span>
+                } @else if (item.deuda === 0) {
+                  <span class="t-meta">Sin deuda</span>
                 } @else if (item.credito.grupo === 'PERSONA' && item.credito.fechaAcordada) {
                   <span class="t-meta">Desde {{ fechaTexto(item.credito.fechaAcordada) }}</span>
                 } @else {
@@ -132,7 +136,7 @@
             de quedar partido entre el progreso y los datos.
           -->
             @if (expandido(item.credito.id)) {
-              <div class="credito__detalle">
+              <div class="credito__detalle detalle-aparece">
                 @let compras = comprasDe(item.credito.id);
                 <!-- Una plataforma sin planes no tiene nada que desglosar. -->
                 @if (item.credito.grupo !== 'PLATAFORMA' || compras.length > 0) {
@@ -242,46 +246,56 @@
                   </div>
                 }
 
-                <div class="acciones-fila">
+                <!-- Las mismas acciones redondas de una cuenta abierta en Cuentas. -->
+                <div class="acciones-redondas">
                   @if (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') {
-                    <button class="chip" type="button" (click)="agregarCompra(item.credito)">
-                      <mat-icon aria-hidden="true">add</mat-icon>
-                      Agregar compra
+                    <button
+                      class="accion-redonda"
+                      type="button"
+                      (click)="agregarCompra(item.credito)"
+                    >
+                      <span class="accion-redonda__circulo">
+                        <mat-icon aria-hidden="true">add_shopping_cart</mat-icon>
+                      </span>
+                      Agregar<br />compra
                     </button>
                   }
                   @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
-                    <button class="chip" type="button" (click)="cambiarTasa(item.credito)">
-                      <mat-icon aria-hidden="true">trending_up</mat-icon>
-                      Cambiar tasa
+                    <button
+                      class="accion-redonda"
+                      type="button"
+                      (click)="cambiarTasa(item.credito)"
+                    >
+                      <span class="accion-redonda__circulo">
+                        <mat-icon aria-hidden="true">percent</mat-icon>
+                      </span>
+                      Cambiar<br />tasa
                     </button>
                   }
                   @if (item.credito.grupo === 'PERSONA') {
                     <button
-                      class="btn btn-primary btn-compacto"
+                      class="accion-redonda"
                       type="button"
                       (click)="registrarAbono(item.credito)"
                     >
-                      Registrar abono
+                      <span class="accion-redonda__circulo">
+                        <mat-icon aria-hidden="true">payments</mat-icon>
+                      </span>
+                      Registrar<br />abono
                     </button>
                   }
-                  <span class="acciones-fila__secundarias">
-                    <button
-                      class="btn btn-text btn-compacto"
-                      type="button"
-                      (click)="editar(item.credito)"
-                    >
+                  <button class="accion-redonda" type="button" (click)="editar(item.credito)">
+                    <span class="accion-redonda__circulo">
                       <mat-icon aria-hidden="true">edit</mat-icon>
-                      Editar
-                    </button>
-                    <button
-                      class="btn btn-text btn-compacto"
-                      type="button"
-                      (click)="archivar(item.credito)"
-                    >
+                    </span>
+                    Editar
+                  </button>
+                  <button class="accion-redonda" type="button" (click)="archivar(item.credito)">
+                    <span class="accion-redonda__circulo">
                       <mat-icon aria-hidden="true">inventory_2</mat-icon>
-                      Archivar
-                    </button>
-                  </span>
+                    </span>
+                    Archivar
+                  </button>
                 </div>
               </div>
             }
@@ -294,10 +308,10 @@
             -->
               <div class="credito__pie">
                 <span class="credito__proxima">
-                  <span class="t-meta" [class.mon-out]="vencida(item)"
-                    >{{ vencida(item) ? 'Venció el' : 'Vence el' }}
-                    {{ fechaCortaDe(item.estadoPago.fechaLimite) }}</span
-                  >
+                  <!-- La fecha ya está arriba, en la etiqueta de la fila. -->
+                  <span class="t-meta" [class.mon-out]="vencida(item)">{{
+                    vencida(item) ? 'Cuota vencida' : 'Cuota del mes'
+                  }}</span>
                   <span class="t-row amt"><app-amount [valor]="item.cuota" /></span>
                 </span>
                 <button

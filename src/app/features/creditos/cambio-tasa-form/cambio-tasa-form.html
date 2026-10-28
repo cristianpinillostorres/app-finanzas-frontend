@@ -1,32 +1,28 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">Cambiar tasa</h2>
-  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera titulo="Cambiar tasa" (cerrar)="cerrar()" />
 
-<p class="help">
-  {{ credito.nombre }}: la nueva tasa efectiva anual (E.A.) que te informó el banco y desde cuándo
-  aplica.
-</p>
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <p class="ios-nota ios-nota--arriba">
+    {{ credito.nombre }}: la nueva tasa efectiva anual (E.A.) que te informó el banco y desde cuándo
+    aplica.
+  </p>
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <div class="field">
-    <label for="ct-fecha">Vigente desde</label>
-    <input class="input" id="ct-fecha" type="date" formControlName="fechaDesde" />
-  </div>
-
-  <div class="field">
-    <label for="ct-tasa">Nueva tasa efectiva anual, E.A. (%)</label>
-    <input
-      class="input"
-      id="ct-tasa"
-      type="number"
-      inputmode="decimal"
-      step="0.01"
-      placeholder="21,50"
-      formControlName="tasaEaPorcentaje"
-    />
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="ct-fecha">Vigente desde</label>
+      <input class="input" id="ct-fecha" type="date" formControlName="fechaDesde" />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="ct-tasa">Tasa E.A. (%)</label>
+      <input
+        class="input"
+        id="ct-tasa"
+        type="number"
+        inputmode="decimal"
+        step="0.01"
+        placeholder="21,50"
+        formControlName="tasaEaPorcentaje"
+      />
+    </div>
   </div>
 
   <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">

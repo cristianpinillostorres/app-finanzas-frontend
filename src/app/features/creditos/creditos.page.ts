@@ -1,5 +1,4 @@
 import { AparicionEscalonada } from '../../shared/motion/aparicion-escalonada';
-import { AutoAnimar } from '../../shared/motion/auto-animar';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,7 +16,6 @@ import {
   cuotasFaltantesCompra,
   cuotasPagadasBanco,
   diasEntre,
-  fechaIsoDesdeLocal,
   inicioDelDia,
   tablaAmortizacion,
   tasaEaVigente,
@@ -48,6 +46,8 @@ import { CreditoForm } from './credito-form/credito-form';
 import { primeraCarga } from '../../shared/carga/primera-carga';
 import { SkeletonRows } from '../../shared/skeleton-rows/skeleton-rows';
 
+const FECHA_HERO = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' });
+
 /**
  * Tab Créditos: deuda total y por pagar este mes arriba, créditos
  * agrupados por tipo (Tarjetas, Bancos, Plataformas, Personas) con su
@@ -66,7 +66,6 @@ import { SkeletonRows } from '../../shared/skeleton-rows/skeleton-rows';
     EmptyState,
     PageHead,
     SkeletonRows,
-    AutoAnimar,
     AparicionEscalonada,
   ],
   templateUrl: './creditos.page.html',
@@ -164,11 +163,13 @@ export class CreditosPage {
    */
   protected readonly cuotaMasCercana = computed(() => {
     const hoy = inicioDelDia(new Date());
-    const pendientes = this.todosLosCreditos()
+    // Un crédito sin cuota (tarjeta en $0) no tiene nada próximo que pagar.
+    const conCuota = this.todosLosCreditos().filter((c) => c.cuota > 0);
+    const pendientes = conCuota
       .map((c) => c.estadoPago)
       .filter((e): e is NonNullable<typeof e> => e !== null && !e.pagadoEsteMes);
     const vencidas = pendientes.filter((e) => e.fechaLimite.getTime() < hoy.getTime()).length;
-    const fechas = this.todosLosCreditos()
+    const fechas = conCuota
       .map((c) => c.estadoPago?.fechaLimite)
       .filter((f): f is Date => f !== undefined && f !== null)
       .filter((f) => f.getTime() >= hoy.getTime())
@@ -205,19 +206,15 @@ export class CreditosPage {
     return diasEntre(new Date(), item.estadoPago.fechaLimite) < 5;
   }
 
-  private readonly expandidos = signal<ReadonlySet<string>>(new Set());
+  /** La que está abierta: una a la vez, abrir otra cierra la anterior. */
+  private readonly abierta = signal<string | null>(null);
 
   protected expandido(creditoId: string): boolean {
-    return this.expandidos().has(creditoId);
+    return this.abierta() === creditoId;
   }
 
   protected alternarExpandido(creditoId: string): void {
-    this.expandidos.update((actual) => {
-      const siguiente = new Set(actual);
-      if (siguiente.has(creditoId)) siguiente.delete(creditoId);
-      else siguiente.add(creditoId);
-      return siguiente;
-    });
+    this.abierta.update((actual) => (actual === creditoId ? null : creditoId));
   }
 
   protected comprasDe(creditoId: string): CompraCuotas[] {
@@ -230,9 +227,9 @@ export class CreditosPage {
     return compra.numCuotas - cuotasFaltantesCompra(compra) + 1;
   }
 
-  /** "28 de septiembre" a partir de una fecha límite. */
-  protected fechaCortaDe(fecha: Date): string {
-    return formatearDiaMes(fechaIsoDesdeLocal(fecha));
+  /** "15 nov." para el héroe: con el mes entero, la cifra partía en dos renglones. */
+  protected fechaHeroDe(fecha: Date): string {
+    return FECHA_HERO.format(fecha).replace(' de ', ' ');
   }
 
   protected textoFecha(fechaLimite: Date): string {

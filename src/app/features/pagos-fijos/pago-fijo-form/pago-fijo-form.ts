@@ -14,6 +14,9 @@ import { opcionesCuentasYBolsillos } from '../../../core/domain';
 import type { Categoria, Cuenta, FrecuenciaPagoFijo } from '../../../core/models';
 import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
 import type { PagoFijoFormData } from './pago-fijo-form-data';
+import { Selector } from '../../../shared/forms/selector';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
+import { MontoInput } from '../../../shared/forms/monto-input';
 
 interface OpcionFrecuencia {
   valor: FrecuenciaPagoFijo;
@@ -33,7 +36,14 @@ interface OpcionMes {
  */
 @Component({
   selector: 'app-pago-fijo-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule],
+  imports: [
+    HojaCabecera,
+    Selector,
+    MontoInput,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+  ],
   templateUrl: './pago-fijo-form.html',
   styleUrl: './pago-fijo-form.scss',
 })

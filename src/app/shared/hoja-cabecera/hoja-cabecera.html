@@ -1,0 +1,12 @@
+<header class="barra">
+  <button
+    type="button"
+    class="barra__cerrar"
+    [disabled]="cerrarDeshabilitado()"
+    (click)="cerrar.emit()"
+  >
+    {{ textoCerrar() }}
+  </button>
+  <h2 class="barra__titulo" [attr.title]="titulo()">{{ titulo() }}</h2>
+  <span aria-hidden="true"></span>
+</header>

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, type Observable, filter, firstValueFrom, map } from 'rxjs';
+import { BehaviorSubject, type Observable, defer, filter, firstValueFrom, map } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
 import { SUPABASE } from '../supabase/supabase.tokens';
@@ -59,6 +59,14 @@ export class SesionLocal {
   private readonly listas = new Map<NombreTabla, BehaviorSubject<Fila[] | null>>(
     TABLAS.map((t) => [t, new BehaviorSubject<Fila[] | null>(null)]),
   );
+  /**
+   * Tablas que nunca llegaron del servidor a este dispositivo. Si una de
+   * ellas se ve vacía es porque no hubo cómo traerla (sin red, o falló la
+   * descarga), no porque esté vacía: la pantalla lo distingue con esto.
+   */
+  private readonly sinTraerTablas = new BehaviorSubject<ReadonlySet<NombreTabla>>(
+    new Set(TABLAS),
+  );
   private persistencia: Persistencia | undefined;
   private cadena: Promise<unknown> = Promise.resolve();
   private cargada = false;
@@ -86,6 +94,7 @@ export class SesionLocal {
         this.persistencia.tablasDescargadas(),
       ]);
       for (const { tabla, fila } of guardadas) this.filas.get(tabla)?.set(fila.id, fila);
+      this.sinTraerTablas.next(new Set(TABLAS.filter((tabla) => !descargadas.has(tabla))));
       this.cargada = true;
       // Lo que ya se descargó alguna vez se muestra ya; lo que nunca, espera
       // a la descarga — si no, una cuenta con datos se vería vacía un
@@ -119,6 +128,11 @@ export class SesionLocal {
 
   observar(tabla: NombreTabla): Observable<Fila[]> {
     return this.listas.get(tabla)!.pipe(filter((filas): filas is Fila[] => filas !== null));
+  }
+
+  /** Si la tabla todavía no ha llegado nunca del servidor (ver `sinTraerTablas`). */
+  sinTraer(tabla: NombreTabla): Observable<boolean> {
+    return this.sinTraerTablas.pipe(map((tablas) => tablas.has(tabla)));
   }
 
   /** Una fila de la copia local, esperando a que la tabla esté lista. */
@@ -274,6 +288,11 @@ export class SesionLocal {
         else nuevas.delete(id);
       }
       this.filas.set(tabla, nuevas);
+      if (this.sinTraerTablas.value.has(tabla)) {
+        const quedan = new Set(this.sinTraerTablas.value);
+        quedan.delete(tabla);
+        this.sinTraerTablas.next(quedan);
+      }
       this.emitir(tabla);
       await this.persistencia!.reemplazarTabla(tabla, [...nuevas.values()]);
     });
@@ -328,5 +347,15 @@ export class SincronizacionService {
       void this.sesion.iniciar();
     }
     return this.sesion;
+  }
+
+  /** Ver `SesionLocal.sinTraer`. */
+  sinTraer(tabla: NombreTabla): Observable<boolean> {
+    return defer(() => this.actual().sinTraer(tabla));
+  }
+
+  /** Vuelve a pedir todo al servidor, para el botón "Reintentar" de una pantalla. */
+  reintentar(): Promise<void> {
+    return this.actual().descargarTodo();
   }
 }

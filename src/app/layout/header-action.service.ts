@@ -6,6 +6,12 @@ export interface AccionHeader {
   /** `aria-label` del botón. */
   etiqueta: string;
   accion: () => void;
+  /**
+   * Esconde el "+" flotante de nuevo movimiento mientras la pantalla está
+   * abierta: con los dos "+" a la vista, uno arriba y otro abajo, no se sabía
+   * cuál agregaba qué.
+   */
+  ocultaNuevoMovimiento?: boolean;
 }
 
 /**

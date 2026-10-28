@@ -112,55 +112,58 @@
     titulada "Próximos pagos" que en realidad abría con vencidos.
   -->
     @if (!datosListos() || hayPagosDelMes()) {
-      <section class="panel panel-proximos col-md-12 col-lg-5">
-        <div class="panel-head">
-          <h2>Pagos del mes</h2>
+      <section class="seccion col-md-12 col-lg-5" aria-labelledby="titulo-pagos">
+        <div class="group-head">
+          <h2 class="group-head__titulo" id="titulo-pagos">Pagos del mes</h2>
           <a class="btn btn-text" routerLink="/pagos-fijos">Ver el mes</a>
         </div>
-        @if (!datosListos()) {
-          <app-skeleton-rows [filas]="3" [conIcono]="false" />
-        } @else if (lineaMes().dias.length === 0) {
-          <!-- Sin ningún pago en el mes, "todo al día" era una tranquilidad
+        <div class="panel">
+          @if (!datosListos()) {
+            <app-skeleton-rows [filas]="3" [conIcono]="false" />
+          } @else if (lineaMes().dias.length === 0) {
+            <!-- Sin ningún pago en el mes, "todo al día" era una tranquilidad
            falsa: lo más probable es que todavía no haya nada creado. -->
-          <app-empty-state
-            icono="event_repeat"
-            titulo="Todavía no tienes pagos fijos"
-            descripcion="Agrega lo que pagas cada mes para saber cuánto te queda libre."
-            [compacto]="true"
-          >
-            <a class="btn btn-outline" routerLink="/pagos-fijos">Agregar pagos fijos</a>
-          </app-empty-state>
-        } @else {
-          <app-franja-mes class="panel-franja" [linea]="lineaMes()" />
-          <div class="rows" auto-animate>
-            @for (item of proximosPagos(); track item.id) {
-              <div class="row row--estatica">
-                <span class="row-main">
-                  <span class="t-row">{{ item.nombre }}</span>
-                  <app-semaforo-badge
-                    [estado]="item.estado"
-                    [texto]="textoVencimientoDe(item.fechaLimite)"
-                  />
-                </span>
-                <span class="row-end">
-                  <span class="t-row amt">
-                    @if (item.esEstimado) {
-                      <span aria-hidden="true">~</span><span class="sr-only">aproximadamente </span>
-                    }
-                    <app-amount [valor]="item.monto"
-                  /></span>
-                </span>
-              </div>
-            } @empty {
-              <app-empty-state
-                icono="task_alt"
-                titulo="Todo pagado"
-                descripcion="Ya pagaste todo lo de este mes."
-                [compacto]="true"
-              />
-            }
-          </div>
-        }
+            <app-empty-state
+              icono="event_repeat"
+              titulo="Todavía no tienes pagos fijos"
+              descripcion="Agrega lo que pagas cada mes para saber cuánto te queda libre."
+              [compacto]="true"
+            >
+              <a class="btn btn-outline" routerLink="/pagos-fijos">Agregar pagos fijos</a>
+            </app-empty-state>
+          } @else {
+            <app-franja-mes class="panel-franja" [linea]="lineaMes()" />
+            <div class="rows" auto-animate>
+              @for (item of proximosPagos(); track item.id) {
+                <div class="row row--estatica">
+                  <span class="row-main">
+                    <span class="t-row">{{ item.nombre }}</span>
+                    <app-semaforo-badge
+                      [estado]="item.estado"
+                      [texto]="textoVencimientoDe(item.fechaLimite)"
+                    />
+                  </span>
+                  <span class="row-end">
+                    <span class="t-row amt">
+                      @if (item.esEstimado) {
+                        <span aria-hidden="true">~</span
+                        ><span class="sr-only">aproximadamente </span>
+                      }
+                      <app-amount [valor]="item.monto"
+                    /></span>
+                  </span>
+                </div>
+              } @empty {
+                <app-empty-state
+                  icono="task_alt"
+                  titulo="Todo pagado"
+                  descripcion="Ya pagaste todo lo de este mes."
+                  [compacto]="true"
+                />
+              }
+            </div>
+          }
+        </div>
       </section>
     }
 
@@ -176,96 +179,102 @@
         [class.col-lg-7]="!datosListos() || hayMovimientos() || presupuestos().length > 0"
       >
         @if (!datosListos() || hayMovimientos()) {
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Ingresos vs gastos</h2>
+          <section aria-labelledby="titulo-tendencia">
+            <div class="group-head">
+              <h2 class="group-head__titulo" id="titulo-tendencia">Ingresos vs gastos</h2>
               <span class="t-meta">Acumulado de {{ nombreMesActual }}</span>
             </div>
-            @if (!datosListos()) {
-              <div class="skeleton skeleton-grafica" aria-hidden="true"></div>
-            } @else if (tendencia().length === 0) {
-              <app-empty-state
-                icono="show_chart"
-                titulo="Sin ingresos ni gastos este mes"
-                descripcion="La tendencia aparece con el primer ingreso o gasto registrado."
-              />
-            } @else {
-              <app-tendencia-mes-chart [puntos]="tendencia()" />
-            }
-          </div>
+            <div class="panel">
+              @if (!datosListos()) {
+                <div class="skeleton skeleton-grafica" aria-hidden="true"></div>
+              } @else if (tendencia().length === 0) {
+                <app-empty-state
+                  icono="show_chart"
+                  titulo="Sin ingresos ni gastos este mes"
+                  descripcion="La tendencia aparece con el primer ingreso o gasto registrado."
+                />
+              } @else {
+                <app-tendencia-mes-chart [puntos]="tendencia()" />
+              }
+            </div>
+          </section>
 
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Últimos movimientos</h2>
+          <section aria-labelledby="titulo-ultimos">
+            <div class="group-head">
+              <h2 class="group-head__titulo" id="titulo-ultimos">Últimos movimientos</h2>
               <a class="btn btn-text" routerLink="/movimientos">Ver todos</a>
             </div>
-            @if (!datosListos()) {
-              <app-skeleton-rows [filas]="3" />
-            } @else {
-              <div class="rows" auto-animate>
-                @for (movimiento of ultimosMovimientos(); track movimiento.id) {
-                  <div class="row row--estatica">
-                    <span class="ico" [class]="claseIconoDe(movimiento)">
-                      <mat-icon aria-hidden="true">{{ iconoDe(movimiento) }}</mat-icon>
-                    </span>
-                    <span class="row-main">
-                      <span class="t-row">{{ movimiento.descripcion }}</span>
-                      <span class="t-meta">
-                        {{ etiquetaDiaDe(movimiento.fecha) }} · {{ cuentaDe(movimiento) }}
+            <div class="panel">
+              @if (!datosListos()) {
+                <app-skeleton-rows [filas]="3" />
+              } @else {
+                <div class="rows" auto-animate>
+                  @for (movimiento of ultimosMovimientos(); track movimiento.id) {
+                    <div class="row row--estatica">
+                      <span class="ico" [class]="claseIconoDe(movimiento)">
+                        <mat-icon aria-hidden="true">{{ iconoDe(movimiento) }}</mat-icon>
                       </span>
-                    </span>
-                    <span class="row-end">
-                      <span class="t-row amt" [class]="claseMontoDe(movimiento)"
-                        >{{ signoDe(movimiento) }}<app-amount [valor]="movimiento.monto"
-                      /></span>
-                    </span>
-                  </div>
-                } @empty {
-                  <app-empty-state
-                    icono="receipt_long"
-                    titulo="Sin movimientos"
-                    descripcion="Registra el primero con el botón de nuevo movimiento."
-                    [compacto]="true"
-                  />
-                }
-              </div>
-            }
-          </div>
+                      <span class="row-main">
+                        <span class="t-row">{{ movimiento.descripcion }}</span>
+                        <span class="t-meta">
+                          {{ etiquetaDiaDe(movimiento.fecha) }} · {{ cuentaDe(movimiento) }}
+                        </span>
+                      </span>
+                      <span class="row-end">
+                        <span class="t-row amt" [class]="claseMontoDe(movimiento)"
+                          >{{ signoDe(movimiento) }}<app-amount [valor]="movimiento.monto"
+                        /></span>
+                      </span>
+                    </div>
+                  } @empty {
+                    <app-empty-state
+                      icono="receipt_long"
+                      titulo="Sin movimientos"
+                      descripcion="Registra el primero con el botón de nuevo movimiento."
+                      [compacto]="true"
+                    />
+                  }
+                </div>
+              }
+            </div>
+          </section>
         }
 
         @if (!datosListos() || hayCreditos()) {
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Cuotas de tus créditos</h2>
+          <section aria-labelledby="titulo-cuotas">
+            <div class="group-head">
+              <h2 class="group-head__titulo" id="titulo-cuotas">Cuotas de tus créditos</h2>
               <a class="btn btn-text" routerLink="/creditos">Ver créditos</a>
             </div>
-            @if (!datosListos()) {
-              <app-skeleton-rows [filas]="2" [conIcono]="false" />
-            } @else {
-              <div class="rows" auto-animate>
-                @for (item of cuotasQueFaltan(); track item.credito.id) {
-                  <div class="row row--estatica fila-cuotas">
-                    <div class="hd">
-                      <span class="t-row">{{ item.credito.nombre }}</span>
-                      <!-- Texto y barra miden lo mismo (lo pagado): antes decía "8 de 12"
+            <div class="panel">
+              @if (!datosListos()) {
+                <app-skeleton-rows [filas]="2" [conIcono]="false" />
+              } @else {
+                <div class="rows" auto-animate>
+                  @for (item of cuotasQueFaltan(); track item.credito.id) {
+                    <div class="row row--estatica fila-cuotas">
+                      <div class="hd">
+                        <span class="t-row">{{ item.credito.nombre }}</span>
+                        <!-- Texto y barra miden lo mismo (lo pagado): antes decía "8 de 12"
                    (las que faltan) sobre una barra llena al 33 % (las pagadas). -->
-                      <span class="t-sec tnum"
-                        >{{ item.total - item.faltan }} de {{ item.total }} pagadas</span
-                      >
+                        <span class="t-sec tnum"
+                          >{{ item.total - item.faltan }} de {{ item.total }} pagadas</span
+                        >
+                      </div>
+                      <div class="bar"><i [style.--progreso]="item.progreso / 100"></i></div>
                     </div>
-                    <div class="bar"><i [style.--progreso]="item.progreso / 100"></i></div>
-                  </div>
-                } @empty {
-                  <app-empty-state
-                    icono="credit_score"
-                    titulo="Sin cuotas pendientes"
-                    descripcion="Ningún crédito tiene cuotas por delante."
-                    [compacto]="true"
-                  />
-                }
-              </div>
-            }
-          </div>
+                  } @empty {
+                    <app-empty-state
+                      icono="credit_score"
+                      titulo="Sin cuotas pendientes"
+                      descripcion="Ningún crédito tiene cuotas por delante."
+                      [compacto]="true"
+                    />
+                  }
+                </div>
+              }
+            </div>
+          </section>
         }
       </div>
     }
@@ -274,51 +283,57 @@
     @if (!datosListos() || hayMovimientos() || presupuestos().length > 0) {
       <div class="col-apilada col-md-12 col-lg-5">
         @if (presupuestos().length > 0) {
-          <section class="panel" aria-labelledby="titulo-presupuestos">
-            <div class="panel-head">
-              <h2 id="titulo-presupuestos">Presupuestos del mes</h2>
+          <section aria-labelledby="titulo-presupuestos">
+            <div class="group-head">
+              <h2 class="group-head__titulo" id="titulo-presupuestos">Presupuestos del mes</h2>
               <a class="btn btn-text" routerLink="/categorias">Ajustar</a>
             </div>
-            <div class="rows">
-              @for (p of presupuestos(); track p.categoria.id) {
-                <div class="row row--estatica fila-presupuesto">
-                  <div class="hd">
-                    <span class="t-row">{{ p.categoria.nombre }}</span>
-                    <span class="t-sec tnum"
-                      ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
-                    /></span>
+            <div class="panel">
+              <div class="rows">
+                @for (p of presupuestos(); track p.categoria.id) {
+                  <div class="row row--estatica fila-presupuesto">
+                    <div class="hd">
+                      <span class="t-row">{{ p.categoria.nombre }}</span>
+                      <span class="t-sec tnum"
+                        ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
+                      /></span>
+                    </div>
+                    <div
+                      class="bar"
+                      [class.bar--cerca]="p.estado === 'cerca'"
+                      [class.bar--pasado]="p.estado === 'pasado'"
+                    >
+                      <i [style.--progreso]="progresoDe(p.proporcion)"></i>
+                    </div>
+                    <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
+                      {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
+                      <app-amount [valor]="absoluto(p.restante)" />
+                    </span>
                   </div>
-                  <div
-                    class="bar"
-                    [class.bar--cerca]="p.estado === 'cerca'"
-                    [class.bar--pasado]="p.estado === 'pasado'"
-                  >
-                    <i [style.--progreso]="progresoDe(p.proporcion)"></i>
-                  </div>
-                  <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
-                    {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
-                    <app-amount [valor]="absoluto(p.restante)" />
-                  </span>
-                </div>
-              }
+                }
+              </div>
             </div>
           </section>
         }
         @if (!datosListos() || hayMovimientos()) {
-          <div class="panel panel-categorias">
-            <div class="panel-head"><h2>Gastos por categoría</h2></div>
-            @if (!datosListos()) {
-              <div class="skeleton skeleton-dona" aria-hidden="true"></div>
-            } @else if (gastosPorCategoria().length === 0) {
-              <app-empty-state
-                icono="donut_large"
-                titulo="Sin gastos este mes"
-                [descripcion]="'Todavía no hay gastos categorizados en ' + nombreMesActual + '.'"
-              />
-            } @else {
-              <app-donut-categorias [datos]="gastosPorCategoria()" />
-            }
-          </div>
+          <section aria-labelledby="titulo-categorias">
+            <div class="group-head">
+              <h2 class="group-head__titulo" id="titulo-categorias">Gastos por categoría</h2>
+            </div>
+            <div class="panel">
+              @if (!datosListos()) {
+                <div class="skeleton skeleton-dona" aria-hidden="true"></div>
+              } @else if (gastosPorCategoria().length === 0) {
+                <app-empty-state
+                  icono="donut_large"
+                  titulo="Sin gastos este mes"
+                  [descripcion]="'Todavía no hay gastos categorizados en ' + nombreMesActual + '.'"
+                />
+              } @else {
+                <app-donut-categorias [datos]="gastosPorCategoria()" />
+              }
+            </div>
+          </section>
         }
       </div>
     }

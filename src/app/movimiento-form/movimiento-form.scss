@@ -1,12 +1,12 @@
 // Un solo componente reutilizado en `MatDialog` (escritorio) y
-// `MatBottomSheet` (móvil): el padding se ajusta al mismo breakpoint que el
-// resto de la app en vez de tener una versión por contexto. `--pad` lo usa
-// también el pie fijo para llegar de borde a borde.
+// `MatBottomSheet` (móvil). Es una hoja de iOS: fondo de página, barra con
+// "Cancelar", segmentado, el monto grande y una lista agrupada blanca.
+// `--pad` lo usa también el pie fijo para llegar de borde a borde.
 :host {
   --pad: var(--space-4);
   display: block;
-  padding: var(--pad);
-  padding-bottom: 0;
+  padding: 0 var(--pad);
+  background: var(--bg-page);
 }
 
 @media (min-width: 768px) {
@@ -15,73 +15,111 @@
   }
 }
 
-.sheet-hd {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-2);
-}
-
-// 16px entre campos (antes 24px): en un teléfono de 844px de alto, ese aire
-// era lo que dejaba "Registrar" debajo del borde de la hoja.
 form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  padding-top: var(--space-2);
 }
 
-.tipo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+// ───────────────────── segmentado de iOS ─────────────────────
+// Pista hundida y la opción elegida en una píldora clara con sombra.
+.segmentado {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
 }
-
-.help {
-  margin: 0;
+.segmentado button {
+  // 38 + 3 + 3 de la pista: el área táctil llega a 44px.
+  min-height: 38px;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: none;
+  font: inherit;
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.segmentado button[aria-pressed='true'] {
+  background: var(--bg-raised);
+  font-weight: var(--weight-semibold);
+  box-shadow: var(--shadow-sm);
 }
 
-.opcional {
-  font-weight: var(--weight-regular);
+.ayuda {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-wrap: balance;
+}
+
+// ─────────────────────────── monto ───────────────────────────
+.monto {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding-block: var(--space-3) var(--space-2);
+}
+.monto__signo {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
   color: var(--text-muted);
 }
-
-// Monto: el dato que manda en el formulario, con "$" fijo a la izquierda
-// para que se lea como plata desde el primer dígito.
-.input-monto {
-  position: relative;
-}
-.input-monto__signo {
-  position: absolute;
-  left: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  font-size: var(--text-md);
-  pointer-events: none;
-}
-.input-monto .input {
-  padding-left: calc(var(--space-3) + 1ch + var(--space-1));
-  font-variant-numeric: tabular-nums;
-}
 #m-monto {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
+  // A la medida de las cifras ("ch" es el ancho de un dígito), para que el
+  // "$" quede pegado al número y el conjunto se centre.
+  width: calc(var(--cifras, 1) * 0.62em + 0.1em);
+  min-width: 0.7em;
+  max-width: calc(100% - 2em);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: clamp(32px, calc(520px / (var(--cifras, 1) + 4)), 52px);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--text-primary);
+  caret-color: var(--accent);
+  outline: none;
+}
+#m-monto::placeholder {
+  color: var(--text-primary);
+}
+.err--centro {
+  text-align: center;
+  margin-top: calc(-1 * var(--space-2));
 }
 
-// Rótulo de un valor calculado: mismo aspecto que un `label`.
-.field__rotulo {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
+// Descripción: un campo blanco suelto, como el de la referencia.
+.descripcion {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  font: inherit;
+  font-size: var(--text-fila);
+  color: var(--text-primary);
+  outline: none;
 }
-.valor-calculado {
-  display: flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  font-size: var(--text-md);
-  font-weight: var(--weight-medium);
-  font-variant-numeric: tabular-nums;
+.descripcion::placeholder {
+  color: var(--text-muted);
+}
+.descripcion:focus-visible {
+  border-color: var(--accent-brillo);
 }
 
 // Pie fijo al fondo de la hoja o del diálogo mientras se hace scroll.
@@ -90,7 +128,11 @@ form {
   bottom: 0;
   z-index: 1;
   margin-inline: calc(-1 * var(--pad));
-  padding: var(--space-3) var(--pad) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--pad) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-page);
+}
+.pie .btn {
+  min-height: 52px;
+  font-size: var(--text-md);
 }

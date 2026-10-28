@@ -176,7 +176,9 @@
   --shadow-sm: 0 2px 6px var(--shadow-color);
   --shadow-md: 0 12px 24px var(--shadow-color);
   --shadow-lg: 0 24px 40px var(--shadow-color);
-  --glow-md: 0 0 24px var(--glow-color);
+  // Sin halo en el estilo iOS: la acción primaria se distingue por su
+  // relleno y una sombra con desplazamiento, no por un brillo de color.
+  --glow-md: 0 0 0 0 transparent;
 
   // Nombre histórico, usado por la capa de Material para diálogo y hoja
   // inferior. Se mantiene como alias de la sombra grande.
@@ -196,6 +198,9 @@
   --text-sm: 13px; // secundario: subtítulos de fila, kv
   --text-base: 14px; // cuerpo de listas y controles
   --text-md: 16px; // inputs (por debajo de 16px iOS hace zoom al enfocar)
+  // Filas de las hojas iOS. 15px y no 16: a 16 se veía grande al lado de
+  // iOS. El zoom al enfocar lo evita `maximum-scale=1` en `index.html`.
+  --text-fila: 15px;
   --text-lg: 18px; // títulos de pantalla y de panel
   --text-xl: 20px; // KPI
   --text-2xl: 24px; // monto de stat-card destacada
@@ -208,6 +213,8 @@
   // de texto corrido.
   --text-display-lg: 44px;
   --text-display: 28px;
+  // Título grande de la barra de navegación en el teléfono (estilo iOS).
+  --text-titulo-grande: 26px;
 
   // `--weight-light` solo queda para el lema del login.
   --weight-light: 300;
@@ -302,17 +309,78 @@
   }
 }
 
-// El override manual gana en las dos direcciones; sin atributo, manda el
-// sistema. Este orden (media query primero, `[data-theme]` después) es lo
-// que permite forzar claro estando el SO en oscuro y viceversa.
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='claro']) {
-    @include tokens-oscuro;
-  }
+// --------------------------- tema neutro ---------------------------
+// Blanco y negro, sin tinte: el claro con grises puros y el acento en negro.
+@mixin tokens-neutro {
+  @include tokens-claro;
+
+  --bg-page: var(--p-gris-100);
+  --bg-surface: var(--p-white);
+  --bg-raised: var(--p-white);
+  --bg-sunken: var(--p-gris-100);
+  --bg-subtle: var(--p-gris-200);
+  --bg-hover: var(--p-gris-100);
+
+  --text-primary: var(--p-gris-950);
+  --text-secondary: var(--p-gris-700);
+  --text-muted: var(--p-gris-600);
+
+  --border: var(--p-gris-200);
+  --border-strong: var(--p-gris-300);
+  --border-control: var(--p-gris-500);
+
+  --accent: var(--p-gris-950);
+  --accent-bg: var(--p-gris-200);
+  --accent-solid: var(--p-gris-950);
+  --accent-brillo: var(--p-gris-700);
+  --text-on-accent: var(--p-gris-50);
+  --accent-on-inverse: var(--p-gris-200);
+
+  --marca-textura: var(--p-gris-700);
+  --glow-color: rgb(0 0 0 / 0%);
+}
+
+// ------------------------- tema medianoche -------------------------
+// El oscuro de la app: negro profundo con el azul eléctrico como única voz.
+@mixin tokens-medianoche {
+  @include tokens-oscuro;
+
+  --bg-page: var(--p-noche-950);
+  --bg-surface: var(--p-noche-800);
+  --bg-raised: var(--p-noche-700);
+  --bg-sunken: var(--p-noche-950);
+  --bg-subtle: var(--p-noche-600);
+  --bg-hover: var(--p-noche-700);
+
+  --text-primary: var(--p-white);
+  --text-secondary: var(--p-noche-300);
+  --text-muted: var(--p-noche-400);
+
+  --border: var(--p-noche-600);
+  --border-strong: var(--p-noche-550);
+  --border-control: var(--p-noche-500);
+
+  --accent: var(--p-azul-400);
+  --accent-bg: var(--p-azul-900);
+  --accent-solid: var(--p-azul-500);
+  --accent-brillo: var(--p-azul-400);
+  --text-on-accent: var(--p-white);
+  --accent-on-inverse: var(--p-azul-500);
+
+  --marca-textura: var(--p-azul-400);
+  --glow-color: rgb(0 0 0 / 0%);
+}
+
+// Tres temas elegidos a mano desde el menú (`ThemeService`). Sin atributo
+// manda Teal (`tokens-claro`, en `:root`): es el tema de la app, no se
+// sigue al sistema. Los valores del atributo son históricos: 'claro' es
+// Teal y 'oscuro' es Medianoche.
+:root[data-theme='neutro'] {
+  @include tokens-neutro;
 }
 
 :root[data-theme='oscuro'] {
-  @include tokens-oscuro;
+  @include tokens-medianoche;
 }
 
 :root[data-theme='claro'] {

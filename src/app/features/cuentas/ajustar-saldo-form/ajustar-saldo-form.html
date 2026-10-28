@@ -1,42 +1,39 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">Ajustar saldo</h2>
-  <button
-    mat-icon-button
-    type="button"
-    aria-label="Cerrar"
-    (click)="cerrar()"
-    [disabled]="guardando()"
-  >
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera titulo="Ajustar saldo" [cerrarDeshabilitado]="guardando()" (cerrar)="cerrar()" />
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <div class="field">
-    <label for="a-pieza">¿Qué quieres corregir?</label>
-    <select class="input" id="a-pieza" formControlName="piezaId">
-      @for (pieza of piezas; track pieza.id) {
-        <option [value]="pieza.id">{{ etiquetaPieza(pieza) }}</option>
-      }
-    </select>
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="a-pieza">Corregir</label>
+      <app-selector
+        inputId="a-pieza"
+        formControlName="piezaId"
+        [opciones]="piezas"
+        campoValor="id"
+        [etiquetaDe]="etiquetaDePieza"
+      />
+    </div>
+    <div class="ios-fila">
+      <span class="ios-fila__rotulo">Saldo en la app</span>
+      <output class="ios-fila__valor">{{ saldoActual() | monedaCop }}</output>
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="a-saldo">Saldo real</label>
+      <input
+        class="input"
+        id="a-saldo"
+        type="number"
+        inputmode="numeric"
+        placeholder="$ 0"
+        formControlName="saldoReal"
+        [attr.aria-invalid]="invalido(form.controls.saldoReal) || null"
+      />
+    </div>
   </div>
-
-  <p class="help">Saldo actual: {{ saldoActual() | monedaCop }}</p>
-
-  <div class="field">
-    <label for="a-saldo">Saldo real, el que ves en tu banco</label>
-    <input
-      class="input"
-      id="a-saldo"
-      type="number"
-      inputmode="numeric"
-      placeholder="0"
-      formControlName="saldoReal"
-    />
-    @if (invalido(form.controls.saldoReal)) {
-      <span class="err">Escribe el saldo que tienes de verdad.</span>
-    }
-  </div>
+  @if (invalido(form.controls.saldoReal)) {
+    <p class="ios-nota err">Escribe el saldo que tienes de verdad.</p>
+  } @else {
+    <p class="ios-nota">El saldo real es el que ves en tu banco o en tu billetera.</p>
+  }
 
   <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
     Ajustar saldo

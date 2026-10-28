@@ -120,6 +120,22 @@ describe('SesionLocal', () => {
     expect(emitida?.map((c) => c.id)).toEqual(['c1']);
   });
 
+  it('distingue una tabla vacía de una que no se pudo traer, y deja de marcarla al traerla', async () => {
+    const remoto = new RemotoFalso();
+    remoto.servidor.set('cuentas/c1', { id: 'c1', nombre: 'Nequi' });
+    remoto.enLinea = false;
+    const { sesion } = await iniciar(remoto);
+
+    // Sin red y sin copia: se ve vacía, pero marcada como "sin traer".
+    expect(await lista(sesion, 'cuentas')).toEqual([]);
+    expect(await firstValueFrom(sesion.sinTraer('cuentas'))).toBe(true);
+
+    remoto.enLinea = true;
+    await sesion.descargarTodo();
+    expect(await firstValueFrom(sesion.sinTraer('cuentas'))).toBe(false);
+    expect((await lista(sesion, 'cuentas')).map((c) => c.id)).toEqual(['c1']);
+  });
+
   it('ignora un cambio en vivo de una fila que tiene cambios propios sin subir', async () => {
     const remoto = new RemotoFalso();
     const { sesion } = await iniciar(remoto);

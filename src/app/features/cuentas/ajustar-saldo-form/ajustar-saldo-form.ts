@@ -15,6 +15,8 @@ import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
 import { GuardandoOverlay } from '../../../shared/guardando-overlay/guardando-overlay';
 import { MonedaCopPipe } from '../../../shared/pipes/moneda-cop.pipe';
 import type { AjustarSaldoFormData } from './ajustar-saldo-form-data';
+import { Selector } from '../../../shared/forms/selector';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 /**
  * Ajusta el saldo de una pieza (saldo libre o un bolsillo puntual): se
@@ -24,7 +26,14 @@ import type { AjustarSaldoFormData } from './ajustar-saldo-form-data';
  */
 @Component({
   selector: 'app-ajustar-saldo-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule, MonedaCopPipe, GuardandoOverlay],
+  imports: [HojaCabecera, 
+    Selector,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MonedaCopPipe,
+    GuardandoOverlay,
+  ],
   templateUrl: './ajustar-saldo-form.html',
   styleUrl: './ajustar-saldo-form.scss',
 })
@@ -62,6 +71,9 @@ export class AjustarSaldoForm {
   protected etiquetaPieza(pieza: Cuenta): string {
     return pieza.id === this.datos.cuentaRaiz.id ? 'Saldo libre' : `Bolsillo · ${pieza.nombre}`;
   }
+
+  /** La misma etiqueta, como función suelta para el selector de la pieza. */
+  protected readonly etiquetaDePieza = (pieza: Cuenta): string => this.etiquetaPieza(pieza);
 
   protected cerrar(): void {
     this.dialogRef.close();

@@ -1,63 +1,58 @@
-<div class="sheet-hd">
-  <h2 class="screen-title">{{ editando ? 'Editar categoría' : 'Nueva categoría' }}</h2>
-  <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
-    <mat-icon aria-hidden="true">close</mat-icon>
-  </button>
-</div>
+<app-hoja-cabecera [titulo]="editando ? 'Editar categoría' : 'Nueva categoría'" (cerrar)="cerrar()" />
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
   @if (!editando) {
-    <div class="field">
-      <span class="field__label" id="cat-tipo-label">Tipo</span>
-      <span class="seg" role="group" aria-labelledby="cat-tipo-label">
-        <button
-          type="button"
-          [attr.aria-pressed]="form.controls.tipo.value === 'GASTO'"
-          (click)="form.controls.tipo.setValue('GASTO')"
-        >
-          Gasto
-        </button>
-        <button
-          type="button"
-          [attr.aria-pressed]="form.controls.tipo.value === 'INGRESO'"
-          (click)="form.controls.tipo.setValue('INGRESO')"
-        >
-          Ingreso
-        </button>
-      </span>
+    <div class="ios-segmentado" role="group" aria-label="Tipo de categoría">
+      <button
+        type="button"
+        [attr.aria-pressed]="form.controls.tipo.value === 'GASTO'"
+        (click)="form.controls.tipo.setValue('GASTO')"
+      >
+        Gasto
+      </button>
+      <button
+        type="button"
+        [attr.aria-pressed]="form.controls.tipo.value === 'INGRESO'"
+        (click)="form.controls.tipo.setValue('INGRESO')"
+      >
+        Ingreso
+      </button>
     </div>
   }
 
-  <div class="field">
-    <label for="cat-nombre">Nombre</label>
-    <input
-      class="input"
-      id="cat-nombre"
-      placeholder="Mascotas"
-      maxlength="40"
-      autocomplete="off"
-      formControlName="nombre"
-    />
-  </div>
-
-  @if (form.controls.tipo.value === 'GASTO') {
-    <div class="field">
-      <label for="cat-tope">Tope mensual (opcional)</label>
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="cat-nombre">Nombre</label>
       <input
         class="input"
-        id="cat-tope"
-        type="number"
-        inputmode="numeric"
-        min="0"
-        placeholder="Ej.: 300000"
-        formControlName="topeMensual"
+        id="cat-nombre"
+        placeholder="Mascotas"
+        maxlength="40"
+        autocomplete="off"
+        formControlName="nombre"
       />
-      <p class="help">Lo máximo que quieres gastar al mes aquí. Te avisamos al llegar al 80 %.</p>
     </div>
+    @if (form.controls.tipo.value === 'GASTO') {
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" for="cat-tope">Tope mensual</label>
+        <input
+          class="input"
+          id="cat-tope"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          placeholder="Opcional"
+          formControlName="topeMensual"
+        />
+      </div>
+    }
+  </div>
+  @if (form.controls.tipo.value === 'GASTO') {
+    <p class="ios-nota">Lo máximo que quieres gastar al mes aquí. Te avisamos al llegar al 80 %.</p>
   }
 
-  <div class="field">
-    <span class="field__label" id="cat-icono-label">Ícono</span>
+  <h3 class="ios-seccion" id="cat-icono-label">Ícono</h3>
+  <div class="ios-grupo ios-grupo--libre">
     <div class="iconos" role="radiogroup" aria-labelledby="cat-icono-label">
       @for (icono of iconos; track icono) {
         <button

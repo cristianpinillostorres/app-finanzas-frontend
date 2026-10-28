@@ -10,6 +10,7 @@ import { CATEGORIAS_API } from '../../../core/api/categorias/categorias-api';
 import { ICONOS_CATEGORIA } from '../../../core/api/categorias/categorias-catalogo';
 import type { Categoria, TipoCategoria } from '../../../core/models';
 import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 export interface CategoriaFormData {
   /** Sin categoría: crear una nueva. */
@@ -26,7 +27,7 @@ export interface CategoriaFormData {
  */
 @Component({
   selector: 'app-categoria-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule],
+  imports: [HojaCabecera, ReactiveFormsModule, MatIconModule, MatButtonModule],
   templateUrl: './categoria-form.html',
   styleUrl: './categoria-form.scss',
 })

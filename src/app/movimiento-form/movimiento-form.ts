@@ -6,6 +6,7 @@ import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bott
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, map, startWith } from 'rxjs';
 
@@ -39,6 +40,7 @@ import { mostrarErrorGuardado } from '../shared/guardado/guardado.util';
 import { MonedaCopPipe } from '../shared/pipes/moneda-cop.pipe';
 import { formatearCop } from '../shared/format/moneda';
 import type { MovimientoFormData, TipoFormularioMovimiento } from './movimiento-form-data';
+import { HojaCabecera } from '../shared/hoja-cabecera/hoja-cabecera';
 
 /**
  * Formulario de movimiento: gasto, ingreso o transferencia. Un solo
@@ -49,7 +51,14 @@ import type { MovimientoFormData, TipoFormularioMovimiento } from './movimiento-
  */
 @Component({
   selector: 'app-movimiento-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule, MonedaCopPipe, MontoInput],
+  imports: [HojaCabecera, 
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MonedaCopPipe,
+    MontoInput,
+  ],
   templateUrl: './movimiento-form.html',
   styleUrl: './movimiento-form.scss',
 })
@@ -150,6 +159,48 @@ export class MovimientoForm {
   );
 
   protected readonly tipo = computed(() => this.valorFormulario().tipo);
+
+  /**
+   * Los errores salen solo después de tocar "Registrar": antes, con solo
+   * pasar por un campo, la hoja se llenaba de rojo sin que la persona
+   * hubiera hecho nada mal.
+   */
+  private readonly intento = signal(false);
+
+  // Valores elegidos en las filas de la lista: el menú de cada una marca el suyo.
+  protected readonly valorCategoria = computed(() => this.valorFormulario().categoriaId);
+  protected readonly valorPagarCon = computed(() => this.valorFormulario().pagarConId);
+  protected readonly valorDestino = computed(() => this.valorFormulario().destinoId);
+  protected readonly valorDesde = computed(() => this.valorFormulario().desdeId);
+  protected readonly valorHacia = computed(() => this.valorFormulario().haciaId);
+  protected readonly valorCuotas = computed(() => this.valorFormulario().cuotas);
+
+  protected readonly etiquetaCategoria = computed(
+    () => this.categorias().find((c) => c.id === this.valorCategoria())?.nombre,
+  );
+
+  /** Cifras del monto con sus puntos ("150.000" son 7): el ancho del campo sale de ahí. */
+  protected readonly cifrasMonto = computed(() => {
+    const monto = this.valorFormulario().monto;
+    return monto ? formatearCop(monto).replace(/[^\d.]/g, '').length : 1;
+  });
+
+  /** El aviso de la lista agrupada: el primer dato que falta, en una sola línea. */
+  protected readonly errorGrupo = computed(() => {
+    if (!this.intento()) return null;
+    this.estadoFormulario();
+    const c = this.form.controls;
+    const tipo = this.tipo();
+    if (tipo !== 'transferencia' && c.categoriaId.invalid) {
+      return tipo === 'gasto' ? 'Elige en qué gastaste.' : 'Elige de dónde viene.';
+    }
+    if (tipo === 'gasto' && c.pagarConId.invalid) return 'Elige con qué pagas.';
+    if (tipo === 'ingreso' && c.destinoId.invalid) return 'Elige dónde entra la plata.';
+    if (tipo === 'transferencia' && (c.desdeId.invalid || c.haciaId.invalid)) {
+      return 'Elige de dónde sale y a dónde va.';
+    }
+    return null;
+  });
 
   protected readonly opcionPagarCon = computed(() =>
     this.buscarOpcion(this.valorFormulario().pagarConId, this.gruposPagarCon()),
@@ -309,10 +360,13 @@ export class MovimientoForm {
   }
 
   protected invalido(control: AbstractControl): boolean {
-    return control.invalid && (control.dirty || control.touched);
+    return control.invalid && this.intento();
   }
 
   protected cambiarTipo(tipo: TipoFormularioMovimiento): void {
+    // Gasto e ingreso comparten el campo de categoría pero no el catálogo:
+    // la categoría de uno no vale en el otro.
+    if (tipo !== this.tipo()) this.form.controls.categoriaId.setValue(null);
     this.form.controls.tipo.setValue(tipo);
   }
 
@@ -321,7 +375,22 @@ export class MovimientoForm {
     this.bottomSheetRef?.dismiss();
   }
 
+  /** Lo que se elige en el menú de una fila. */
+  protected elegir(
+    campo: 'categoriaId' | 'pagarConId' | 'destinoId' | 'desdeId' | 'haciaId' | 'cuotas',
+    valor: string | number,
+  ): void {
+    const control = this.form.controls[campo] as AbstractControl;
+    control.setValue(valor);
+    control.markAsDirty();
+  }
+
+  protected etiquetaCuenta(id: string | null | undefined): string | undefined {
+    return this.opcionesCuentas().find((o) => o.id === id)?.etiqueta;
+  }
+
   protected registrar(): void {
+    this.intento.set(true);
     this.form.markAllAsTouched();
     if (!this.formularioValido()) {
       // Al primer campo con error, para no buscarlo a ojo (ni a ciegas con

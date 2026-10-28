@@ -92,11 +92,12 @@
     )
   );
 
-  // El título de cada diálogo es un `.screen-title` (Anton, en mayúsculas
-  // y teal: ver `styles/componentes`), no el `mat-dialog-title`.
+  // Diálogos y hojas sobre el color de la página, como las hojas de iOS:
+  // los campos van en blanco encima (ver "formularios en diálogos y hojas"
+  // en `styles/componentes`). El título es un `.screen-title`.
   @include mat.dialog-overrides(
     (
-      container-color: var(--bg-raised),
+      container-color: var(--bg-page),
       container-shape: var(--radius-lg),
       subhead-color: var(--text-primary),
       supporting-text-color: var(--text-secondary),
@@ -129,7 +130,7 @@
 
   @include mat.bottom-sheet-overrides(
     (
-      container-background-color: var(--bg-raised),
+      container-background-color: var(--bg-page),
       container-shape: var(--radius-lg) var(--radius-lg) 0 0,
       container-text-color: var(--text-primary),
     )

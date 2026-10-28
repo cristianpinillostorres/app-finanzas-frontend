@@ -14,6 +14,16 @@ import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
 import { GuardandoOverlay } from '../../../shared/guardando-overlay/guardando-overlay';
 import type { CreditoFormData } from './credito-form-data';
 
+const EJEMPLOS: Record<GrupoCredito, { nombre: string; entidad: string }> = {
+  TARJETA: { nombre: 'Visa Oro', entidad: 'Bancolombia' },
+  BANCO: { nombre: 'Crédito de vivienda', entidad: 'Davivienda' },
+  PLATAFORMA: { nombre: 'Compras en Addi', entidad: 'Addi' },
+  PERSONA: { nombre: 'Préstamo de Juan', entidad: '' },
+};
+import { Selector } from '../../../shared/forms/selector';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
+import { MontoInput } from '../../../shared/forms/monto-input';
+
 interface OpcionGrupo {
   valor: GrupoCredito;
   etiqueta: string;
@@ -35,7 +45,15 @@ interface OpcionTipoTasa {
  */
 @Component({
   selector: 'app-credito-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule, GuardandoOverlay],
+  imports: [
+    HojaCabecera,
+    Selector,
+    MontoInput,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    GuardandoOverlay,
+  ],
   templateUrl: './credito-form.html',
   styleUrl: './credito-form.scss',
 })
@@ -137,6 +155,10 @@ export class CreditoForm {
   });
   protected readonly pideEntidad = computed(() => !this.esPersona());
 
+  /** Ejemplos del tipo elegido: "Crédito de vivienda" para una tarjeta despistaba. */
+  protected readonly ejemploNombre = computed(() => EJEMPLOS[this.grupoSeleccionado()].nombre);
+  protected readonly ejemploEntidad = computed(() => EJEMPLOS[this.grupoSeleccionado()].entidad);
+
   constructor() {
     if (this.modoEdicion) {
       // El grupo queda fijo: se deshabilita en vez de ocultarse para que
@@ -200,7 +222,8 @@ export class CreditoForm {
           tipoTasa: v.tipoTasa,
           plazoMeses: v.plazoMeses,
           cuotasPagadasIniciales: v.cuotasPagadasIniciales,
-          seguroMensual: v.seguroMensual,
+          // El campo de monto vacío da `null`; sin seguro es 0.
+          seguroMensual: v.seguroMensual ?? 0,
         };
       case 'PERSONA':
         return {

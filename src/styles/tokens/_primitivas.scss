@@ -34,6 +34,29 @@
   --p-neutral-700: #3e4a4e; // texto secundario
   --p-neutral-950: #0e1414; // texto primario
 
+  // — grises puros (tema Neutro: blanco y negro, sin tinte) —
+  --p-gris-50: #fafafa;
+  --p-gris-100: #f5f5f5; // página
+  --p-gris-200: #e5e5e5; // bordes y rellenos
+  --p-gris-300: #d4d4d4; // borde fuerte
+  --p-gris-500: #858585; // borde de control — 3:1 sobre la página
+  --p-gris-600: #6b6b6b; // texto atenuado
+  --p-gris-700: #404040; // texto secundario
+  --p-gris-950: #0a0a0a; // texto primario y acento
+
+  // — medianoche (tema oscuro: negro con acento azul eléctrico) —
+  --p-noche-950: #0e0e0e; // página
+  --p-noche-800: #191919; // superficie
+  --p-noche-700: #222222; // superficie elevada (hoja, diálogo, menú)
+  --p-noche-600: #2c2c2c; // relleno y bordes
+  --p-noche-550: #414042; // borde fuerte
+  --p-noche-500: #6d6e71; // borde de control — 3:1 sobre la superficie
+  --p-noche-400: #a7a9ac; // texto atenuado
+  --p-noche-300: #d1d3d4; // texto secundario
+  --p-azul-900: #1b2150; // fondo de acento
+  --p-azul-500: #405bff; // botón sólido (blanco encima: 4.9:1)
+  --p-azul-400: #8396ff; // acento como texto y foco sobre negro
+
   // — teal (marca: acción primaria, enlaces, foco, selección) —
   --p-teal-100: #ddf1f2; // fondo de acento, tema claro
   --p-teal-200: #b4e0e3; // texto secundario sobre el panel de marca

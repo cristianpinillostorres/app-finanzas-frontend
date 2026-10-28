@@ -338,20 +338,20 @@
 
 // ─────────────────────────── superficies ───────────────────────────
 
-// Superficies como las de Mi Semana: paneles de 20px con borde y sin
-// sombra (la sombra queda para lo que flota o se puede tocar como un
-// objeto: la tarjeta de crédito, los menús, la barra lateral).
+// Superficies como las listas agrupadas de iOS: blancas sobre la página
+// gris, sin borde ni sombra; las separa el tono. El borde se deja
+// transparente (no se quita) para no mover nada de sitio.
 .card {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .panel {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   overflow: hidden;
 }
@@ -394,21 +394,21 @@
   flex-direction: column;
   gap: var(--space-1);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   padding: var(--space-4) var(--space-5);
   min-width: 0;
   overflow: hidden;
   container-type: inline-size;
 }
+// Rótulo en caja normal, como los de iOS: las mayúsculas quedan solo para
+// la cifra héroe.
 .stat-card .t-meta,
 .kpi .t-meta {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-weight: var(--weight-extrabold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-weight: var(--weight-medium);
 }
 // Monto de la tarjeta: crece con la tarjeta hasta los 28px de Mi Semana y
 // se encoge antes de desbordar. `min-width: 0` en el contenedor + este
@@ -433,7 +433,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-pill);
   padding: 0 var(--space-1);
 }
@@ -448,20 +448,22 @@
   isolation: isolate;
   overflow: hidden;
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
-// El rótulo de la cifra héroe, en la voz de las etiquetas de Mi Semana.
+// El rótulo de la cifra héroe: en caja normal, como los encabezados de
+// sección de iOS. Las mayúsculas con tracking eran otra voz más en una
+// pantalla que ya tenía dos.
 .hero > .t-meta,
 .hero > .hd:first-child > .t-meta,
 .hero__cabeza > .t-meta {
-  font-weight: var(--weight-extrabold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
 }
 // Textura de billete: líneas finas entrelazadas (guilloché), como las de
 // la impresión de seguridad de un billete, en el color del acento. Es el
@@ -481,6 +483,14 @@
   -webkit-mask: url('/textura-billete.svg') right top / auto 200px no-repeat;
   mask: url('/textura-billete.svg') right top / auto 200px no-repeat;
   pointer-events: none;
+}
+// En el teléfono la tarjeta es angosta y a 200px la textura llegaba hasta
+// las cifras de abajo: se queda en la franja de la cifra grande.
+@media (max-width: 767.98px) {
+  .hero::before {
+    -webkit-mask-size: auto 120px;
+    mask-size: auto 120px;
+  }
 }
 .desglose {
   display: flex;
@@ -615,13 +625,36 @@
   justify-content: space-between;
   gap: var(--space-2);
 }
+// Alto fijo: en escritorio, una tarjeta sin cabecera que va al lado de una
+// sección con cabecera se baja esta misma medida para que las dos tarjetas
+// empiecen a la misma altura (ver `.hero--libre` en General).
+:root {
+  --alto-group-head: 20px;
+}
 .group-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  height: var(--alto-group-head);
   padding: 0 var(--space-1);
   margin-bottom: var(--space-2);
+}
+// Título de sección como los de iOS: fuera de la tarjeta, en gris y en caja
+// normal. Lo que acompaña a la derecha (cifras, "Ver todos") va en `.t-meta`
+// o como `.btn-text`.
+.group-head__titulo {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
+// El enlace conserva sus 44px de toque, pero sin empujar la tarjeta de
+// abajo ni despegarse del borde derecho.
+.group-head > .btn-text {
+  margin-block: calc((var(--tap-min) - 1lh) / -2);
+  margin-right: calc(-1 * var(--space-3));
+  font-size: var(--text-sm);
 }
 
 // Separador de día (Movimientos): pegajoso dentro de su lista, para no
@@ -882,6 +915,25 @@
   height: var(--text-lg);
 }
 
+// Lo que se abre bajo una fila (Cuentas, Créditos): aparece con un fundido
+// corto, solo `opacity` y `transform`. Antes lo animaba auto-animate, que
+// mide el alto de cada tarjeta vecina cuadro a cuadro: en el teléfono se
+// trababa, y los grupos de más abajo saltaban sin animación.
+.detalle-aparece {
+  animation: detalle-aparece var(--dur-base) var(--ease-out) both;
+}
+@keyframes detalle-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detalle-aparece {
+    animation: none;
+  }
+}
+
 // Flecha al final de la fila que abre una tarjeta: dice que se abre, y
 // girada, que ya está abierta.
 .fila-flecha {
@@ -914,6 +966,8 @@
   color: inherit;
   width: 100%;
   cursor: pointer;
+  // Sin el destello gris que el navegador del teléfono pone al tocar.
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 .row:last-child {
@@ -924,12 +978,20 @@
 // el `padding-inline` de cada lista. La línea inferior se apaga mientras
 // dura, así no corta el resaltado.
 .row {
-  border-radius: var(--radius-md);
   transition: background var(--dur-fast) var(--ease-out);
 }
-.row:hover {
-  background: var(--bg-hover);
-  border-bottom-color: transparent;
+// Solo con mouse: en el teléfono el `:hover` se queda pegado después del
+// toque y la fila tocada seguía gris. La esquina va solo en el resaltado:
+// en reposo doblaba las puntas de la línea inferior hacia arriba.
+@media (hover: hover) {
+  .row:hover {
+    background: var(--bg-hover);
+    border-bottom-color: transparent;
+    border-radius: var(--radius-md);
+  }
+}
+.row:focus-visible {
+  border-radius: var(--radius-md);
 }
 // Fila puramente informativa (no abre nada): sin cursor de mano ni hover,
 // para no prometer una interacción que no existe. Reemplaza los
@@ -1212,8 +1274,9 @@
   // 16px a propósito: por debajo de eso Safari en iOS hace zoom al enfocar.
   font-size: var(--text-md);
   color: var(--text-primary);
-  background: var(--bg-sunken);
-  border: 1px solid var(--border-control);
+  // `--bg-campo` y `--borde-campo` los cambian los diálogos y hojas (abajo).
+  background: var(--bg-campo, var(--bg-sunken));
+  border: 1px solid var(--borde-campo, var(--border-control));
   border-radius: var(--radius-campo);
   transition:
     border-color var(--dur-fast) var(--ease-out),
@@ -1527,4 +1590,385 @@ select.input {
 .mat-bottom-sheet-container {
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
+}
+
+// Hoja de registro (el "+"): fondo de página de borde a borde, sin el
+// relleno de Material ni su sombra (que se veía como un borde oscuro), con
+// el asa de las hojas de iOS arriba. `panelClass` queda en el panel del
+// overlay, no en el contenedor: de ahí el selector descendiente.
+.hoja-movimiento .mat-bottom-sheet-container {
+  position: relative;
+  padding: 0;
+  max-height: 92dvh;
+  background: var(--bg-page);
+  box-shadow: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+.hoja-movimiento .mat-bottom-sheet-container::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  z-index: 2;
+  width: 36px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  transform: translateX(-50%);
+}
+.hoja-movimiento .mat-mdc-dialog-surface {
+  background: var(--bg-page);
+}
+
+// Menús de opciones de la hoja (Categoría, Pagar con...): el menú
+// desplegable de iOS, redondeado, con filas de 44px y el visto a la derecha.
+.mat-mdc-menu-panel.menu-opciones {
+  min-width: 240px;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: min(420px, 60dvh);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-lg);
+
+  .mat-mdc-menu-item {
+    min-height: var(--tap-min);
+    font-size: var(--text-md);
+  }
+  .mat-mdc-menu-item .mat-icon {
+    margin-right: var(--space-3);
+    color: var(--text-secondary);
+  }
+  .mat-mdc-menu-item[aria-checked='true'] {
+    font-weight: var(--weight-semibold);
+  }
+  .mat-mdc-menu-item-text {
+    flex: 1;
+  }
+}
+.menu-opciones__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.menu-opciones__check {
+  font-size: 20px;
+  color: var(--accent);
+}
+.menu-opciones__grupo {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
+
+// ─────────────── formularios en diálogos y hojas (estilo iOS) ───────────────
+// La hoja va sobre el color de la página y los campos en blanco encima, sin
+// borde: se distinguen por tono, como las celdas de un formulario de iOS. El
+// título deja Anton y va en la sans de la app, en caja normal.
+.mat-mdc-dialog-surface,
+.mat-bottom-sheet-container {
+  --bg-campo: var(--bg-surface);
+  --borde-campo: transparent;
+
+  .screen-title {
+    font-family: var(--font-sans);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-extrabold);
+    line-height: var(--leading-snug);
+    letter-spacing: -0.01em;
+    text-transform: none;
+    color: var(--text-primary);
+  }
+}
+
+// ─────────────────── hoja de formulario iOS (todas las hojas) ───────────────────
+// Lo que ya tenía el "+", para todos los formularios: la barra de arriba
+// (`app-hoja-cabecera`), filas agrupadas en blanco (rótulo a la izquierda,
+// valor a la derecha) y el botón principal abajo.
+
+// Grupo de filas: las rayas entre filas quedan con el mismo margen a los
+// dos lados (el relleno es del grupo, no de la fila).
+.ios-grupo {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+.ios-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.ios-fila:last-child {
+  border-bottom: 0;
+}
+.ios-fila__rotulo {
+  flex: 0 1 auto;
+  max-width: 60%;
+  font-size: var(--text-fila);
+  color: var(--text-primary);
+}
+// El control ocupa el resto de la fila, alineado a la derecha y sin caja.
+.ios-fila__valor,
+.ios-fila > .input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  appearance: none;
+  font: inherit;
+  font-size: var(--text-fila);
+  color: var(--text-secondary);
+  text-align: right;
+  outline: none;
+}
+.ios-fila > .input::placeholder {
+  color: var(--text-muted);
+}
+span.ios-fila__valor,
+output.ios-fila__valor {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 46px;
+}
+.ios-fila__valor::-webkit-date-and-time-value {
+  text-align: right;
+}
+.ios-fila__valor::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+}
+.ios-fila__chevron {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-left: calc(-1 * var(--space-2));
+  // El glifo trae aire a la derecha: sin esto la flecha quedaba más
+  // adentro que el final de los valores de las demás filas.
+  margin-right: -5px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.ios-fila:has(.ios-interruptor) .ios-fila__rotulo {
+  flex: 1;
+  max-width: none;
+}
+.ios-fila > app-selector {
+  flex: 1;
+  min-width: 0;
+}
+.ios-fila [aria-invalid='true'] {
+  color: var(--color-gasto);
+}
+// Sin resaltado de fondo: el foco de teclado pinta el rótulo con el acento.
+.ios-fila:has(:focus-visible) .ios-fila__rotulo,
+button.ios-fila:focus-visible .ios-fila__rotulo {
+  color: var(--accent);
+}
+button.ios-fila:focus-visible {
+  outline: none;
+}
+
+// Interruptor de iOS para los sí/no (un checkbox de verdad, redibujado).
+.ios-interruptor {
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  margin: 0 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  appearance: none;
+  cursor: pointer;
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+.ios-interruptor::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--p-white);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.ios-interruptor:checked {
+  background: var(--accent-solid);
+}
+.ios-interruptor:checked::after {
+  transform: translateX(20px);
+}
+.ios-interruptor:focus-visible {
+  outline: 2px solid var(--accent-brillo);
+  outline-offset: 2px;
+}
+
+// Nota bajo un grupo (ayuda o error), alineada con el texto de las filas.
+.ios-nota {
+  margin: calc(-1 * var(--space-2)) var(--space-4) 0;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.ios-nota.err {
+  color: var(--color-gasto);
+}
+// Título de un grupo, en gris y pequeño, como las secciones de Ajustes.
+.ios-seccion {
+  margin: var(--space-2) var(--space-4) calc(-1 * var(--space-2));
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
+
+// El cuerpo de una hoja: columna con aire entre grupos y el botón al final.
+.ios-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ios-form > .btn-primary {
+  min-height: 52px;
+  margin-top: var(--space-2);
+  font-size: var(--text-md);
+}
+// Nota que va encima del primer grupo (contexto de la hoja), sin el margen
+// negativo que la pega al grupo de arriba.
+.ios-nota--arriba {
+  margin-top: 0;
+}
+// Muestra de color en una fila: un círculo, como el selector de color de iOS.
+.ios-color {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.ios-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.ios-color::-webkit-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+.ios-color::-moz-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+// Grupo que no es una lista de filas (la rejilla de íconos de categoría).
+.ios-grupo--libre {
+  padding: var(--space-3);
+}
+// Segmentado de iOS: pista hundida y la opción elegida en una píldora clara.
+.ios-segmentado {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+}
+.ios-segmentado button {
+  // 38 + 3 + 3 de la pista: el área táctil llega a 44px.
+  min-height: 38px;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.ios-segmentado button[aria-pressed='true'] {
+  background: var(--bg-raised);
+  font-weight: var(--weight-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+// ─────────────────────── acciones redondas ───────────────────────
+// Acciones de una cuenta o un crédito abierto: columnas iguales (dos o
+// tres, según lo que aplique), cada una un círculo con el ícono y el
+// nombre debajo. Caben en una fila desde 320px.
+.acciones-redondas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.accion-redonda {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  // Dos palabras, una sobre otra (el `<br>` de la plantilla).
+  line-height: var(--leading-tight);
+  color: var(--text-secondary);
+  text-align: center;
+  cursor: pointer;
+}
+
+.accion-redonda__circulo {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border-radius: var(--radius-pill);
+  background: var(--accent-bg);
+  color: var(--accent);
+  transition: transform var(--dur-fast) var(--ease-out);
+
+  mat-icon {
+    font-size: var(--text-xl);
+    width: var(--text-xl);
+    height: var(--text-xl);
+  }
+}
+
+.accion-redonda:active .accion-redonda__circulo {
+  transform: scale(0.94);
+}
+
+.accion-redonda:focus-visible {
+  outline: none;
+
+  .accion-redonda__circulo {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }

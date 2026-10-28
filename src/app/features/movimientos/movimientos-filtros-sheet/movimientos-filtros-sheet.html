@@ -1,10 +1,5 @@
 <div class="cuerpo">
-  <div class="sheet-hd">
-    <h2 class="screen-title">Filtros</h2>
-    <button mat-icon-button type="button" aria-label="Cerrar" (click)="cerrar()">
-      <mat-icon aria-hidden="true">close</mat-icon>
-    </button>
-  </div>
+  <app-hoja-cabecera titulo="Filtros" (cerrar)="cerrar()" />
 
   <div class="grupo-filtro">
     <span class="t-sec">Tipo</span>
@@ -112,48 +107,42 @@
     }
   </div>
 
-  <div class="field">
-    <label for="s-cta">Cuenta o crédito</label>
-    <select
-      class="input"
-      id="s-cta"
-      #campoCuenta
-      (change)="fijarCuentaOCredito(campoCuenta.value || null)"
-    >
-      <option value="">Todas</option>
-      @for (opcion of data.opcionesCuentaOCredito; track opcion.id) {
-        <option [value]="opcion.id" [selected]="draft().cuentaOCreditoId === opcion.id">
-          {{ opcion.etiqueta }}
-        </option>
-      }
-    </select>
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="s-cta">Cuenta o crédito</label>
+      <app-selector
+        inputId="s-cta"
+        [opciones]="data.opcionesCuentaOCredito"
+        campoValor="id"
+        opcionTodas="Todas"
+        [valor]="draft().cuentaOCreditoId ?? null"
+        (cambio)="fijarCuentaOCredito($any($event))"
+      />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="s-cat">Categoría</label>
+      <app-selector
+        inputId="s-cat"
+        [opciones]="data.categorias"
+        campoValor="id"
+        campoEtiqueta="nombre"
+        campoIcono="icono"
+        opcionTodas="Todas"
+        [valor]="draft().categoriaId ?? null"
+        (cambio)="fijarCategoria($any($event))"
+      />
+    </div>
+    <label class="ios-fila" for="s-internos">
+      <span class="ios-fila__rotulo">Movimientos internos</span>
+      <input
+        class="ios-interruptor"
+        id="s-internos"
+        type="checkbox"
+        [checked]="draft().mostrarInternos"
+        (change)="fijarInternos($any($event.target).checked)"
+      />
+    </label>
   </div>
-
-  <div class="field">
-    <label for="s-cat">Categoría</label>
-    <select
-      class="input"
-      id="s-cat"
-      #campoCategoria
-      (change)="fijarCategoria(campoCategoria.value || null)"
-    >
-      <option value="">Todas</option>
-      @for (categoria of data.categorias; track categoria.id) {
-        <option [value]="categoria.id" [selected]="draft().categoriaId === categoria.id">
-          {{ categoria.nombre }}
-        </option>
-      }
-    </select>
-  </div>
-
-  <label class="switch">
-    <input
-      type="checkbox"
-      [checked]="draft().mostrarInternos"
-      (change)="fijarInternos($any($event.target).checked)"
-    />
-    Mostrar movimientos internos
-  </label>
 </div>
 
 <div class="sheet-ft">

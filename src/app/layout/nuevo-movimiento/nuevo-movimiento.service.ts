@@ -22,16 +22,26 @@ export class NuevoMovimientoService {
    * `disableClose`: tocar fuera ya no descarta lo escrito. El formulario
    * decide — cierra si no se tocó nada, y la X y Escape cierran siempre
    * (ver el constructor de `MovimientoForm`).
+   *
+   * El foco arranca en el monto, no en "Cancelar": es lo primero que se
+   * escribe, y en el celular abre de una el teclado numérico.
    */
   abrir(datos: MovimientoFormData = {}): void {
     if (this.viewport.esMovil()) {
-      this.bottomSheet.open(MovimientoForm, { data: datos, disableClose: true });
+      this.bottomSheet.open(MovimientoForm, {
+        data: datos,
+        disableClose: true,
+        autoFocus: '#m-monto',
+        panelClass: 'hoja-movimiento',
+      });
     } else {
       this.dialog.open(MovimientoForm, {
-        width: '650px',
+        width: '520px',
         maxHeight: '90vh',
         data: datos,
         disableClose: true,
+        autoFocus: '#m-monto',
+        panelClass: 'hoja-movimiento',
       });
     }
   }

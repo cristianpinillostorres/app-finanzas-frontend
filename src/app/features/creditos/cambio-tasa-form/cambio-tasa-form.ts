@@ -9,6 +9,7 @@ import { CREDITOS_API } from '../../../core/api/creditos/creditos-api';
 import { fechaIsoDesdeLocal } from '../../../core/domain';
 import type { CreditoBanco } from '../../../core/models';
 import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
+import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
 
 export interface CambioTasaFormData {
   credito: CreditoBanco;
@@ -22,7 +23,7 @@ export interface CambioTasaFormData {
  */
 @Component({
   selector: 'app-cambio-tasa-form',
-  imports: [ReactiveFormsModule, MatIconModule, MatButtonModule],
+  imports: [HojaCabecera, ReactiveFormsModule, MatIconModule, MatButtonModule],
   templateUrl: './cambio-tasa-form.html',
   styleUrl: './cambio-tasa-form.scss',
 })

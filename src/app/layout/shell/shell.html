@@ -5,14 +5,17 @@
 } @else {
   @if (!viewport.esMovil()) {
     <!--
-    El esquema de Mi Semana: la marca en Anton arriba a la izquierda, las
-    acciones a la derecha, y debajo una barra lateral flotante con las
-    secciones y la cuenta junto al contenido. Es la misma navegación de
-    antes (los mismos cinco enlaces); solo cambia dónde se dibuja.
+    La marca arriba a la izquierda (el mismo cuadrito del teléfono), las
+    acciones a la derecha, y debajo una barra lateral con las secciones y
+    la cuenta junto al contenido. Es la misma navegación del teléfono (los
+    mismos cinco enlaces); solo cambia dónde se dibuja.
   -->
     <header class="cabezote">
       <div class="cabezote__inner">
-        <span class="marca">Finanzas</span>
+        <span class="marca">
+          <span class="brand__marca" aria-hidden="true"><mat-icon>savings</mat-icon></span>
+          Finanzas
+        </span>
 
         <!-- Quién tiene la sesión abierta, junto a la marca. El correo largo se
            corta con elipsis y el `title` lo muestra completo. -->
@@ -41,17 +44,15 @@
           }}</mat-icon>
         </button>
 
-        <!-- El `theme-btn` de Mi Semana: la luna con el tema claro, el sol con
-           el oscuro — el ícono es a dónde lleva, no dónde estás. -->
         <button
           mat-icon-button
           type="button"
           class="cabezote__icono"
-          [attr.aria-label]="tituloTema()"
-          [title]="tituloTema()"
-          (click)="tema.alternar()"
+          aria-label="Elegir tema"
+          title="Elegir tema"
+          [matMenuTriggerFor]="menuTema"
         >
-          <mat-icon aria-hidden="true">{{ tema.oscuro() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          <mat-icon aria-hidden="true">contrast</mat-icon>
         </button>
 
         <button
@@ -185,21 +186,27 @@
         </span>
         <!-- h1 en móvil: `app-page-head`, que lleva el h1 de la pantalla, no se
            dibuja bajo 768px, y sin esto la página no tenía título principal. -->
-        <h1 class="screen-title">{{ tituloPantalla() }}</h1>
+        <h1 class="titulo-grande">{{ tituloPantalla() }}</h1>
         <span class="spacer"></span>
         @if (accionPantalla(); as accion) {
           <button
             mat-icon-button
             type="button"
+            class="topbar__boton"
             [attr.aria-label]="accion.etiqueta"
             (click)="accion.accion()"
           >
             <mat-icon aria-hidden="true">{{ accion.icono }}</mat-icon>
           </button>
         }
+        <!-- Botones redondos sobre la superficie, como los de la barra de
+             navegación de iOS. El ojo va afuera porque se usa a diario (en
+             la calle, con alguien al lado); el tema, que se elige una vez,
+             vive en el menú "···". -->
         <button
           mat-icon-button
           type="button"
+          class="topbar__boton"
           [attr.aria-label]="tituloOjo()"
           (click)="montos.alternar()"
         >
@@ -210,27 +217,17 @@
         <button
           mat-icon-button
           type="button"
+          class="topbar__boton"
           aria-label="Más opciones"
           [matMenuTriggerFor]="menuMovil"
         >
-          <mat-icon aria-hidden="true">more_vert</mat-icon>
+          <mat-icon aria-hidden="true">more_horiz</mat-icon>
         </button>
         <mat-menu #menuMovil="matMenu" class="menu-cuenta">
-          <!-- En el teléfono no hay barra lateral ni sitio para otro ícono en
-             el header: tema y cuenta van acá, como en el cajón de Mi Semana.
-             Segmentado en vez de un ítem que alterna: con "Modo oscuro" como
-             acción no se sabía cuál está activo sin leerlo al revés. -->
-          <div class="menu-cuenta__tema">
-            <span class="t-sec">Tema</span>
-            <span class="seg seg--compacto">
-              <button type="button" [attr.aria-pressed]="!tema.oscuro()" (click)="fijarTema(false)">
-                Claro
-              </button>
-              <button type="button" [attr.aria-pressed]="tema.oscuro()" (click)="fijarTema(true)">
-                Oscuro
-              </button>
-            </span>
-          </div>
+          <button mat-menu-item type="button" [matMenuTriggerFor]="menuTema">
+            <mat-icon aria-hidden="true">contrast</mat-icon>
+            <span>Tema</span>
+          </button>
           <a mat-menu-item routerLink="/categorias">
             <mat-icon aria-hidden="true">sell</mat-icon>
             <span>Categorías</span>
@@ -249,15 +246,17 @@
       <router-outlet />
     </main>
 
-    <button
-      mat-fab
-      type="button"
-      class="fab-nuevo"
-      aria-label="Nuevo movimiento"
-      (click)="abrirNuevoMovimiento()"
-    >
-      <mat-icon aria-hidden="true">add</mat-icon>
-    </button>
+    @if (!accionPantalla()?.ocultaNuevoMovimiento) {
+      <button
+        mat-fab
+        type="button"
+        class="fab-nuevo"
+        aria-label="Nuevo movimiento"
+        (click)="abrirNuevoMovimiento()"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>
+      </button>
+    }
 
     <nav class="barra-inferior" aria-label="Navegación principal">
       @for (item of navItems; track item.path) {
@@ -279,6 +278,29 @@
     </nav>
   }
 }
+
+<!-- Menú de tema, el mismo en escritorio y en el teléfono: las tres
+     opciones a la vista, con una muestra de su color y la activa marcada. -->
+<mat-menu #menuTema="matMenu" class="menu-tema">
+  @for (opcion of opcionesTema; track opcion.id) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="tema.tema() === opcion.id"
+      (click)="tema.fijar(opcion.id)"
+    >
+      <!-- La muestra va en el hueco del ícono del ítem; el visto, al final. -->
+      <mat-icon class="muestra-tema" [attr.data-tema]="opcion.id" aria-hidden="true"></mat-icon>
+      <span class="menu-tema__fila">
+        {{ opcion.nombre }}
+        @if (tema.tema() === opcion.id) {
+          <span class="material-symbols-outlined menu-tema__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+</mat-menu>
 
 <!-- Para las cuentas de correo y contraseña (creadas a mano antes del
      registro con Google): une Google al mismo usuario, con los mismos

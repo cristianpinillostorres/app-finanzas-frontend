@@ -36,11 +36,26 @@
 
 // En escritorio el héroe comparte fila con "Pagos del mes", que es más
 // alto: estirarlo y repartir su contenido evita el escalón bajo la tarjeta.
-// El desglose queda anclado abajo, alineado con el final del panel vecino.
+// El desglose queda anclado abajo, alineado con el final del panel vecino,
+// y el héroe baja lo que mide la cabecera "Pagos del mes" para que las dos
+// tarjetas empiecen a la misma altura.
 @media (min-width: 1024px) {
   .hero--libre {
     align-self: stretch;
     justify-content: space-between;
+  }
+  .hero--libre.col-lg-7 {
+    margin-top: calc(var(--alto-group-head) + var(--space-2));
+  }
+  // Y al revés: si el héroe es el más alto, la tarjeta de pagos se estira.
+  .seccion {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+
+    > .panel {
+      flex: 1;
+    }
   }
 }
 
@@ -57,8 +72,7 @@
     order: 1;
   }
 
-  .col-apilada,
-  .panel-categorias {
+  .col-apilada {
     order: 2;
   }
 }

@@ -21,7 +21,7 @@
   }
 }
 
-// El desglose (`.caja-detalle`) y las acciones (`.acciones-fila`) son los
+// El desglose (`.caja-detalle`) y las acciones (`.acciones-redondas`) son los
 // mismos de Cuentas: ver `_componentes.scss`.
 .credito__detalle {
   display: flex;
@@ -32,4 +32,6 @@
 
 // Igual que en Cuentas: el tope de 680px que había acá desalineaba las
 // tarjetas respecto del encabezado con "Agregar crédito". El ancho lo
-// decide ahora el grid de 12 columnas de la página.
+// decide ahora el grid de 12 columnas de la página: una sola columna,
+// como Cuentas. En tres columnas los nombres se cortaban ("Préstamo de mi
+// he…") con media pantalla vacía al lado.

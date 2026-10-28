@@ -66,7 +66,9 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        // Con las APIs vacías la cuenta es nueva y el `Shell` manda a la
+        // bienvenida: sin la ruta, esa navegación fallaba fuera de las pruebas.
+        provideRouter([{ path: 'bienvenida', children: [] }]),
         provideNoopAnimations(),
         ...APIS_VACIAS,
         PREFERENCIAS_FALSAS,

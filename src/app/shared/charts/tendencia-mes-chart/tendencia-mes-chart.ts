@@ -117,6 +117,9 @@ export class TendenciaMesChart {
     axisTicks: { show: false },
     tooltip: { enabled: false },
     labels: {
+      // Derechos siempre: inclinados, los números de día se leían de lado.
+      rotate: 0,
+      hideOverlappingLabels: true,
       style: { colors: this.base().textoTenue, fontSize: '11px' },
       formatter: (valor: string) => valor,
     },
