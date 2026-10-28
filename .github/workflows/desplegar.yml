@@ -1,6 +1,6 @@
 # Cada push corre las pruebas, compila y publica en Cloudflare Pages:
-# - main → producción (app-finanzas.pages.dev)
-# - cualquier otra rama → URL de vista previa propia (p. ej. hotfix-x.app-finanzas.pages.dev)
+# - main → producción (app-finanzas-8ba.pages.dev)
+# - cualquier otra rama → URL de vista previa propia (p. ej. hotfix-x.app-finanzas-8ba.pages.dev)
 # Si las pruebas fallan, no se publica nada.
 name: Desplegar
 

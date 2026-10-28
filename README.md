@@ -69,7 +69,7 @@ npm run build     # build de producción (usa environment.prod.ts)
 Lo hace GitHub Actions (`.github/workflows/desplegar.yml`) en cada push:
 pruebas → build → `wrangler pages deploy`.
 
-- `main` → producción (`app-finanzas.pages.dev`).
+- `main` → producción (`app-finanzas-8ba.pages.dev`).
 - Cualquier otra rama → URL de vista previa propia.
 - Secretos del repositorio: `CLOUDFLARE_API_TOKEN` (permiso *Cloudflare
   Pages: Edit*) y `CLOUDFLARE_ACCOUNT_ID`.
