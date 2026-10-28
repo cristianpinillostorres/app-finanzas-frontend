@@ -287,44 +287,54 @@
                     </button>
                     <!-- La misma caja y las mismas acciones redondas que una
                          cuenta o un crédito abierto. -->
-                    @if (expandido(movimiento.id)) {
-                      <div class="detalle-movimiento detalle-aparece">
-                        <div class="caja-detalle">
-                          <div class="caja-detalle__fila">
-                            <span>Fecha</span>
-                            <span>{{ fechaCompletaDe(movimiento) }}</span>
-                          </div>
-                          <div class="caja-detalle__fila">
-                            <span>Tipo</span>
-                            <span>{{ etiquetaTipoDe(movimiento) }}</span>
-                          </div>
-                          @if (nombrePagoFijoDe(movimiento); as nombrePagoFijo) {
+                    <div
+                      class="plegable"
+                      [class.plegable--abierto]="expandido(movimiento.id)"
+                      [inert]="!expandido(movimiento.id)"
+                    >
+                      <div class="plegable__dentro">
+                        <div class="detalle-movimiento">
+                          <div class="caja-detalle">
                             <div class="caja-detalle__fila">
-                              <span>Pago fijo</span>
-                              <span>{{ nombrePagoFijo }}</span>
+                              <span>Fecha</span>
+                              <span>{{ fechaCompletaDe(movimiento) }}</span>
                             </div>
-                          }
-                        </div>
-                        <div class="acciones-redondas">
-                          <button class="accion-redonda" type="button" (click)="editar(movimiento)">
-                            <span class="accion-redonda__circulo">
-                              <mat-icon aria-hidden="true">edit</mat-icon>
-                            </span>
-                            Editar
-                          </button>
-                          <button
-                            class="accion-redonda"
-                            type="button"
-                            (click)="eliminar(movimiento)"
-                          >
-                            <span class="accion-redonda__circulo">
-                              <mat-icon aria-hidden="true">delete</mat-icon>
-                            </span>
-                            Eliminar
-                          </button>
+                            <div class="caja-detalle__fila">
+                              <span>Tipo</span>
+                              <span>{{ etiquetaTipoDe(movimiento) }}</span>
+                            </div>
+                            @if (nombrePagoFijoDe(movimiento); as nombrePagoFijo) {
+                              <div class="caja-detalle__fila">
+                                <span>Pago fijo</span>
+                                <span>{{ nombrePagoFijo }}</span>
+                              </div>
+                            }
+                          </div>
+                          <div class="acciones-redondas">
+                            <button
+                              class="accion-redonda"
+                              type="button"
+                              (click)="editar(movimiento)"
+                            >
+                              <span class="accion-redonda__circulo">
+                                <mat-icon aria-hidden="true">edit</mat-icon>
+                              </span>
+                              Editar
+                            </button>
+                            <button
+                              class="accion-redonda"
+                              type="button"
+                              (click)="eliminar(movimiento)"
+                            >
+                              <span class="accion-redonda__circulo">
+                                <mat-icon aria-hidden="true">delete</mat-icon>
+                              </span>
+                              Eliminar
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    }
+                    </div>
                   </div>
                 }
               </div>

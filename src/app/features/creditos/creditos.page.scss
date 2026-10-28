@@ -15,10 +15,20 @@
   padding: var(--space-2);
   border: 0;
   border-radius: var(--radius-md);
+  // El margen de abajo cambia junto con el detalle que se pliega.
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    margin-bottom var(--dur-slow) cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus-visible {
     border-radius: var(--radius-md);
   }
+}
+// Si la fila queda sola (sin barra, sin pie y cerrada), también se sale 8px
+// por abajo. Si no, sobraban 8px bajo el contenido: la tarjeta se veía
+// corrida hacia arriba y el fondo al pasar por encima, descentrado.
+.credito:not(:has(> .hd, > .credito__pie, > .plegable--abierto)) > .fila-credito {
+  margin-bottom: calc(-1 * var(--space-2));
 }
 
 // El desglose (`.caja-detalle`) y las acciones (`.acciones-redondas`) son los

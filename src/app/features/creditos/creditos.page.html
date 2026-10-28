@@ -130,170 +130,176 @@
             "Registrar pago") sigue siendo lo último de la tarjeta, en vez
             de quedar partido entre el progreso y los datos.
           -->
-            @if (expandido(item.credito.id)) {
-              <div class="credito__detalle detalle-aparece">
-                @let compras = comprasDe(item.credito.id);
-                <!-- Una plataforma sin planes no tiene nada que desglosar. -->
-                @if (item.credito.grupo !== 'PLATAFORMA' || compras.length > 0) {
-                  <div class="caja-detalle">
-                    @if (item.credito.grupo === 'TARJETA') {
-                      <div class="caja-detalle__fila caja-detalle__fila--total">
-                        <span>Cupo disponible</span>
-                        <app-amount
-                          class="amt"
-                          [valor]="cupoDisponible(item.credito, item.deuda)"
-                        />
-                      </div>
-                      @if (valorExtracto(item.credito.id); as valor) {
-                        <div class="caja-detalle__fila">
-                          <span>Valor del extracto</span>
-                          <app-amount class="amt" [valor]="valor" />
+            <div
+              class="plegable"
+              [class.plegable--abierto]="expandido(item.credito.id)"
+              [inert]="!expandido(item.credito.id)"
+            >
+              <div class="plegable__dentro">
+                <div class="credito__detalle">
+                  @let compras = comprasDe(item.credito.id);
+                  <!-- Una plataforma sin planes no tiene nada que desglosar. -->
+                  @if (item.credito.grupo !== 'PLATAFORMA' || compras.length > 0) {
+                    <div class="caja-detalle">
+                      @if (item.credito.grupo === 'TARJETA') {
+                        <div class="caja-detalle__fila caja-detalle__fila--total">
+                          <span>Cupo disponible</span>
+                          <app-amount
+                            class="amt"
+                            [valor]="cupoDisponible(item.credito, item.deuda)"
+                          />
                         </div>
+                        @if (valorExtracto(item.credito.id); as valor) {
+                          <div class="caja-detalle__fila">
+                            <span>Valor del extracto</span>
+                            <app-amount class="amt" [valor]="valor" />
+                          </div>
+                        }
                       }
-                    }
 
-                    @if (item.credito.grupo === 'BANCO') {
-                      <div class="caja-detalle__fila">
-                        <span
-                          >Tasa E.A.{{
-                            item.credito.tipoTasa === 'VARIABLE' ? ' vigente' : ''
-                          }}</span
-                        >
-                        <span class="tnum">{{ tasaEaTexto(tasaEaVigenteDe(item.credito)) }}</span>
-                      </div>
-                      <div class="caja-detalle__fila">
-                        <span>Tasa mensual</span>
-                        <span class="tnum">{{
-                          tasaMensualTexto(tasaEaVigenteDe(item.credito))
-                        }}</span>
-                      </div>
-                      @if (item.credito.seguroMensual > 0) {
+                      @if (item.credito.grupo === 'BANCO') {
                         <div class="caja-detalle__fila">
-                          <span>Seguros</span>
-                          <app-amount class="amt" [valor]="item.credito.seguroMensual" />
+                          <span
+                            >Tasa E.A.{{
+                              item.credito.tipoTasa === 'VARIABLE' ? ' vigente' : ''
+                            }}</span
+                          >
+                          <span class="tnum">{{ tasaEaTexto(tasaEaVigenteDe(item.credito)) }}</span>
                         </div>
-                      }
-                      @if (terminaTexto(item.credito, item.cuotasFaltantes); as termina) {
                         <div class="caja-detalle__fila">
-                          <span>Termina</span>
-                          <span>{{ termina }}</span>
+                          <span>Tasa mensual</span>
+                          <span class="tnum">{{
+                            tasaMensualTexto(tasaEaVigenteDe(item.credito))
+                          }}</span>
                         </div>
+                        @if (item.credito.seguroMensual > 0) {
+                          <div class="caja-detalle__fila">
+                            <span>Seguros</span>
+                            <app-amount class="amt" [valor]="item.credito.seguroMensual" />
+                          </div>
+                        }
+                        @if (terminaTexto(item.credito, item.cuotasFaltantes); as termina) {
+                          <div class="caja-detalle__fila">
+                            <span>Termina</span>
+                            <span>{{ termina }}</span>
+                          </div>
+                        }
+                        @if (proximaCuota(item.credito); as proxima) {
+                          <div class="caja-detalle__fila">
+                            <span>Próxima cuota · capital / interés</span>
+                            <span class="amt">
+                              <app-amount [valor]="proxima.capital" /> /
+                              <app-amount [valor]="proxima.interes" />
+                            </span>
+                          </div>
+                        }
+                        @if (item.credito.tipoTasa === 'VARIABLE') {
+                          @let cambios = cambiosTasaDe(item.credito.id);
+                          @if (cambios.length > 0) {
+                            <span class="t-rotulo caja-detalle__titulo">Cambios de tasa</span>
+                            @for (cambio of cambios; track cambio.id) {
+                              <div class="caja-detalle__fila">
+                                <span>Desde {{ fechaTexto(cambio.fechaDesde) }}</span>
+                                <span class="tnum">{{ tasaEaTexto(cambio.tasaEa) }}</span>
+                              </div>
+                            }
+                          }
+                        }
                       }
-                      @if (proximaCuota(item.credito); as proxima) {
-                        <div class="caja-detalle__fila">
-                          <span>Próxima cuota · capital / interés</span>
-                          <span class="amt">
-                            <app-amount [valor]="proxima.capital" /> /
-                            <app-amount [valor]="proxima.interes" />
-                          </span>
+
+                      @if (item.credito.grupo === 'PERSONA') {
+                        <div class="caja-detalle__fila caja-detalle__fila--total">
+                          <span>Monto original</span>
+                          <app-amount class="amt" [valor]="item.credito.monto" />
                         </div>
-                      }
-                      @if (item.credito.tipoTasa === 'VARIABLE') {
-                        @let cambios = cambiosTasaDe(item.credito.id);
-                        @if (cambios.length > 0) {
-                          <span class="t-rotulo caja-detalle__titulo">Cambios de tasa</span>
-                          @for (cambio of cambios; track cambio.id) {
+                        @let abonos = abonosPersona(item.credito.id);
+                        @if (abonos.length > 0) {
+                          <span class="t-rotulo caja-detalle__titulo">Abonos</span>
+                          @for (abono of abonos; track abono.id) {
                             <div class="caja-detalle__fila">
-                              <span>Desde {{ fechaTexto(cambio.fechaDesde) }}</span>
-                              <span class="tnum">{{ tasaEaTexto(cambio.tasaEa) }}</span>
+                              <span>{{ fechaTexto(abono.fecha) }}</span>
+                              <app-amount class="amt" [valor]="abono.monto" />
                             </div>
                           }
                         }
                       }
-                    }
 
-                    @if (item.credito.grupo === 'PERSONA') {
-                      <div class="caja-detalle__fila caja-detalle__fila--total">
-                        <span>Monto original</span>
-                        <app-amount class="amt" [valor]="item.credito.monto" />
-                      </div>
-                      @let abonos = abonosPersona(item.credito.id);
-                      @if (abonos.length > 0) {
-                        <span class="t-rotulo caja-detalle__titulo">Abonos</span>
-                        @for (abono of abonos; track abono.id) {
+                      @if (
+                        (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') &&
+                        compras.length > 0
+                      ) {
+                        <span class="t-rotulo caja-detalle__titulo">{{
+                          item.credito.grupo === 'TARJETA' ? 'Compras' : 'Planes'
+                        }}</span>
+                        @for (compra of compras; track compra.id) {
                           <div class="caja-detalle__fila">
-                            <span>{{ fechaTexto(abono.fecha) }}</span>
-                            <app-amount class="amt" [valor]="abono.monto" />
+                            <span class="caja-detalle__nombre">
+                              <mat-icon aria-hidden="true">shopping_bag</mat-icon>
+                              {{ compra.descripcion }}
+                            </span>
+                            <span class="tnum"
+                              >Cuota {{ cuotaActualCompra(compra) }} de {{ compra.numCuotas }}</span
+                            >
                           </div>
                         }
                       }
-                    }
+                    </div>
+                  }
 
-                    @if (
-                      (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') &&
-                      compras.length > 0
-                    ) {
-                      <span class="t-rotulo caja-detalle__titulo">{{
-                        item.credito.grupo === 'TARJETA' ? 'Compras' : 'Planes'
-                      }}</span>
-                      @for (compra of compras; track compra.id) {
-                        <div class="caja-detalle__fila">
-                          <span class="caja-detalle__nombre">
-                            <mat-icon aria-hidden="true">shopping_bag</mat-icon>
-                            {{ compra.descripcion }}
-                          </span>
-                          <span class="tnum"
-                            >Cuota {{ cuotaActualCompra(compra) }} de {{ compra.numCuotas }}</span
-                          >
-                        </div>
-                      }
+                  <!-- Las mismas acciones redondas de una cuenta abierta en Cuentas. -->
+                  <div class="acciones-redondas">
+                    @if (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') {
+                      <button
+                        class="accion-redonda"
+                        type="button"
+                        (click)="agregarCompra(item.credito)"
+                      >
+                        <span class="accion-redonda__circulo">
+                          <mat-icon aria-hidden="true">add_shopping_cart</mat-icon>
+                        </span>
+                        Agregar <br />compra
+                      </button>
                     }
+                    @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
+                      <button
+                        class="accion-redonda"
+                        type="button"
+                        (click)="cambiarTasa(item.credito)"
+                      >
+                        <span class="accion-redonda__circulo">
+                          <mat-icon aria-hidden="true">percent</mat-icon>
+                        </span>
+                        Cambiar <br />tasa
+                      </button>
+                    }
+                    @if (item.credito.grupo === 'PERSONA') {
+                      <button
+                        class="accion-redonda"
+                        type="button"
+                        (click)="registrarAbono(item.credito)"
+                      >
+                        <span class="accion-redonda__circulo">
+                          <mat-icon aria-hidden="true">payments</mat-icon>
+                        </span>
+                        Registrar <br />abono
+                      </button>
+                    }
+                    <button class="accion-redonda" type="button" (click)="editar(item.credito)">
+                      <span class="accion-redonda__circulo">
+                        <mat-icon aria-hidden="true">edit</mat-icon>
+                      </span>
+                      Editar
+                    </button>
+                    <button class="accion-redonda" type="button" (click)="archivar(item.credito)">
+                      <span class="accion-redonda__circulo">
+                        <mat-icon aria-hidden="true">inventory_2</mat-icon>
+                      </span>
+                      Archivar
+                    </button>
                   </div>
-                }
-
-                <!-- Las mismas acciones redondas de una cuenta abierta en Cuentas. -->
-                <div class="acciones-redondas">
-                  @if (item.credito.grupo === 'TARJETA' || item.credito.grupo === 'PLATAFORMA') {
-                    <button
-                      class="accion-redonda"
-                      type="button"
-                      (click)="agregarCompra(item.credito)"
-                    >
-                      <span class="accion-redonda__circulo">
-                        <mat-icon aria-hidden="true">add_shopping_cart</mat-icon>
-                      </span>
-                      Agregar <br />compra
-                    </button>
-                  }
-                  @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
-                    <button
-                      class="accion-redonda"
-                      type="button"
-                      (click)="cambiarTasa(item.credito)"
-                    >
-                      <span class="accion-redonda__circulo">
-                        <mat-icon aria-hidden="true">percent</mat-icon>
-                      </span>
-                      Cambiar <br />tasa
-                    </button>
-                  }
-                  @if (item.credito.grupo === 'PERSONA') {
-                    <button
-                      class="accion-redonda"
-                      type="button"
-                      (click)="registrarAbono(item.credito)"
-                    >
-                      <span class="accion-redonda__circulo">
-                        <mat-icon aria-hidden="true">payments</mat-icon>
-                      </span>
-                      Registrar <br />abono
-                    </button>
-                  }
-                  <button class="accion-redonda" type="button" (click)="editar(item.credito)">
-                    <span class="accion-redonda__circulo">
-                      <mat-icon aria-hidden="true">edit</mat-icon>
-                    </span>
-                    Editar
-                  </button>
-                  <button class="accion-redonda" type="button" (click)="archivar(item.credito)">
-                    <span class="accion-redonda__circulo">
-                      <mat-icon aria-hidden="true">inventory_2</mat-icon>
-                    </span>
-                    Archivar
-                  </button>
                 </div>
               </div>
-            }
+            </div>
 
             @if (item.estadoPago && item.cuota > 0) {
               <!--
@@ -311,7 +317,7 @@
                 </span>
                 <button
                   class="btn btn-compacto"
-                  [class]="urgente(item) ? 'btn-primary' : 'btn-outline'"
+                  [class]="urgente(item) ? 'btn-primary' : 'btn-tonal'"
                   type="button"
                   (click)="registrarPago(item)"
                 >

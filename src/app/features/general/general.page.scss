@@ -92,14 +92,6 @@
   }
 }
 
-.bar--cerca > i {
-  background: var(--color-deuda);
-}
-
-.bar--pasado > i {
-  background: var(--color-gasto);
-}
-
 // Los primeros pasos se van solos al terminarlos, pero el elemento queda
 // vacío en el grid y sumaba un hueco de más: el héroe de General quedaba
 // 20px más abajo que el de las otras pantallas.

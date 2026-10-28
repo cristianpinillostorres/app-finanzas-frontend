@@ -112,7 +112,7 @@
                 <span class="sr-only">{{ fechaLarga(dia.fecha) }}</span>
                 <div class="linea__pagos" auto-animate>
                   @for (item of dia.items; track item.id) {
-                    <div class="stack" auto-animate>
+                    <div class="stack">
                       <div
                         class="row fila-pago"
                         [class.row--estatica]="item.esCredito"
@@ -157,67 +157,74 @@
                           }
                         </span>
                       </div>
-                      @if (expandido(item.id)) {
-                        <!-- La misma caja y las mismas acciones redondas que una
+                      <!-- La misma caja y las mismas acciones redondas que una
                            cuenta, un crédito o un movimiento abierto. -->
-                        <div class="detalle-pago detalle-aparece" [id]="'detalle-' + item.id">
-                          <div class="caja-detalle">
-                            <div class="caja-detalle__fila">
-                              <span>Se paga</span>
-                              <span>{{ cuandoSePaga(item) }}</span>
-                            </div>
-                            @if (cuentaDe(item); as cuenta) {
+                      <div
+                        class="plegable"
+                        [id]="'detalle-' + item.id"
+                        [class.plegable--abierto]="expandido(item.id)"
+                        [inert]="!expandido(item.id)"
+                      >
+                        <div class="plegable__dentro">
+                          <div class="detalle-pago">
+                            <div class="caja-detalle">
                               <div class="caja-detalle__fila">
-                                <span>Desde</span>
-                                <span>{{ cuenta }}</span>
+                                <span>Se paga</span>
+                                <span>{{ cuandoSePaga(item) }}</span>
                               </div>
-                            }
-                          </div>
-                          <div class="acciones-redondas">
+                              @if (cuentaDe(item); as cuenta) {
+                                <div class="caja-detalle__fila">
+                                  <span>Desde</span>
+                                  <span>{{ cuenta }}</span>
+                                </div>
+                              }
+                            </div>
+                            <div class="acciones-redondas">
+                              @if (!item.pagado) {
+                                <button
+                                  class="accion-redonda"
+                                  type="button"
+                                  (click)="marcarPagado(item)"
+                                >
+                                  <span class="accion-redonda__circulo">
+                                    <mat-icon aria-hidden="true">check</mat-icon>
+                                  </span>
+                                  Ya lo <br />pagué
+                                </button>
+                              } @else if (item.marcadoSinMovimiento) {
+                                <button
+                                  class="accion-redonda"
+                                  type="button"
+                                  (click)="desmarcar(item)"
+                                >
+                                  <span class="accion-redonda__circulo">
+                                    <mat-icon aria-hidden="true">undo</mat-icon>
+                                  </span>
+                                  Desmarcar
+                                </button>
+                              }
+                              <button class="accion-redonda" type="button" (click)="editar(item)">
+                                <span class="accion-redonda__circulo">
+                                  <mat-icon aria-hidden="true">edit</mat-icon>
+                                </span>
+                                Editar
+                              </button>
+                              <button class="accion-redonda" type="button" (click)="eliminar(item)">
+                                <span class="accion-redonda__circulo">
+                                  <mat-icon aria-hidden="true">delete</mat-icon>
+                                </span>
+                                Eliminar
+                              </button>
+                            </div>
                             @if (!item.pagado) {
-                              <button
-                                class="accion-redonda"
-                                type="button"
-                                (click)="marcarPagado(item)"
-                              >
-                                <span class="accion-redonda__circulo">
-                                  <mat-icon aria-hidden="true">check</mat-icon>
-                                </span>
-                                Ya lo <br />pagué
-                              </button>
-                            } @else if (item.marcadoSinMovimiento) {
-                              <button
-                                class="accion-redonda"
-                                type="button"
-                                (click)="desmarcar(item)"
-                              >
-                                <span class="accion-redonda__circulo">
-                                  <mat-icon aria-hidden="true">undo</mat-icon>
-                                </span>
-                                Desmarcar
-                              </button>
+                              <p class="t-meta detalle-pago__nota">
+                                "Ya lo pagué" es para lo que pagaste antes de usar la app: lo marca
+                                sin registrar un gasto, para no contarlo dos veces.
+                              </p>
                             }
-                            <button class="accion-redonda" type="button" (click)="editar(item)">
-                              <span class="accion-redonda__circulo">
-                                <mat-icon aria-hidden="true">edit</mat-icon>
-                              </span>
-                              Editar
-                            </button>
-                            <button class="accion-redonda" type="button" (click)="eliminar(item)">
-                              <span class="accion-redonda__circulo">
-                                <mat-icon aria-hidden="true">delete</mat-icon>
-                              </span>
-                              Eliminar
-                            </button>
                           </div>
-                          @if (!item.pagado) {
-                            <p class="t-meta detalle-pago__nota">
-                              "Ya lo pagué" es para lo que pagaste antes de usar la app: lo marca
-                              sin registrar un gasto, para no contarlo dos veces.
-                            </p>
-                          }
                         </div>
-                      }
+                      </div>
                     </div>
                   }
                 </div>

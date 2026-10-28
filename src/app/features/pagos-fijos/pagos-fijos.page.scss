@@ -55,7 +55,7 @@
   top: var(--space-3);
   right: var(--space-2);
   color: var(--text-muted);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-slow) cubic-bezier(0.4, 0, 0.2, 1);
 }
 .fila-pago__abrir[aria-expanded='true'] .fila-pago__chevron {
   transform: rotate(180deg);

@@ -138,6 +138,8 @@
   background: transparent;
   color: var(--text-primary);
   cursor: pointer;
+  // Un `<a class="btn">` es un botón: sin el subrayado del enlace.
+  text-decoration: none;
   white-space: nowrap;
   transition:
     background-color var(--dur-fast) var(--ease-out),
@@ -705,6 +707,13 @@
   margin-block: calc((var(--tap-min) - 1lh) / -2);
   margin-right: calc(-1 * var(--space-3));
   font-size: var(--text-sm);
+
+  // La píldora de fondo mide 44px y aquí se monta sobre la tarjeta de
+  // abajo: al pasar por encima solo se oscurece el texto.
+  &:hover:not(:disabled) {
+    background: none;
+    color: var(--accent-brillo);
+  }
 }
 
 // Separador de día (Movimientos): pegajoso dentro de su lista, para no
@@ -790,9 +799,8 @@
   gap: var(--space-2);
 }
 // El detalle entra y sale del DOM (un `@if` en la plantilla), no se oculta
-// con `display: none`: así el contenedor `.stack`, que lleva `auto-animate`,
-// puede animar el despliegue y el plegado. Con `display` no hay nada que
-// animar — el alto salta de golpe.
+// con `display: none`: así su `.plegable` puede animar el despliegue y el
+// plegado. Con `display` no hay nada que animar — el alto salta de golpe.
 .detalle {
   border-top: 1px solid var(--border);
   padding-top: var(--space-3);
@@ -807,8 +815,9 @@
 // era adorno, y hacía competir cinco tarjetas a la vez.
 // La tarjeta de tarea de Mi Semana: sombra corta, y al pasar por encima
 // sube 2px con un aro teal.
+// Sin borde, como los paneles y la tarjeta del título: la sombra ya la
+// separa del fondo.
 .credito {
-  border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--bg-surface);
   box-shadow: var(--shadow-sm);
@@ -828,18 +837,17 @@
     0 0 0 1px color-mix(in srgb, var(--accent-brillo) 35%, transparent);
 }
 // Pie de la tarjeta de crédito: la cuota que viene y la acción para
-// pagarla, sobre fondo hundido para separarlo de los datos de arriba.
-// Siempre es lo último de la tarjeta (también abierta): los márgenes
-// negativos lo pegan a los bordes de abajo y de los lados.
+// pagarla. Siempre es lo último de la tarjeta (también abierta). Lo separa
+// una raya con aire a los lados, como la del detalle de una cuenta; antes
+// iba sobre fondo hundido de borde a borde y la tarjeta se veía partida.
 .credito__pie {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-3);
-  margin: var(--space-1) calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-sunken);
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--border);
 }
 .credito__proxima {
@@ -965,23 +973,50 @@
   height: var(--text-lg);
 }
 
-// Lo que se abre bajo una fila (Cuentas, Créditos): aparece con un fundido
-// corto, solo `opacity` y `transform`. Antes lo animaba auto-animate, que
-// mide el alto de cada tarjeta vecina cuadro a cuadro: en el teléfono se
-// trababa, y los grupos de más abajo saltaban sin animación.
-.detalle-aparece {
-  animation: detalle-aparece var(--dur-base) var(--ease-out) both;
+// Lo que se abre bajo una fila (Cuentas, Créditos, Movimientos, Pagos
+// fijos): crece de alto al abrir y se encoge al cerrar.
+// El detalle está siempre en la página y solo cambia de clase: es una
+// transición, no una animación de entrada y salida, así que si se toca otra
+// fila a mitad de camino se devuelve desde donde va en vez de saltar al
+// final. Antes se creaba y se destruía con cada toque y se veía a golpes.
+// El alto lo resuelve el navegador con la fila del grid (de `0fr` a `1fr`),
+// sin medir nada desde JS. La curva es pareja (acelera y frena igual): con
+// `--ease-out` casi todo el recorrido pasaba en los primeros cuadros.
+// `--plegable-hueco` es el `gap` del contenedor, que se pliega también.
+// Cerrado lleva `inert`: ni el foco ni el lector de pantalla entran.
+.plegable {
+  --plegable-curva: cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: calc(-1 * var(--plegable-hueco, 0px));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--dur-slow) var(--plegable-curva),
+    margin-top var(--dur-slow) var(--plegable-curva),
+    opacity var(--dur-base) var(--plegable-curva),
+    visibility 0s linear var(--dur-slow);
 }
-@keyframes detalle-aparece {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
+.plegable--abierto {
+  grid-template-rows: 1fr;
+  margin-top: 0;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
-@media (prefers-reduced-motion: reduce) {
-  .detalle-aparece {
-    animation: none;
-  }
+// Recorta lo que no cabe mientras se pliega. Los 4px de cada lado dejan
+// ver entero el aro de foco de los botones del borde.
+.plegable__dentro {
+  min-height: 0;
+  overflow: hidden;
+  padding-inline: var(--space-1);
+  margin-inline: calc(-1 * var(--space-1));
+}
+.credito > .plegable {
+  --plegable-hueco: var(--space-3);
+}
+.stack > .plegable {
+  --plegable-hueco: var(--space-2);
 }
 
 // Flecha al final de la fila que abre una tarjeta: dice que se abre, y
@@ -989,7 +1024,8 @@
 .fila-flecha {
   flex: none;
   color: var(--text-muted);
-  transition: transform var(--dur-base) var(--ease-out);
+  // Gira con la misma curva y duración con que se pliega el detalle.
+  transition: transform var(--dur-slow) cubic-bezier(0.4, 0, 0.2, 1);
 }
 [aria-expanded='true'] > .fila-flecha {
   transform: rotate(180deg);
@@ -1145,11 +1181,15 @@
   height: 100%;
   transform: scaleX(var(--progreso, 0));
   transform-origin: left;
-  background: var(--accent);
+  background: var(--dato);
   transition: transform var(--dur-slow) var(--ease-out);
 }
-.bar--ingreso > i {
-  background: var(--color-ingreso);
+// Estados: el único caso en que una barra lleva color (ver `--dato`).
+.bar--cerca > i {
+  background: var(--color-deuda);
+}
+.bar--pasado > i {
+  background: var(--color-gasto);
 }
 
 // Barra de dos tramos (disponible / reservado en Cuentas): a diferencia de
@@ -1157,6 +1197,8 @@
 // dimensionan con `flex-basis` y no con el `scaleX` de `--progreso`.
 .bar--segmentos {
   display: flex;
+  // Un hueco de 2px separa los dos tramos, que son de la misma tinta.
+  gap: 2px;
 }
 .bar--segmentos > i {
   width: auto;
@@ -1166,10 +1208,10 @@
   transition: flex-basis var(--dur-slow) var(--ease-out);
 }
 .bar--segmentos > .seg-disponible {
-  background: var(--accent);
+  background: var(--dato-heroe);
 }
 .bar--segmentos > .seg-reservado {
-  background: var(--color-ingreso);
+  background: var(--dato-heroe-suave);
 }
 
 // Reparto por tipo de cuenta ("Dónde está tu dinero"): nombre, barra y
@@ -1206,11 +1248,12 @@
   margin-right: var(--space-1);
   vertical-align: baseline;
 }
+// Los mismos tonos de la barra: lo disponible fuerte, lo reservado claro.
 .punto--disponible {
-  background: var(--accent);
+  background: var(--dato-heroe);
 }
 .punto--reservado {
-  background: var(--color-ingreso);
+  background: var(--dato-heroe-suave);
 }
 
 .reparto__cifra {
@@ -1218,9 +1261,6 @@
   align-items: baseline;
   gap: var(--space-2);
   flex: none;
-}
-.bar--deuda > i {
-  background: var(--color-deuda);
 }
 
 // Barra de categoría (Gastos por categoría, General).

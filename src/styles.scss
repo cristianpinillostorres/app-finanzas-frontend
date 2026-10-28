@@ -69,6 +69,21 @@ body {
   height: 100%;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  // Como una app instalada: el texto no se selecciona al tocar, mantener
+  // presionado o arrastrar, y iOS no abre el menú de copiar. Los campos sí
+  // dejan seleccionar (más abajo).
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+// Lo que la persona escribe sí se selecciona: para corregirlo o copiarlo.
+input,
+textarea,
+[contenteditable]:not([contenteditable='false']) {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
 }
 
 h1,

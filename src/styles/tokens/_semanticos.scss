@@ -132,6 +132,22 @@
 :root {
   @include tokens-claro;
 
+  // -- datos --
+  // Las barras de avance y de reparto van en tinta neutra, la misma en los
+  // tres temas: el acento es de lo que se toca (botones, enlaces, foco) y
+  // con él una cuota pagada salía teal, negra o azul según el tema. El
+  // color en un dato queda para cuando dice algo: ámbar si va cerca del
+  // límite, rojo si se pasó (`.bar--cerca`, `.bar--pasado`).
+  --dato: var(--text-muted);
+  // Excepción: la barra de la tarjeta héroe (disponible y reservado en
+  // Cuentas). El héroe es el momento de marca de cada pantalla (ya lleva la
+  // textura en el acento) y en tinta neutra quedaba apagado. Va en dos tonos
+  // del acento: lo reservado es la misma plata apartada, así que es el mismo
+  // color, más claro, y no otro (antes era el verde de ingreso, que junto al
+  // teal no se distinguía).
+  --dato-heroe: var(--accent);
+  --dato-heroe-suave: color-mix(in srgb, var(--accent) 40%, var(--bg-subtle));
+
   // -- alias por tipo de movimiento --
   // Transferencias y ajustes no tienen color propio: una transferencia no
   // suma ni resta patrimonio, y un ajuste es una corrección, no un hecho
