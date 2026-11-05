@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -28,6 +28,8 @@ export class LoginPage {
 
   constructor() {
     inject(ThemeService).soloClaro();
+    // Al corregir un dato, el error del intento anterior ya no aplica.
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.auth.limpiarError());
     // El panel propio ya cubre el del puente (`data-puente`, ver index.html).
     setTimeout(() => document.documentElement.removeAttribute('data-puente'), 800);
   }
@@ -72,6 +74,41 @@ export class LoginPage {
     const control = this.form.controls.password;
     return control.touched && control.invalid ? 'Escribe tu contraseña.' : null;
   });
+
+  protected readonly correoValido = computed(() => {
+    this.cambios();
+    const c = this.form.controls.email;
+    return c.value.length > 0 && c.valid;
+  });
+  protected readonly claveLista = computed(() => {
+    this.cambios();
+    return this.form.controls.password.value.length > 0;
+  });
+
+  /**
+   * Estado del candado de la cabecera: cerrado en reposo, firme cuando el
+   * formulario está completo, abriéndose mientras entra y con un temblor si
+   * el acceso falla. Solo cambia el dibujo; entrar no espera a la animación.
+   */
+  protected readonly estadoCandado = computed<'cerrado' | 'listo' | 'abriendo' | 'abierto' | 'error'>(() => {
+    if (this.auth.autenticado()) return 'abierto';
+    if (this.auth.iniciandoCon() === 'correo') return 'abriendo';
+    if (this.auth.error()) return 'error';
+    return this.correoValido() && this.claveLista() && !this.recuperando() ? 'listo' : 'cerrado';
+  });
+  protected readonly textoCandado = computed(() => {
+    switch (this.estadoCandado()) {
+      case 'abierto': return 'Bienvenido';
+      case 'abriendo': return 'Abriendo tu cuenta';
+      case 'listo': return 'Listo para entrar';
+      default: return 'Cuenta protegida';
+    }
+  });
+
+  /** Un solo mensaje visible: el del servidor manda sobre los de campo. */
+  protected readonly mensajeError = computed(
+    () => this.auth.error() ?? this.errorCorreo() ?? this.errorClave(),
+  );
 
   /** "Olvidé mi contraseña": el mismo formulario, solo con el correo. */
   protected readonly recuperando = signal(false);

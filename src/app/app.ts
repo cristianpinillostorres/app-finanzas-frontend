@@ -9,6 +9,9 @@ import { Shell } from './layout/shell/shell';
 import { TransicionLogin } from './shared/bienvenida/transicion-login';
 import { destinoDeLaSesion } from './shared/bienvenida/sin-recorrido-pendiente.guard';
 
+/** Tiempo mínimo que el login muestra el candado abierto al entrar. */
+const PAUSA_CANDADO_MS = 900;
+
 /**
  * Sin `/login` como ruta ni guard: toda la app está detrás de sesión, así
  * que la raíz decide entre `Shell` (con las 5 pantallas) y
@@ -65,10 +68,14 @@ export class App {
 
   private async decidirDestino(): Promise<void> {
     this.enCurso = true;
+    const inicio = Date.now();
     try {
       const destino = await firstValueFrom(destinoDeLaSesion(this.injector));
       if (destino !== true) await this.router.navigateByUrl(destino);
     } finally {
+      // El candado del login se ve abierto un momento antes de pasar a la app.
+      const resta = PAUSA_CANDADO_MS - (Date.now() - inicio);
+      if (resta > 0) await new Promise((r) => setTimeout(r, resta));
       this.enCurso = false;
       this.decidiendo.set(false);
       this.auth.terminarEntrada();

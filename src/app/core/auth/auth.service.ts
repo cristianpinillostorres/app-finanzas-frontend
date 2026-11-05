@@ -106,6 +106,11 @@ export class AuthService {
     });
   }
 
+  /** Quita el error del formulario de correo (la persona ya está corrigiendo). */
+  limpiarError(): void {
+    if (this._error()?.metodo === 'correo') this._error.set(null);
+  }
+
   /**
    * "Regístrate" del login: sesión anónima para recorrer la bienvenida sin
    * cuenta todavía.

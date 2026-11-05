@@ -12,6 +12,8 @@ function crearAuthFalso() {
     error: signal<string | null>(null),
     errorGoogle: signal<string | null>(null),
     errorRegistro: signal<string | null>(null),
+    autenticado: signal(false),
+    limpiarError: vi.fn(),
     entrarConGoogle: vi.fn(async () => {}),
     iniciarSesion: vi.fn(async () => {}),
   };
@@ -64,5 +66,29 @@ describe('LoginPage', () => {
     await fixture.whenStable();
 
     expect(elemento.querySelector('[role="alert"]')?.textContent).toContain('No hay conexión');
+  });
+
+  it('el candado pasa de cerrado a listo y a abriendo según el estado', async () => {
+    const { fixture, auth, elemento } = await montar();
+    const candado = () => elemento.querySelector('.candado')!.getAttribute('data-estado');
+    expect(candado()).toBe('cerrado');
+
+    const correo = elemento.querySelector<HTMLInputElement>('#l-email')!;
+    const clave = elemento.querySelector<HTMLInputElement>('#l-password')!;
+    correo.value = 'ana@ejemplo.com';
+    correo.dispatchEvent(new Event('input'));
+    clave.value = 'secreta';
+    clave.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(candado()).toBe('listo');
+
+    auth.iniciandoCon.set('correo');
+    await fixture.whenStable();
+    expect(candado()).toBe('abriendo');
+
+    auth.iniciandoCon.set(null);
+    auth.error.set('Credenciales inválidas');
+    await fixture.whenStable();
+    expect(candado()).toBe('error');
   });
 });

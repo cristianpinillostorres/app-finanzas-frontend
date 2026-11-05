@@ -32,7 +32,16 @@
   <main class="acceso">
     <div class="acceso__contenido">
       <div class="acceso__cabecera">
-        <h1 class="acceso__titulo">Toma el control <span class="acento">de tu plata hoy.</span></h1>
+        <h1 class="acceso__titulo">Toma el control<span class="acento">de tu plata hoy.</span></h1>
+      </div>
+
+      <div class="candado" [attr.data-estado]="estadoCandado()">
+        <svg class="candado__dibujo" viewBox="0 0 64 72" aria-hidden="true">
+          <path class="candado__escudo" d="M32 4 56 13v18c0 18-10 30-24 37C18 61 8 49 8 31V13z" />
+          <path class="candado__arco" d="M24 33v-6a8 8 0 0 1 16 0v6" />
+          <rect class="candado__cuerpo" x="21" y="33" width="22" height="16" rx="3" />
+        </svg>
+        <span class="candado__texto" role="status">{{ textoCandado() }}</span>
       </div>
 
       <div class="acceso__opciones">
@@ -49,7 +58,7 @@
                 placeholder="tu@correo.com"
                 formControlName="email"
                 [attr.aria-invalid]="errorCorreo() ? true : null"
-                [attr.aria-describedby]="errorCorreo() ? 'l-email-error' : null"
+                [attr.aria-describedby]="errorCorreo() ? 'l-error' : null"
               />
             </div>
             @if (!recuperando()) {
@@ -60,19 +69,27 @@
                 id="l-password"
                 type="password"
                 autocomplete="current-password"
-                placeholder="Requerida"
+                placeholder="Tu contraseña"
                 formControlName="password"
-                [attr.aria-invalid]="errorClave() ? true : null"
-                [attr.aria-describedby]="errorClave() ? 'l-password-error' : null"
+                [attr.aria-invalid]="errorClave() || auth.error() ? true : null"
+                [attr.aria-describedby]="mensajeError() ? 'l-error' : null"
               />
             </div>
             }
           </div>
-          @if (errorCorreo(); as error) {
-            <p class="ios-nota err" id="l-email-error">{{ error }}</p>
-          }
-          @if (errorClave(); as error) {
-            <p class="ios-nota err" id="l-password-error">{{ error }}</p>
+          <!-- Un solo mensaje a la vez: primero el del servidor, luego los de campo. -->
+          @if (mensajeError(); as error) {
+            <p class="acceso__error" id="l-error" role="alert">
+              <mat-icon aria-hidden="true" class="err-icon">info</mat-icon>
+              <span>
+                {{ error }}
+                @if (auth.error() && !recuperando()) {
+                  <button type="button" class="acceso__enlace" (click)="abrirRecuperacion()">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                }
+              </span>
+            </p>
           }
 
           <button
@@ -103,18 +120,10 @@
             <button type="button" class="acceso__enlace" (click)="volverAEntrar()">
               Volver a entrar
             </button>
-          } @else {
+          } @else if (!auth.error()) {
             <button type="button" class="acceso__enlace" (click)="abrirRecuperacion()">
               Olvidé mi contraseña
             </button>
-          }
-
-          <!-- Error exclusivo de login por correo -->
-          @if (auth.error(); as error) {
-            <div class="err" role="alert">
-              <mat-icon aria-hidden="true" class="err-icon">error_outline</mat-icon>
-              <span>{{ error }}</span>
-            </div>
           }
         </form>
 
