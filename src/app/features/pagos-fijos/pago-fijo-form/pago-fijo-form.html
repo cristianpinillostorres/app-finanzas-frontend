@@ -7,7 +7,13 @@
   <div class="ios-grupo">
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="pf-nombre">Nombre</label>
-      <input class="input" id="pf-nombre" placeholder="Arriendo" formControlName="nombre" />
+      <input
+        autocomplete="off"
+        class="input"
+        id="pf-nombre"
+        placeholder="Arriendo"
+        formControlName="nombre"
+      />
     </div>
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="pf-categoria">Categoría</label>
@@ -37,7 +43,14 @@
       <label class="ios-fila__rotulo" for="pf-monto">{{
         form.controls.esVariable.value ? 'Monto estimado' : 'Monto'
       }}</label>
-      <input class="input" id="pf-monto" appMonto placeholder="$ 0" formControlName="monto" />
+      <input
+        autocomplete="off"
+        class="input"
+        id="pf-monto"
+        appMonto
+        placeholder="$ 0"
+        formControlName="monto"
+      />
     </div>
     <label class="ios-fila" for="pf-variable">
       <span class="ios-fila__rotulo">Monto variable</span>
@@ -62,6 +75,7 @@
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="pf-dia">Día límite</label>
       <input
+        autocomplete="off"
         class="input"
         id="pf-dia"
         type="number"

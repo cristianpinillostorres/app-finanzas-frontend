@@ -1,4 +1,7 @@
-<app-hoja-cabecera [titulo]="modoEdicion ? 'Editar movimiento' : 'Nuevo movimiento'" (cerrar)="cerrar()" />
+<app-hoja-cabecera
+  [titulo]="modoEdicion ? 'Editar movimiento' : 'Nuevo movimiento'"
+  (cerrar)="cerrar()"
+/>
 
 <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
   <!-- Botones de alternar (aria-pressed) dentro de un grupo: no son
@@ -29,6 +32,7 @@
     <label class="sr-only" for="m-monto">Monto</label>
     <span class="monto__signo" aria-hidden="true">$</span>
     <input
+      autocomplete="off"
       id="m-monto"
       appMonto
       placeholder="0"
@@ -51,7 +55,13 @@
   <div class="ios-grupo">
     <label class="ios-fila" for="m-fecha">
       <span class="ios-fila__rotulo">Fecha</span>
-      <input class="ios-fila__valor" id="m-fecha" type="date" formControlName="fecha" />
+      <input
+        autocomplete="off"
+        class="ios-fila__valor"
+        id="m-fecha"
+        type="date"
+        formControlName="fecha"
+      />
     </label>
 
     @if (tipo() === 'gasto' || tipo() === 'ingreso') {
@@ -80,11 +90,7 @@
       </button>
 
       @if (opcionPagarCon()?.tipo === 'credito') {
-        <button
-          type="button"
-          class="ios-fila"
-          [matMenuTriggerFor]="menuCuotas"
-        >
+        <button type="button" class="ios-fila" [matMenuTriggerFor]="menuCuotas">
           <span class="ios-fila__rotulo">Cuotas</span>
           <span class="ios-fila__valor">{{ valorCuotas() }}</span>
           <mat-icon class="ios-fila__chevron" aria-hidden="true">chevron_right</mat-icon>
@@ -93,6 +99,7 @@
           <label class="ios-fila" for="m-vcuota">
             <span class="ios-fila__rotulo">Valor de cada cuota</span>
             <input
+              autocomplete="off"
               class="ios-fila__valor"
               id="m-vcuota"
               appMonto
@@ -163,6 +170,7 @@
          categoría, así registrar un gasto no obliga a escribir nada. -->
     <label class="sr-only" for="m-desc">Descripción (opcional)</label>
     <input
+      autocomplete="off"
       class="descripcion"
       id="m-desc"
       [placeholder]="placeholderDescripcion()"
@@ -200,7 +208,9 @@
       <span class="menu-opciones__fila">
         {{ categoria.nombre }}
         @if (categoria.id === valorCategoria()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+            >check</span
+          >
         }
       </span>
     </button>
@@ -221,7 +231,9 @@
         <span class="menu-opciones__fila">
           {{ opcion.etiqueta }}
           @if (opcion.id === valorPagarCon()) {
-            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+              >check</span
+            >
           }
         </span>
       </button>
@@ -243,7 +255,9 @@
         <span class="menu-opciones__fila">
           {{ opcion.etiqueta }}
           @if (opcion.id === valorHacia()) {
-            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+              >check</span
+            >
           }
         </span>
       </button>
@@ -263,7 +277,9 @@
       <span class="menu-opciones__fila">
         {{ opcion.etiqueta }}
         @if (opcion.id === valorDestino()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+            >check</span
+          >
         }
       </span>
     </button>
@@ -282,7 +298,9 @@
       <span class="menu-opciones__fila">
         {{ opcion.etiqueta }}
         @if (opcion.id === valorDesde()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+            >check</span
+          >
         }
       </span>
     </button>
@@ -301,7 +319,9 @@
       <span class="menu-opciones__fila">
         {{ n === 1 ? '1 cuota' : n + ' cuotas' }}
         @if (n === valorCuotas()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
+            >check</span
+          >
         }
       </span>
     </button>

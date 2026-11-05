@@ -1,4 +1,4 @@
-<div class="bienvenida" [class.desde-login]="desdeLogin">
+<div class="bienvenida" [class.desde-login]="desdeLogin" [class.saliendo]="saliendo()">
   <!-- Panel en vivo: "Te queda libre" armándose con lo que se agrega. -->
   <aside class="vivo" aria-label="Tu mes en vivo">
     <div class="vivo__marca">
@@ -9,7 +9,7 @@
     <!-- Mismo bloque y misma altura que el lema y la lista del login. -->
     <div class="vivo__cuerpo">
       <div class="vivo__cifra">
-        <span class="vivo__etiqueta">Te queda libre este mes</span>
+        <span class="vivo__etiqueta"><span class="solo-ancho">Te queda </span>libre este mes</span>
         <span class="vivo__numero"><app-amount [valor]="libre()" [animar]="true" /></span>
         <div class="vivo__barra" aria-hidden="true">
           <i class="seg seg--libre" [style.width.%]="barra().libre"></i>
@@ -41,15 +41,15 @@
 
   <main class="contenido" #contenido>
     <div class="columna">
-      <!-- Encabezado fijo de los pasos 1 a 5: volver, progreso y título. -->
+      <!-- Encabezado fijo de los pasos 1 a 6: volver, progreso y título. -->
       @if (cabeza(); as c) {
         <header class="encabezado">
           <div class="progreso__fila">
             <button type="button" class="btn btn-text atras" (click)="atras()">
-              <mat-icon aria-hidden="true">arrow_back</mat-icon>
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
               Atrás
             </button>
-            <span class="etiqueta">Paso {{ paso() }} de 5</span>
+            <span class="paso-de">Paso {{ paso() }} de 6</span>
           </div>
           <div class="progreso__segmentos" aria-hidden="true">
             @for (s of segmentos; track s) {
@@ -57,29 +57,18 @@
             }
           </div>
           <div class="cabeza">
-            <h2 class="titulo">
-              {{ c.antes }} <span class="acento">{{ c.acento }}</span>
-            </h2>
+            <h2 class="titulo">{{ c.antes }} {{ c.acento }}</h2>
             <p class="texto-sm">{{ c.texto }}</p>
           </div>
         </header>
       }
 
-      <!-- Mientras llegan los datos, la forma del paso en gris (ver `listo`
-           y `preparando`). -->
-      @if ((!listo() || preparando()) && paso() >= 1 && paso() <= 5) {
+      <!-- Mientras llegan los datos, la forma del paso en gris (ver `listo`). -->
+      @if (!listo() && paso() >= 1 && paso() <= 6) {
         <div class="paso esqueleto" aria-busy="true" aria-label="Cargando">
-          <div class="skeleton skeleton-text skeleton-text--corto"></div>
-          <div class="esqueleto__fila">
-            <div class="skeleton esqueleto__tarjeta"></div>
-            <div class="skeleton esqueleto__tarjeta"></div>
-            <div class="skeleton esqueleto__tarjeta"></div>
-            <div class="skeleton esqueleto__tarjeta"></div>
-          </div>
-          <div class="skeleton skeleton-text skeleton-text--corto"></div>
-          <div class="skeleton esqueleto__campo"></div>
-          <div class="skeleton skeleton-text skeleton-text--corto"></div>
-          <div class="skeleton esqueleto__campo"></div>
+          <div class="skeleton esqueleto__segmentado"></div>
+          <div class="skeleton esqueleto__grupo"></div>
+          <div class="skeleton esqueleto__grupo"></div>
           <!-- Donde va Continuar en el paso real: no salta al aparecer. -->
           <div class="acciones acciones--pie">
             <div class="skeleton esqueleto__boton"></div>
@@ -96,14 +85,26 @@
                 </h1>
               </div>
               <app-muestras-general class="sube" style="animation-delay: 120ms" />
-              <div class="acciones sube" style="animation-delay: 420ms">
+              <ul class="ganchos sube" style="animation-delay: 420ms">
+                <li>
+                  <mat-icon aria-hidden="true">check</mat-icon>Empezar no te toma mucho tiempo.
+                </li>
+                <li>
+                  <mat-icon aria-hidden="true">check</mat-icon>Sabes antes de gastar si te alcanza.
+                </li>
+                <li>
+                  <mat-icon aria-hidden="true">check</mat-icon>Ves qué pagas y cuándo, cada mes.
+                </li>
+                <li>
+                  <mat-icon aria-hidden="true">lock</mat-icon>No nos conectamos a tus cuentas
+                  bancarias.
+                </li>
+              </ul>
+              <!-- El mismo pie de los pasos: Empezar a la derecha y la salida a la izquierda. -->
+              <div class="acciones acciones--pie">
                 <button type="button" class="btn btn-primary boton-grande" (click)="siguiente()">
-                  Empezar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  Empezar
                 </button>
-                <span class="nota">
-                  <mat-icon aria-hidden="true">lock</mat-icon>
-                  5 pasos, unos 3 minutos. No nos conectamos a tus cuentas bancarias.
-                </span>
                 <button type="button" class="btn btn-text" (click)="saltarRecorrido()">
                   Saltar recorrido
                 </button>
@@ -112,64 +113,152 @@
           }
 
           @case (1) {
+            <!-- Caracterización: todo opcional. Los objetivos ordenan "Sácale más provecho". -->
             <section class="paso sube">
-              @if (cuenta(); as c) {
-                <div class="creado">
-                  <span class="creado__icono"><mat-icon aria-hidden="true">check</mat-icon></span>
-                  <span class="creado__texto"
-                    ><strong>{{ c.nombre }}</strong> ya está creada.</span
-                  >
-                </div>
-              } @else {
-                <fieldset class="grupo">
-                  <legend class="grupo__titulo">¿Dónde la tienes?</legend>
-                  <div class="tipos">
-                    @for (t of tiposCuenta; track t.valor) {
-                      <button
-                        type="button"
-                        class="tipo"
-                        [attr.aria-pressed]="tipoCuenta() === t.valor"
-                        (click)="tipoCuenta.set(t.valor)"
-                      >
-                        <mat-icon aria-hidden="true">{{ t.icono }}</mat-icon>
-                        {{ t.nombre }}
-                      </button>
-                    }
-                  </div>
-                </fieldset>
-
-                <div class="grupo">
-                  <label class="grupo__titulo" for="bv-cuenta">¿Cómo la llamas?</label>
+              <h3 class="ios-seccion">Tu nombre</h3>
+              <div class="ios-grupo">
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-nombre">Nombre</label>
                   <input
-                    class="input input--grande"
-                    id="bv-cuenta"
+                    class="input"
+                    id="bv-nombre"
                     autocomplete="off"
-                    [placeholder]="ejemploCuenta()"
-                    [value]="nombreCuenta()"
-                    (input)="nombreCuenta.set($any($event.target).value)"
+                    maxlength="40"
+                    placeholder="Cómo te llamamos"
+                    [value]="nombre()"
+                    (input)="nombre.set($any($event.target).value)"
                   />
                 </div>
+              </div>
 
-                <div class="grupo">
-                  <label class="grupo__titulo" for="bv-saldo">¿Cuánto tienes hoy?</label>
-                  <div class="moneda moneda--grande">
-                    <span aria-hidden="true">$</span>
+              <h3 class="ios-seccion" id="bv-objetivos">¿Qué quieres lograr?</h3>
+              <div class="ios-grupo" role="group" aria-labelledby="bv-objetivos">
+                @for (o of opcionesObjetivo; track o.valor) {
+                  <button
+                    type="button"
+                    class="ios-fila"
+                    [attr.aria-pressed]="objetivos().has(o.valor)"
+                    (click)="alternarObjetivo(o.valor)"
+                  >
+                    <span class="ios-fila__rotulo">{{ o.nombre }}</span>
+                    @if (objetivos().has(o.valor)) {
+                      <mat-icon class="marca" aria-hidden="true">check</mat-icon>
+                    }
+                  </button>
+                }
+              </div>
+              <p class="ios-nota">Elige los que quieras.</p>
+
+              <h3 class="ios-seccion" id="bv-tema">Tema</h3>
+              <div class="ios-grupo temas" role="group" aria-labelledby="bv-tema">
+                @for (t of opcionesTema; track t.id) {
+                  <button
+                    type="button"
+                    class="tema"
+                    [attr.aria-pressed]="tema() === t.id"
+                    (click)="elegirTema(t.id)"
+                  >
+                    <i class="muestra-tema" [attr.data-tema]="t.id" aria-hidden="true"></i>
+                    {{ t.nombre }}
+                  </button>
+                }
+              </div>
+              <p class="ios-nota">Se aplica al instante. Lo cambias cuando quieras en el menú.</p>
+
+              <div class="datos">
+                <button
+                  type="button"
+                  class="datos__boton"
+                  aria-controls="bv-aviso-datos"
+                  [attr.aria-expanded]="avisoDatos()"
+                  (click)="avisoDatos.set(!avisoDatos())"
+                >
+                  <mat-icon aria-hidden="true">privacy_tip</mat-icon>
+                  ¿Cómo usamos estos datos?
+                </button>
+                @if (avisoDatos()) {
+                  <div class="datos__aviso" id="bv-aviso-datos">
+                    <p>
+                      Todo es opcional. Tu nombre lo usamos para saludarte y lo que quieres lograr,
+                      para ordenar las funciones que te sugerimos; no cambian tus cifras ni lo que
+                      puedes hacer en la app.
+                    </p>
+                    <p>
+                      Se guardan en tu cuenta, no los compartimos con nadie y no los usamos para
+                      publicidad. Tratamos tus datos según la Ley 1581 de 2012 (habeas data).
+                    </p>
+                  </div>
+                }
+              </div>
+
+              <div class="acciones acciones--pie">
+                <button
+                  type="button"
+                  class="btn btn-primary boton-grande"
+                  (click)="guardarCaracterizacion()"
+                >
+                  Continuar
+                </button>
+                <button type="button" class="btn btn-text" (click)="siguiente()">Omitir</button>
+              </div>
+            </section>
+          }
+
+          @case (2) {
+            <section class="paso sube">
+              @if (cuenta(); as c) {
+                <div class="ios-grupo">
+                  <div class="ios-fila">
+                    <mat-icon class="marca" aria-hidden="true">check_circle</mat-icon>
+                    <span class="ios-fila__rotulo"
+                      ><strong>{{ c.nombre }}</strong> ya está creada.</span
+                    >
+                  </div>
+                </div>
+              } @else {
+                <div class="ios-segmentado" role="group" aria-label="¿Dónde la tienes?">
+                  @for (t of tiposCuenta; track t.valor) {
+                    <button
+                      type="button"
+                      [attr.aria-pressed]="tipoCuenta() === t.valor"
+                      (click)="tipoCuenta.set(t.valor)"
+                    >
+                      {{ t.corto }}
+                    </button>
+                  }
+                </div>
+
+                <div class="ios-grupo">
+                  <div class="ios-fila">
+                    <label class="ios-fila__rotulo" for="bv-cuenta">Nombre</label>
                     <input
-                      class="input input--monto"
+                      class="input"
+                      id="bv-cuenta"
+                      autocomplete="off"
+                      [placeholder]="ejemploCuenta()"
+                      [value]="nombreCuenta()"
+                      (input)="nombreCuenta.set($any($event.target).value)"
+                    />
+                  </div>
+                  <div class="ios-fila">
+                    <label class="ios-fila__rotulo" for="bv-saldo">¿Cuánto tienes hoy?</label>
+                    <input
+                      autocomplete="off"
+                      class="input monto"
                       id="bv-saldo"
                       inputmode="numeric"
-                      placeholder="0"
-                      [value]="miles(saldo())"
+                      placeholder="$ 0"
+                      [value]="plata(saldo())"
                       (input)="leerMonto($event, saldo)"
                     />
                   </div>
-                  <div class="chips">
-                    @for (v of atajosSaldo; track v) {
-                      <button type="button" class="chip" (click)="saldo.set(v)">
-                        $ {{ miles(v) }}
-                      </button>
-                    }
-                  </div>
+                </div>
+                <div class="chips atajos">
+                  @for (v of atajosSaldo; track v) {
+                    <button type="button" class="chip" (click)="saldo.set(v)">
+                      {{ plata(v) }}
+                    </button>
+                  }
                 </div>
               }
               <div class="acciones acciones--pie">
@@ -179,55 +268,51 @@
                   [disabled]="(!cuenta() && saldo() <= 0) || guardando()"
                   (click)="crearCuenta()"
                 >
-                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  Continuar
                 </button>
               </div>
             </section>
           }
 
-          @case (2) {
+          @case (3) {
             <section class="paso sube">
-              <div class="grupo">
-                <div class="grupo__fila">
-                  <span class="grupo__titulo">Gastos</span>
-                  <span class="texto-xs">{{ activas() }} de {{ categorias().length }} activas</span>
-                </div>
-                <div class="categorias">
-                  @for (c of categoriasGasto(); track c.id) {
-                    <button
-                      type="button"
-                      class="categoria"
-                      [attr.aria-pressed]="!ocultas().has(c.id)"
-                      (click)="alternarCategoria(c.id)"
-                    >
-                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
-                      <span>{{ c.nombre }}</span>
-                      <mat-icon class="categoria__marca" aria-hidden="true">{{
-                        ocultas().has(c.id) ? 'add' : 'check'
-                      }}</mat-icon>
-                    </button>
-                  }
-                </div>
+              <div class="ios-seccion seccion-fila">
+                <h3 id="bv-gastos">Gastos</h3>
+                <span>{{ activas() }} de {{ categorias().length }} activas</span>
+              </div>
+              <div class="ios-grupo" role="group" aria-labelledby="bv-gastos">
+                @for (c of categoriasGasto(); track c.id) {
+                  <button
+                    type="button"
+                    class="ios-fila"
+                    [attr.aria-pressed]="!ocultas().has(c.id)"
+                    (click)="alternarCategoria(c.id)"
+                  >
+                    <mat-icon class="fila-icono" aria-hidden="true">{{ c.icono }}</mat-icon>
+                    <span class="ios-fila__rotulo">{{ c.nombre }}</span>
+                    @if (!ocultas().has(c.id)) {
+                      <mat-icon class="marca" aria-hidden="true">check</mat-icon>
+                    }
+                  </button>
+                }
               </div>
 
-              <div class="grupo">
-                <span class="grupo__titulo">Ingresos</span>
-                <div class="categorias">
-                  @for (c of categoriasIngreso(); track c.id) {
-                    <button
-                      type="button"
-                      class="categoria"
-                      [attr.aria-pressed]="!ocultas().has(c.id)"
-                      (click)="alternarCategoria(c.id)"
-                    >
-                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
-                      <span>{{ c.nombre }}</span>
-                      <mat-icon class="categoria__marca" aria-hidden="true">{{
-                        ocultas().has(c.id) ? 'add' : 'check'
-                      }}</mat-icon>
-                    </button>
-                  }
-                </div>
+              <h3 class="ios-seccion" id="bv-ingresos">Ingresos</h3>
+              <div class="ios-grupo" role="group" aria-labelledby="bv-ingresos">
+                @for (c of categoriasIngreso(); track c.id) {
+                  <button
+                    type="button"
+                    class="ios-fila"
+                    [attr.aria-pressed]="!ocultas().has(c.id)"
+                    (click)="alternarCategoria(c.id)"
+                  >
+                    <mat-icon class="fila-icono" aria-hidden="true">{{ c.icono }}</mat-icon>
+                    <span class="ios-fila__rotulo">{{ c.nombre }}</span>
+                    @if (!ocultas().has(c.id)) {
+                      <mat-icon class="marca" aria-hidden="true">check</mat-icon>
+                    }
+                  </button>
+                }
               </div>
 
               <div class="acciones acciones--pie">
@@ -236,218 +321,160 @@
                   class="btn btn-primary boton-grande"
                   (click)="guardarCategorias()"
                 >
-                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  Continuar
                 </button>
                 <button type="button" class="btn btn-text" (click)="omitir('categorias')">
-                  Me sirven las que vienen
+                  Dejarlas así
                 </button>
               </div>
             </section>
           }
 
-          @case (3) {
+          @case (4) {
             <section class="paso sube">
-              <fieldset class="grupo">
-                <legend class="grupo__titulo">¿Qué tipo de deuda?</legend>
-                <div class="tipos">
-                  @for (t of tiposCredito; track t.valor) {
-                    <button
-                      type="button"
-                      class="tipo"
-                      [attr.aria-pressed]="grupoCredito() === t.valor"
-                      (click)="grupoCredito.set(t.valor)"
-                    >
-                      <mat-icon aria-hidden="true">{{ t.icono }}</mat-icon>
-                      {{ t.nombre }}
-                    </button>
-                  }
-                </div>
-              </fieldset>
+              <div class="ios-segmentado" role="group" aria-label="¿Qué tipo de deuda?">
+                @for (t of tiposCredito; track t.valor) {
+                  <button
+                    type="button"
+                    [attr.aria-pressed]="grupoCredito() === t.valor"
+                    (click)="grupoCredito.set(t.valor)"
+                  >
+                    {{ t.corto }}
+                  </button>
+                }
+              </div>
 
-              <!-- Los campos cambian con el tipo; entran con una transición para
-                 que se note el cambio. Dos filas como mucho: sin scroll. -->
-              @switch (grupoCredito()) {
-                @case ('BANCO') {
-                  <div class="campos sube">
-                    <div class="fila-dos">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito">Nombre</label>
-                        <input
-                          class="input"
-                          id="bv-credito"
-                          autocomplete="off"
-                          [placeholder]="ejemploCredito()"
-                          [value]="nombreCredito()"
-                          (input)="nombreCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-monto"
-                          >¿Cuánto te prestaron?</label
-                        >
-                        <div class="moneda">
-                          <span aria-hidden="true">$</span>
-                          <input
-                            class="input input--monto"
-                            id="bv-credito-monto"
-                            inputmode="numeric"
-                            placeholder="0"
-                            [value]="miles(montoCredito())"
-                            (input)="leerMonto($event, montoCredito)"
-                          />
-                        </div>
-                      </div>
+              <div class="ios-grupo">
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-credito">{{
+                    grupoCredito() === 'PERSONA' ? '¿A quién le debes?' : 'Nombre'
+                  }}</label>
+                  <input
+                    class="input"
+                    id="bv-credito"
+                    autocomplete="off"
+                    [placeholder]="ejemploCredito()"
+                    [value]="nombreCredito()"
+                    (input)="nombreCredito.set($any($event.target).value)"
+                  />
+                </div>
+                @switch (grupoCredito()) {
+                  @case ('BANCO') {
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-monto"
+                        >¿Cuánto te prestaron?</label
+                      >
+                      <input
+                        autocomplete="off"
+                        class="input monto"
+                        id="bv-credito-monto"
+                        inputmode="numeric"
+                        placeholder="$ 0"
+                        [value]="plata(montoCredito())"
+                        (input)="leerMonto($event, montoCredito)"
+                      />
                     </div>
-                    <div class="fila-cuatro">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-plazo">Meses</label>
-                        <input
-                          class="input"
-                          id="bv-credito-plazo"
-                          inputmode="numeric"
-                          [value]="plazoCredito()"
-                          (input)="plazoCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-pagadas">Ya pagadas</label>
-                        <input
-                          class="input"
-                          id="bv-credito-pagadas"
-                          inputmode="numeric"
-                          [value]="pagadasCredito()"
-                          (input)="pagadasCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-tasa">Tasa E.A. %</label>
-                        <input
-                          class="input"
-                          id="bv-credito-tasa"
-                          inputmode="decimal"
-                          placeholder="21,5"
-                          [value]="tasaCredito()"
-                          (input)="tasaCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
-                        <input
-                          class="input"
-                          id="bv-credito-dia"
-                          inputmode="numeric"
-                          maxlength="2"
-                          [value]="diaPagoCredito()"
-                          (input)="leerDia($event, diaPagoCredito)"
-                        />
-                      </div>
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-plazo">Meses</label>
+                      <input
+                        autocomplete="off"
+                        class="input"
+                        id="bv-credito-plazo"
+                        inputmode="numeric"
+                        placeholder="36"
+                        [value]="plazoCredito()"
+                        (input)="plazoCredito.set($any($event.target).value)"
+                      />
                     </div>
-                    <span class="texto-xs">La tasa sale en tu extracto o en el contrato.</span>
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-pagadas"
+                        >Cuotas ya pagadas</label
+                      >
+                      <input
+                        autocomplete="off"
+                        class="input"
+                        id="bv-credito-pagadas"
+                        inputmode="numeric"
+                        placeholder="0"
+                        [value]="pagadasCredito()"
+                        (input)="pagadasCredito.set($any($event.target).value)"
+                      />
+                    </div>
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-tasa">Tasa E.A. %</label>
+                      <input
+                        autocomplete="off"
+                        class="input"
+                        id="bv-credito-tasa"
+                        inputmode="decimal"
+                        placeholder="21,5"
+                        [value]="tasaCredito()"
+                        (input)="tasaCredito.set($any($event.target).value)"
+                      />
+                    </div>
+                  }
+                  @case ('PERSONA') {
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-monto"
+                        >¿Cuánto le debes?</label
+                      >
+                      <input
+                        autocomplete="off"
+                        class="input monto"
+                        id="bv-credito-monto"
+                        inputmode="numeric"
+                        placeholder="$ 0"
+                        [value]="plata(montoCredito())"
+                        (input)="leerMonto($event, montoCredito)"
+                      />
+                    </div>
+                  }
+                  @default {
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-credito-cupo">Cupo</label>
+                      <input
+                        autocomplete="off"
+                        class="input monto"
+                        id="bv-credito-cupo"
+                        inputmode="numeric"
+                        placeholder="$ 0"
+                        [value]="plata(cupoCredito())"
+                        (input)="leerMonto($event, cupoCredito)"
+                      />
+                    </div>
+                  }
+                }
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-credito-dia">Día de pago</label>
+                  <input
+                    autocomplete="off"
+                    class="input"
+                    id="bv-credito-dia"
+                    inputmode="numeric"
+                    maxlength="2"
+                    placeholder="5"
+                    [value]="diaPagoCredito()"
+                    (input)="leerDia($event, diaPagoCredito)"
+                  />
+                </div>
+                @if (grupoCredito() === 'TARJETA') {
+                  <div class="ios-fila">
+                    <label class="ios-fila__rotulo" for="bv-credito-corte">Día de corte</label>
+                    <input
+                      autocomplete="off"
+                      class="input"
+                      id="bv-credito-corte"
+                      inputmode="numeric"
+                      maxlength="2"
+                      placeholder="20"
+                      [value]="diaCorteCredito()"
+                      (input)="leerDia($event, diaCorteCredito)"
+                    />
                   </div>
                 }
-                @case ('PERSONA') {
-                  <div class="campos sube">
-                    <div class="fila-dos">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito">¿A quién le debes?</label>
-                        <input
-                          class="input"
-                          id="bv-credito"
-                          autocomplete="off"
-                          [placeholder]="ejemploCredito()"
-                          [value]="nombreCredito()"
-                          (input)="nombreCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-monto"
-                          >¿Cuánto le debes?</label
-                        >
-                        <div class="moneda">
-                          <span aria-hidden="true">$</span>
-                          <input
-                            class="input input--monto"
-                            id="bv-credito-monto"
-                            inputmode="numeric"
-                            placeholder="0"
-                            [value]="miles(montoCredito())"
-                            (input)="leerMonto($event, montoCredito)"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="fila-cuatro">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
-                        <input
-                          class="input"
-                          id="bv-credito-dia"
-                          inputmode="numeric"
-                          maxlength="2"
-                          [value]="diaPagoCredito()"
-                          (input)="leerDia($event, diaPagoCredito)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                }
-                @default {
-                  <div class="campos sube">
-                    <div class="fila-dos">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito">Nombre</label>
-                        <input
-                          class="input"
-                          id="bv-credito"
-                          autocomplete="off"
-                          [placeholder]="ejemploCredito()"
-                          [value]="nombreCredito()"
-                          (input)="nombreCredito.set($any($event.target).value)"
-                        />
-                      </div>
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-cupo">Cupo</label>
-                        <div class="moneda">
-                          <span aria-hidden="true">$</span>
-                          <input
-                            class="input input--monto"
-                            id="bv-credito-cupo"
-                            inputmode="numeric"
-                            placeholder="0"
-                            [value]="miles(cupoCredito())"
-                            (input)="leerMonto($event, cupoCredito)"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="fila-cuatro">
-                      <div class="grupo">
-                        <label class="campo__titulo" for="bv-credito-dia">Día de pago</label>
-                        <input
-                          class="input"
-                          id="bv-credito-dia"
-                          inputmode="numeric"
-                          maxlength="2"
-                          [value]="diaPagoCredito()"
-                          (input)="leerDia($event, diaPagoCredito)"
-                        />
-                      </div>
-                      @if (grupoCredito() === 'TARJETA') {
-                        <div class="grupo">
-                          <label class="campo__titulo" for="bv-credito-corte">Día de corte</label>
-                          <input
-                            class="input"
-                            id="bv-credito-corte"
-                            inputmode="numeric"
-                            maxlength="2"
-                            [value]="diaCorteCredito()"
-                            (input)="leerDia($event, diaCorteCredito)"
-                          />
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
+              </div>
+              @if (grupoCredito() === 'BANCO') {
+                <p class="ios-nota">La tasa sale en tu extracto o en el contrato.</p>
               }
 
               <button
@@ -461,14 +488,11 @@
               </button>
 
               @if (creditosAgregados().length > 0) {
-                <div class="grupo">
-                  <span class="grupo__titulo">Agregadas</span>
+                <h3 class="ios-seccion">Agregadas</h3>
+                <div class="ios-grupo">
                   @for (c of creditosAgregados(); track c.id) {
-                    <div class="item aparece">
-                      <span class="item__icono item__icono--deuda"
-                        ><mat-icon aria-hidden="true">credit_card</mat-icon></span
-                      >
-                      <span class="item__texto">
+                    <div class="ios-fila aparece">
+                      <span class="ios-fila__rotulo item__texto">
                         <span>{{ c.nombre }}</span>
                         <span class="texto-xs">{{
                           c.cuota !== null ? 'Cuota de este mes' : c.tipo
@@ -491,7 +515,7 @@
                   [disabled]="creditosAgregados().length === 0"
                   (click)="siguiente()"
                 >
-                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  Continuar
                 </button>
                 <button type="button" class="btn btn-text" (click)="omitir('creditos')">
                   No tengo deudas
@@ -500,57 +524,56 @@
             </section>
           }
 
-          @case (4) {
+          @case (5) {
             <section class="paso sube">
-              <div class="grupo">
-                <label class="grupo__titulo" for="bv-pago">¿Qué pagas?</label>
-                <div class="chips">
-                  @for (s of sugerencias; track s.nombre) {
-                    <button
-                      type="button"
-                      class="chip"
-                      [attr.aria-pressed]="nombrePago() === s.nombre"
-                      (click)="nombrePago.set(s.nombre)"
-                    >
-                      <mat-icon aria-hidden="true">{{ s.icono }}</mat-icon
-                      >{{ s.nombre }}
-                    </button>
-                  }
-                </div>
-                <input
-                  class="input input--grande"
-                  id="bv-pago"
-                  autocomplete="off"
-                  placeholder="O escribe otro"
-                  [value]="nombrePago()"
-                  (input)="nombrePago.set($any($event.target).value)"
-                />
+              <div class="chips">
+                @for (s of sugerencias; track s.nombre) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [attr.aria-pressed]="nombrePago() === s.nombre"
+                    (click)="nombrePago.set(s.nombre)"
+                  >
+                    <mat-icon aria-hidden="true">{{ s.icono }}</mat-icon
+                    >{{ s.nombre }}
+                  </button>
+                }
               </div>
 
-              <div class="fila-monto-dia">
-                <div class="grupo">
-                  <label class="grupo__titulo" for="bv-pago-monto">¿Cuánto?</label>
-                  <div class="moneda moneda--grande">
-                    <span aria-hidden="true">$</span>
-                    <input
-                      class="input input--monto"
-                      id="bv-pago-monto"
-                      inputmode="numeric"
-                      placeholder="0"
-                      [value]="miles(montoPago())"
-                      (input)="leerMonto($event, montoPago)"
-                    />
-                  </div>
-                </div>
-                <div class="grupo">
-                  <label class="grupo__titulo" for="bv-pago-dia">¿Qué día?</label>
+              <div class="ios-grupo">
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-pago">¿Qué pagas?</label>
                   <input
-                    class="input input--dia"
+                    class="input"
+                    id="bv-pago"
+                    autocomplete="off"
+                    placeholder="O escribe otro"
+                    [value]="nombrePago()"
+                    (input)="nombrePago.set($any($event.target).value)"
+                  />
+                </div>
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-pago-monto">¿Cuánto?</label>
+                  <input
+                    autocomplete="off"
+                    class="input monto"
+                    id="bv-pago-monto"
+                    inputmode="numeric"
+                    placeholder="$ 0"
+                    [value]="plata(montoPago())"
+                    (input)="leerMonto($event, montoPago)"
+                  />
+                </div>
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-pago-dia">¿Qué día del mes?</label>
+                  <input
+                    autocomplete="off"
+                    class="input"
                     id="bv-pago-dia"
                     inputmode="numeric"
                     placeholder="5"
-                    [value]="diaPago()"
                     maxlength="2"
+                    [value]="diaPago()"
                     (input)="leerDia($event, diaPago)"
                   />
                 </div>
@@ -567,26 +590,23 @@
               </button>
 
               @if (pagosActivos().length > 0) {
-                <div class="grupo">
-                  <span class="grupo__titulo">Agregados</span>
+                <h3 class="ios-seccion">Agregados</h3>
+                <div class="ios-grupo">
                   @for (p of pagosActivos(); track p.id) {
-                    <div class="item aparece">
-                      <span class="item__icono item__dia"
-                        ><strong>{{ p.diaLimite }}</strong></span
-                      >
-                      <span class="item__texto">
-                        <span>{{ p.nombre }}</span>
-                        <span class="texto-xs">Cada mes</span>
-                      </span>
-                      <strong class="item__monto c-gasto"><app-amount [valor]="p.monto" /></strong>
+                    <div class="ios-fila aparece">
                       <button
                         type="button"
-                        class="btn btn-icon"
+                        class="quitar"
                         [attr.aria-label]="'Quitar ' + p.nombre"
                         (click)="quitarPago(p)"
                       >
-                        <mat-icon aria-hidden="true">close</mat-icon>
+                        <mat-icon aria-hidden="true">remove_circle</mat-icon>
                       </button>
+                      <span class="ios-fila__rotulo item__texto">
+                        <span>{{ p.nombre }}</span>
+                        <span class="texto-xs">Cada mes, el día {{ p.diaLimite }}</span>
+                      </span>
+                      <strong class="item__monto c-gasto"><app-amount [valor]="p.monto" /></strong>
                     </div>
                   }
                 </div>
@@ -599,75 +619,69 @@
                   [disabled]="pagosActivos().length === 0"
                   (click)="siguiente()"
                 >
-                  Continuar <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  Continuar
                 </button>
               </div>
             </section>
           }
 
-          @case (5) {
+          @case (6) {
             <section class="paso sube">
-              <fieldset class="grupo">
-                <legend class="grupo__titulo">¿Qué fue?</legend>
-                <div class="tipos tipos--dos">
-                  <button
-                    type="button"
-                    class="tipo"
-                    [attr.aria-pressed]="tipoMovimiento() === 'GASTO'"
-                    (click)="elegirTipoMovimiento('GASTO')"
-                  >
-                    <mat-icon aria-hidden="true">arrow_upward</mat-icon>
-                    Un gasto
-                  </button>
-                  <button
-                    type="button"
-                    class="tipo"
-                    [attr.aria-pressed]="tipoMovimiento() === 'INGRESO'"
-                    (click)="elegirTipoMovimiento('INGRESO')"
-                  >
-                    <mat-icon aria-hidden="true">arrow_downward</mat-icon>
-                    Un ingreso
-                  </button>
-                </div>
-              </fieldset>
+              <div class="ios-segmentado" role="group" aria-label="¿Qué fue?">
+                <button
+                  type="button"
+                  [attr.aria-pressed]="tipoMovimiento() === 'GASTO'"
+                  (click)="elegirTipoMovimiento('GASTO')"
+                >
+                  Un gasto
+                </button>
+                <button
+                  type="button"
+                  [attr.aria-pressed]="tipoMovimiento() === 'INGRESO'"
+                  (click)="elegirTipoMovimiento('INGRESO')"
+                >
+                  Un ingreso
+                </button>
+              </div>
 
-              <div class="grupo">
-                <label class="grupo__titulo" for="bv-mov">¿Cuánto?</label>
-                <div class="moneda moneda--grande">
-                  <span aria-hidden="true">$</span>
+              <div class="ios-grupo">
+                <div class="ios-fila">
+                  <label class="ios-fila__rotulo" for="bv-mov">¿Cuánto?</label>
                   <input
-                    class="input input--monto"
+                    autocomplete="off"
+                    class="input monto"
                     id="bv-mov"
                     inputmode="numeric"
-                    placeholder="0"
-                    [value]="miles(montoMovimiento())"
+                    placeholder="$ 0"
+                    [value]="plata(montoMovimiento())"
                     (input)="leerMonto($event, montoMovimiento)"
                   />
                 </div>
-                <span class="texto-xs">
-                  {{ tipoMovimiento() === 'GASTO' ? 'Sale de' : 'Entra a' }}
-                  {{ cuenta()?.nombre }}.
-                </span>
               </div>
+              <p class="ios-nota">
+                {{ tipoMovimiento() === 'GASTO' ? 'Sale de' : 'Entra a' }}
+                {{ cuenta()?.nombre }}.
+              </p>
 
-              <div class="grupo">
-                <span class="grupo__titulo" id="bv-mov-cat">
-                  {{ tipoMovimiento() === 'GASTO' ? '¿En qué?' : '¿De dónde?' }}
-                </span>
-                <div class="categorias" role="radiogroup" aria-labelledby="bv-mov-cat">
-                  @for (c of categoriasMovimiento(); track c.id) {
-                    <button
-                      type="button"
-                      class="categoria"
-                      role="radio"
-                      [attr.aria-checked]="categoriaMovimiento()?.id === c.id"
-                      (click)="elegirCategoria(c.id)"
-                    >
-                      <mat-icon aria-hidden="true">{{ c.icono }}</mat-icon>
-                      <span>{{ c.nombre }}</span>
-                    </button>
-                  }
-                </div>
+              <h3 class="ios-seccion" id="bv-mov-cat">
+                {{ tipoMovimiento() === 'GASTO' ? '¿En qué?' : '¿De dónde?' }}
+              </h3>
+              <div class="ios-grupo" role="radiogroup" aria-labelledby="bv-mov-cat">
+                @for (c of categoriasMovimiento(); track c.id) {
+                  <button
+                    type="button"
+                    class="ios-fila"
+                    role="radio"
+                    [attr.aria-checked]="categoriaMovimiento()?.id === c.id"
+                    (click)="elegirCategoria(c.id)"
+                  >
+                    <mat-icon class="fila-icono" aria-hidden="true">{{ c.icono }}</mat-icon>
+                    <span class="ios-fila__rotulo">{{ c.nombre }}</span>
+                    @if (categoriaMovimiento()?.id === c.id) {
+                      <mat-icon class="marca" aria-hidden="true">check</mat-icon>
+                    }
+                  </button>
+                }
               </div>
               <div class="acciones acciones--pie">
                 <button
@@ -676,62 +690,62 @@
                   [disabled]="montoMovimiento() <= 0 || !categoriaMovimiento() || guardando()"
                   (click)="registrar()"
                 >
-                  <mat-icon aria-hidden="true">check</mat-icon>
                   Registrar
                 </button>
                 <!-- Opcional: sin registrar, queda pendiente en los primeros
                    pasos de General (no se marca como omitido). -->
-                <button type="button" class="btn btn-text" (click)="siguiente()">
-                  Lo hago después
-                </button>
+                <button type="button" class="btn btn-text" (click)="siguiente()">Después</button>
               </div>
             </section>
           }
 
-          @case (6) {
+          @case (7) {
             @if (auth.anonimo()) {
-              <!-- Entró por "Regístrate": falta elegir con qué entrar. -->
-              <section class="paso">
-                <div class="cabeza sube">
-                  <span class="etiqueta">Último paso</span>
-                  <h2 class="titulo-grande">
-                    Guarda tu información,<br />
-                    <span class="acento">crea tu cuenta.</span>
-                  </h2>
-                  <p class="texto-sm">
-                    Lo que agregaste queda en tu cuenta y lo ves desde cualquier dispositivo.
-                  </p>
+              <!-- Entró por "Regístrate": falta elegir con qué entrar. Centrado, como el login. -->
+              <section class="paso paso--centrado sube">
+                <div class="cabeza">
+                  @if (saltoRecorrido()) {
+                    <h2 class="titulo-grande">Crea tu cuenta.</h2>
+                    <p class="texto-sm">
+                      Así lo que agregues queda guardado y lo ves desde cualquier dispositivo.
+                    </p>
+                  } @else {
+                    <span class="etiqueta">Último paso</span>
+                    <h2 class="titulo-grande">Guarda tu información.</h2>
+                    <p class="texto-sm">
+                      Lo que agregaste queda en tu cuenta y lo ves desde cualquier dispositivo.
+                    </p>
+                  }
                 </div>
 
-                <form
-                  class="registro sube"
-                  style="animation-delay: 150ms"
-                  (submit)="$event.preventDefault(); crearConCorreo()"
-                >
-                  <div class="field">
-                    <label for="bv-correo">Correo</label>
-                    <input
-                      class="input"
-                      id="bv-correo"
-                      type="email"
-                      autocomplete="email"
-                      [value]="correo()"
-                      (input)="correo.set($any($event.target).value)"
-                    />
+                <form class="registro" (submit)="$event.preventDefault(); crearConCorreo()">
+                  <div class="ios-grupo">
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-correo">Correo</label>
+                      <input
+                        class="input"
+                        id="bv-correo"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="tu@correo.com"
+                        [value]="correo()"
+                        (input)="correo.set($any($event.target).value)"
+                      />
+                    </div>
+                    <div class="ios-fila">
+                      <label class="ios-fila__rotulo" for="bv-clave">Contraseña</label>
+                      <input
+                        class="input"
+                        id="bv-clave"
+                        type="password"
+                        autocomplete="new-password"
+                        aria-describedby="bv-clave-ayuda"
+                        [value]="clave()"
+                        (input)="clave.set($any($event.target).value)"
+                      />
+                    </div>
                   </div>
-                  <div class="field">
-                    <label for="bv-clave">Contraseña</label>
-                    <input
-                      class="input"
-                      id="bv-clave"
-                      type="password"
-                      autocomplete="new-password"
-                      aria-describedby="bv-clave-ayuda"
-                      [value]="clave()"
-                      (input)="clave.set($any($event.target).value)"
-                    />
-                    <span class="texto-xs" id="bv-clave-ayuda">Mínimo 6 caracteres.</span>
-                  </div>
+                  <p class="ios-nota" id="bv-clave-ayuda">Mínimo 6 caracteres.</p>
                   <button
                     type="submit"
                     class="btn btn-primary boton-grande"
@@ -744,9 +758,9 @@
                   }
                 </form>
 
-                <div class="separador sube" style="animation-delay: 220ms"><span>o</span></div>
+                <div class="separador"><span>o</span></div>
 
-                <div class="acciones sube" style="animation-delay: 260ms">
+                <div class="acciones">
                   <button
                     type="button"
                     class="btn btn-outline boton-grande"
@@ -782,14 +796,10 @@
                     type="button"
                     class="btn btn-text"
                     [disabled]="auth.iniciandoSesion()"
-                    (click)="auth.cerrarSesion()"
+                    (click)="volverAlLogin()"
                   >
                     ¿Ya tienes cuenta? Entra
                   </button>
-                  <span class="nota">
-                    <mat-icon aria-hidden="true">lock</mat-icon>
-                    No nos conectamos a tus cuentas bancarias.
-                  </span>
                 </div>
               </section>
             } @else {
@@ -799,13 +809,11 @@
                   <h2 class="titulo-grande">Terminaste los primeros pasos</h2>
                   <p class="texto-sm">Ya puedes ver en General cuánto te queda libre este mes.</p>
                 </div>
-                <div class="lista-resumen">
+                <div class="ios-grupo lista-resumen">
                   @for (r of resumen(); track r.titulo; let i = $index) {
-                    <div class="item item--plano sube" [style.animation-delay.ms]="150 + i * 110">
-                      <span class="item__icono item__icono--ok"
-                        ><mat-icon aria-hidden="true">check</mat-icon></span
-                      >
-                      <span class="item__texto">
+                    <div class="ios-fila sube" [style.animation-delay.ms]="150 + i * 110">
+                      <mat-icon class="marca" aria-hidden="true">check_circle</mat-icon>
+                      <span class="ios-fila__rotulo item__texto">
                         <span>{{ r.titulo }}</span>
                         <span class="texto-xs">{{ r.detalle }}</span>
                       </span>
@@ -814,7 +822,7 @@
                 </div>
                 <div class="acciones sube" style="animation-delay: 600ms">
                   <button type="button" class="btn btn-primary boton-grande" (click)="irAGeneral()">
-                    Ir a General <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                    Ir a General
                   </button>
                   <span class="nota">
                     Después, en «Sácale más provecho», encuentras lo que la app puede hacer además

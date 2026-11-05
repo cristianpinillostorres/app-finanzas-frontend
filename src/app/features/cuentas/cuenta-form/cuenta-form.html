@@ -13,6 +13,7 @@
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="c-nombre">Nombre</label>
       <input
+        autocomplete="off"
         class="input"
         id="c-nombre"
         placeholder="Nombre de la cuenta"
@@ -30,11 +31,18 @@
     <div class="ios-grupo">
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="c-entidad">Nombre</label>
-        <input class="input" id="c-entidad" placeholder="Bancolombia" formControlName="entidad" />
+        <input
+          autocomplete="off"
+          class="input"
+          id="c-entidad"
+          placeholder="Bancolombia"
+          formControlName="entidad"
+        />
       </div>
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="c-ultimos4">Últimos 4 dígitos</label>
         <input
+          autocomplete="off"
           class="input"
           id="c-ultimos4"
           inputmode="numeric"
@@ -52,6 +60,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="c-saldo">Saldo inicial</label>
         <input
+          autocomplete="off"
           class="input"
           id="c-saldo"
           type="number"

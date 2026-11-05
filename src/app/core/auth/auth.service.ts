@@ -63,6 +63,12 @@ export class AuthService {
   readonly uid = computed(() => this._usuario()?.id);
   /** Correo de la sesión, para identificar la cuenta en el menú del `Shell`. */
   readonly email = computed(() => this._usuario()?.email || null);
+  /** El primer nombre que trae la cuenta (Google lo da), o `null`. */
+  readonly nombreDePila = computed(() => {
+    const datos = this._usuario()?.user_metadata;
+    const nombre = datos?.['full_name'] ?? datos?.['name'];
+    return typeof nombre === 'string' && nombre.trim() ? nombre.trim().split(/\s+/)[0] : null;
+  });
   readonly tieneGoogle = computed(
     () => this._usuario()?.identities?.some((i) => i.provider === 'google') ?? false,
   );
@@ -107,7 +113,10 @@ export class AuthService {
     const { error } = await this.supabase.auth.signInAnonymously();
     if (error) {
       console.error('Error al empezar el registro', error);
-      this._error.set({ metodo: 'registro', mensaje: mensajeErrorCrearCuenta(codigoDeError(error)) });
+      this._error.set({
+        metodo: 'registro',
+        mensaje: mensajeErrorCrearCuenta(codigoDeError(error)),
+      });
       this._iniciandoCon.set(null);
     }
   }

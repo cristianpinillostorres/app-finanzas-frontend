@@ -108,6 +108,7 @@
       <header class="topbar topbar--movil topbar--busqueda">
         <mat-icon aria-hidden="true">search</mat-icon>
         <input
+          autocomplete="off"
           #campoBusqueda
           class="campo-busqueda"
           type="text"
@@ -230,8 +231,9 @@
   }
 }
 
-<!-- Menú de tema, el mismo en escritorio y en el teléfono: las tres
-     opciones a la vista, con una muestra de su color y la activa marcada. -->
+<!-- Menú de tema, el mismo en escritorio y en el teléfono: las cinco
+     paletas a la vista, con una muestra de su color y la activa marcada, y
+     debajo el modo (claro u oscuro), que se elige aparte. -->
 <mat-menu #menuTema="matMenu" class="menu-tema">
   @for (opcion of opcionesTema; track opcion.id) {
     <button
@@ -246,6 +248,24 @@
       <span class="menu-tema__fila">
         {{ opcion.nombre }}
         @if (tema.tema() === opcion.id) {
+          <span class="material-symbols-outlined menu-tema__check" aria-hidden="true">check</span>
+        }
+      </span>
+    </button>
+  }
+  <div class="menu-tema__separador" role="separator"></div>
+  @for (opcion of opcionesModo; track opcion.id) {
+    <button
+      mat-menu-item
+      type="button"
+      role="menuitemradio"
+      [attr.aria-checked]="tema.modo() === opcion.id"
+      (click)="tema.fijarModo(opcion.id)"
+    >
+      <mat-icon aria-hidden="true">{{ opcion.icono }}</mat-icon>
+      <span class="menu-tema__fila">
+        {{ opcion.nombre }}
+        @if (tema.modo() === opcion.id) {
           <span class="material-symbols-outlined menu-tema__check" aria-hidden="true">check</span>
         }
       </span>

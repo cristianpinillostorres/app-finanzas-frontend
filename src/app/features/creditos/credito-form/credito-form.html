@@ -13,6 +13,7 @@
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="cr-nombre">Nombre</label>
       <input
+        autocomplete="off"
         class="input"
         id="cr-nombre"
         [placeholder]="ejemploNombre()"
@@ -24,6 +25,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-entidad">Entidad</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-entidad"
           [placeholder]="ejemploEntidad()"
@@ -45,6 +47,7 @@
         <div class="ios-fila">
           <label class="ios-fila__rotulo" for="cr-ultimos4">Últimos 4 dígitos</label>
           <input
+            autocomplete="off"
             class="input"
             id="cr-ultimos4"
             inputmode="numeric"
@@ -58,6 +61,7 @@
         <div class="ios-fila">
           <label class="ios-fila__rotulo" for="cr-cupo">Cupo total</label>
           <input
+            autocomplete="off"
             class="input"
             id="cr-cupo"
             appMonto
@@ -78,6 +82,7 @@
     <div class="ios-fila">
       <label class="ios-fila__rotulo" for="cr-dia-pago">Día límite de pago</label>
       <input
+        autocomplete="off"
         class="input"
         id="cr-dia-pago"
         type="number"
@@ -91,6 +96,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-dia-corte">Día de corte</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-dia-corte"
           type="number"
@@ -109,6 +115,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-monto-banco">Monto prestado</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-monto-banco"
           appMonto
@@ -120,6 +127,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-plazo">Plazo (meses)</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-plazo"
           type="number"
@@ -130,6 +138,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-tasa">Tasa E.A. (%)</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-tasa"
           type="number"
@@ -165,6 +174,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-cuotas-iniciales">Cuotas ya pagadas</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-cuotas-iniciales"
           type="number"
@@ -175,6 +185,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-seguro">Seguro mensual</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-seguro"
           appMonto
@@ -191,6 +202,7 @@
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-monto-persona">Monto acordado</label>
         <input
+          autocomplete="off"
           class="input"
           id="cr-monto-persona"
           appMonto
@@ -201,7 +213,13 @@
       </div>
       <div class="ios-fila">
         <label class="ios-fila__rotulo" for="cr-fecha-acordada">Fecha acordada</label>
-        <input class="input" id="cr-fecha-acordada" type="date" formControlName="fechaAcordada" />
+        <input
+          autocomplete="off"
+          class="input"
+          id="cr-fecha-acordada"
+          type="date"
+          formControlName="fechaAcordada"
+        />
       </div>
     </div>
     @if (invalido(form.controls.monto)) {

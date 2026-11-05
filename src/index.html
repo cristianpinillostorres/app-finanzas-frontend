@@ -5,19 +5,31 @@
     <title>Finanzas personales</title>
     <base href="/" />
     <!--
-      Aplica el tema guardado (`ThemeService`, `data-theme` en `<html>`)
-      antes del primer pintado — de lo contrario se ve un parpadeo: la app
-      arranca con el tema del sistema (CSS puro, instantáneo) y recién
-      después de que Angular carga, `ThemeService` corrige al tema manual
+      Aplica el tema y el modo guardados (`ThemeService`, `data-theme` y
+      `data-modo` en `<html>`) antes del primer pintado — de lo contrario
+      se ve un parpadeo: la app arranca en Teal claro (CSS puro, instantáneo)
+      y recién después de que Angular carga, `ThemeService` corrige al tema
       guardado. Bloqueante a propósito, mínimo, sin dependencias.
     -->
     <script>
       try {
-        // Login y bienvenida van siempre en claro (ver `ThemeService.soloClaro`).
-        var soloClaro = /^\/(login|bienvenida)(\/|$)/.test(location.pathname);
-        var tema = soloClaro ? 'claro' : localStorage.getItem('finanzas.tema');
-        if (tema === 'claro' || tema === 'neutro' || tema === 'oscuro')
-          document.documentElement.setAttribute('data-theme', tema);
+        // Login: siempre Teal claro (ver `ThemeService.soloClaro`). Bienvenida:
+        // el tema elegido pero en claro (`ThemeService.soloModoClaro`).
+        var ruta = location.pathname;
+        var esLogin = /^\/login(\/|$)/.test(ruta);
+        var esBienvenida = /^\/bienvenida(\/|$)/.test(ruta);
+        var temas = ['teal', 'neutro', 'medianoche', 'brasa', 'marino'];
+        var tema = localStorage.getItem('finanzas.tema');
+        var modo = localStorage.getItem('finanzas.modo');
+        // Volviendo de la bienvenida al login ("¿Ya tienes cuenta? Entra"):
+        // el panel de marca queda pintado durante la recarga (ver
+        // `TransicionLogin.marcarVuelta` y `html[data-puente]` en styles.scss).
+        var vuelta = sessionStorage.getItem('finanzas.vuelta-login') === '1';
+        if (vuelta) document.documentElement.setAttribute('data-puente', '');
+        if (esLogin || vuelta || temas.indexOf(tema) === -1) tema = 'teal';
+        if (esLogin || esBienvenida || (modo !== 'claro' && modo !== 'oscuro')) modo = 'claro';
+        document.documentElement.setAttribute('data-theme', tema);
+        document.documentElement.setAttribute('data-modo', modo);
       } catch (e) {}
     </script>
     <!--
@@ -28,7 +40,10 @@
       fijo queda pegado a los bordes redondos/gestos del iPhone en vez de
       respetarlos.
     -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
     <!-- Modo standalone al agregar como ícono de inicio en iOS (Safari no lee el manifest de PWA para esto). -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

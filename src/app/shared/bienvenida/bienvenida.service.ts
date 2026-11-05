@@ -10,7 +10,7 @@ import { CUENTAS_API } from '../../core/api/cuentas/cuentas-api';
 import { MOVIMIENTOS_API } from '../../core/api/movimientos/movimientos-api';
 import { PAGOS_FIJOS_API } from '../../core/api/pagos-fijos/pagos-fijos-api';
 import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
-import { PREFERENCIAS_INICIALES } from '../../core/models';
+import { type CambiosPreferencias, PREFERENCIAS_INICIALES } from '../../core/models';
 import { NuevoMovimientoService } from '../../layout/nuevo-movimiento/nuevo-movimiento.service';
 import { primeraCarga } from '../carga/primera-carga';
 import {
@@ -19,7 +19,6 @@ import {
   PASOS_BIENVENIDA,
   estadoBienvenida,
 } from './pasos-bienvenida';
-
 
 /** Secciones que no sirven de nada sin una cuenta: ahí se registra la plata que sale y entra. */
 const SECCIONES_QUE_PIDEN_CUENTA = ['movimientos', 'pagos-fijos'];
@@ -94,9 +93,18 @@ export class BienvenidaService {
     () => new Set(this.preferencias().recorrido.omitidos),
   );
 
+  /** Lo que eligió en "¿Qué quieres lograr?"; se cambia al instante, como `oculto`. */
+  private readonly _objetivos = linkedSignal(() => this.preferencias().objetivos);
+  readonly objetivos = this._objetivos.asReadonly();
+  /** Cómo prefiere que la llamemos (ver `Preferencias.nombre`). */
+  private readonly _nombre = linkedSignal(() => this.preferencias().nombre);
+  readonly nombre = this._nombre.asReadonly();
+
   /** El bloque que toca (ver `estadoBienvenida`), o `null` si no queda nada. */
   readonly estado = computed(() =>
-    this.listo() ? estadoBienvenida(PASOS_BIENVENIDA, this.contexto(), this.omitidos()) : null,
+    this.listo()
+      ? estadoBienvenida(PASOS_BIENVENIDA, this.contexto(), this.omitidos(), this.objetivos())
+      : null,
   );
 
   /** Mientras falte algo de lo esencial y la persona no haya saltado el recorrido. */
@@ -166,6 +174,15 @@ export class BienvenidaService {
   mostrar(): void {
     this._oculto.set(false);
     this.guardarRecorrido({ oculto: false });
+  }
+
+  /** Guarda en la cuenta el paso "Cuéntanos de ti"; reemplaza lo elegido antes. */
+  guardarCaracterizacion(
+    cambios: Required<Pick<CambiosPreferencias, 'nombre' | 'objetivos'>>,
+  ): void {
+    this._nombre.set(cambios.nombre);
+    this._objetivos.set(cambios.objetivos);
+    this.preferenciasApi.actualizar(cambios).subscribe();
   }
 
   /**

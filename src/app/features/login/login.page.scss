@@ -117,34 +117,26 @@
   background: var(--bg-page);
 }
 
-/* 1. Actualiza tu contenedor principal para agregar el borde superior */
+// Hoja de iOS sobre el fondo de la página, como la bienvenida: sin
+// tarjeta alrededor, los grupos blancos hacen de caja.
 .acceso__contenido {
   width: 100%;
-  max-width: 480px;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
-  padding: 2.5rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
-
-  /* Una línea gruesa del color principal de la app (el teal de la casa) */
-  border-top: 6px solid var(--accent-solid);
 }
 
-/* 2. Actualiza la cabecera */
 .acceso__cabecera {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-6);
 }
 
+// Título grande de iOS, igual al de la bienvenida.
 .acceso__titulo {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: var(--weight-regular);
-  letter-spacing: var(--tracking-display);
-  line-height: var(--leading-display);
-  text-transform: uppercase;
+  font-size: clamp(30px, 8vw, 36px);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 
   // Negro y el final en verde, igual que el título de la bienvenida.
   .acento {
@@ -152,40 +144,39 @@
   }
 }
 
-/* Aumento de espaciado general entre formulario, separador y botón Google */
 .acceso__opciones {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: var(--space-5);
 }
 
-/* Aumento de espaciado interno del formulario */
+// Mismo aire que una hoja (`.ios-form`): grupo, notas y botón.
 .acceso__form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-4);
 }
 
-/* Nuevo: Clase para organizar etiqueta e input con espacio coherente */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
+// Botones en píldora, como los de la bienvenida.
 .acceso__boton {
-  min-height: 48px;
-  font-size: var(--text-base);
+  min-height: 52px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
-  margin-top: 0.5rem; /* Separación extra antes del botón */
-  /* El login conserva sus formas: el resto de la app usa botones en
-     píldora con halo (ver `styles/componentes`), acá solo cambia el color. */
-  border-radius: var(--radius-control);
-  box-shadow: none;
 }
 
-.acceso .input {
-  border-radius: var(--radius-control);
+// El secundario de iOS: relleno blanco como un grupo, sin borde.
+.acceso__boton--claro {
+  margin-top: 0;
+  border: 0;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-subtle);
+  }
 }
 
 .acceso__logo {
@@ -216,16 +207,6 @@
   gap: 1rem;
 }
 
-/* Estilos organizados para los mensajes de error */
-.campo-error {
-  font-size: var(--text-sm);
-  color: var(--color-gasto);
-}
-
-.input[aria-invalid='true'] {
-  border-color: var(--color-gasto);
-}
-
 .err {
   display: flex;
   align-items: flex-start;
@@ -251,7 +232,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  margin: 2.5rem 0 0;
+  margin: var(--space-6) var(--space-4) 0;
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   color: var(--text-muted);
@@ -308,20 +289,24 @@
   }
 
   .acceso__titulo {
-    font-size: 40px;
+    font-size: 44px;
   }
 
-  .acceso__contenido {
-    width: 100%;
-    max-width: 520px;
-    background: var(--bg-surface);
-    padding: 2.5rem;
-    border-radius: 24px;
-    border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-    /* Sombra amplia y muy suave, estilo Apple/Stripe */
-    box-shadow:
-      0 20px 40px -15px rgba(0, 0, 0, 0.05),
-      0 0 10px rgba(0, 0, 0, 0.01);
+  // Desde la bienvenida: el panel vuelve del 42 % al 55 % (al revés de su
+  // "abre-puerta") y el formulario aparece cuando ya terminó de moverse.
+  .login.desde-bienvenida {
+    animation: cierra-puerta 0.45s var(--ease-out) both;
+
+    .acceso__contenido,
+    .marca-panel__cuerpo {
+      animation: aparece-login 0.3s var(--ease-out) 0.35s both;
+    }
+  }
+
+  @keyframes cierra-puerta {
+    from {
+      grid-template-columns: 42% 58%;
+    }
   }
 
   // ──────────────────────────── Animación Máquina ────────────────────────────
@@ -377,5 +362,26 @@
   &:disabled {
     cursor: default;
     opacity: 0.6;
+  }
+}
+
+// En el celular no hay puerta: solo un fundido del formulario.
+@media (max-width: 959px) {
+  .login.desde-bienvenida .acceso__contenido {
+    animation: aparece-login 0.3s var(--ease-out) both;
+  }
+}
+
+@keyframes aparece-login {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login.desde-bienvenida,
+  .login.desde-bienvenida .acceso__contenido,
+  .login.desde-bienvenida .marca-panel__cuerpo {
+    animation: none;
   }
 }

@@ -808,6 +808,34 @@ sesión). De ahí en adelante, cada deploy futuro se aplica solo.
 
 Build, 136 pruebas y deploy a Hosting verificados.
 
+## Cinco temas, cada uno en claro y oscuro (2026-10-28)
+
+El tema (la paleta) y el modo (claro/oscuro) pasaron a elegirse por separado:
+`data-theme` = `teal | neutro | medianoche | brasa | marino` y `data-modo` =
+`claro | oscuro` en `<html>`. Brasa (ciruela con un coral suave, tomado de Superlist; la primera versión, con un naranja puro, resultó demasiado fuerte) y
+Marino (azul tinta con azul de señal) son nuevos, tomados como inspiración de
+dos referencias de Refero; Teal y Neutro ganaron modo oscuro y Medianoche
+ganó modo claro.
+
+- **`_primitivas.scss`:** rampas nuevas `--p-noche-claro-*`, `--p-ciruela-*`,
+  `--p-coral-*`, `--p-marino-*`, `--p-senal-*` (más `azul-100/600`).
+- **`_semanticos.scss`:** un mixin por tema y modo (`tokens-<tema>-<modo>`) y
+  diez reglas `:root[data-theme][data-modo]`. Sobre el coral de Brasa va
+  texto ciruela oscuro (el blanco no llega a AA); como texto, `coral-700`
+  (claro) y `coral-300` (oscuro).
+- **`ThemeService`:** claves `finanzas.tema` y `finanzas.modo`. Sin migración
+  de lo guardado: un valor viejo (`claro`/`oscuro` en `finanzas.tema`) cae al
+  default (Teal claro). `soloClaro()` (login) fuerza Teal claro y
+  `soloModoClaro()` (bienvenida) fuerza solo el modo claro.
+- **UI:** el menú de tema del `Shell` lista las cinco paletas y debajo
+  Claro/Oscuro. Sin modo automático (no sigue al sistema).
+- **Contraste:** `verificar-contraste.mjs` ahora recorre los diez
+  tema×modo y resuelve los `@include`; los diez cumplen AA. Para eso se
+  ajustaron `gris-600`, `marino-ink-600` y los `accent-on-inverse`.
+- **Pendiente:** revisar a mano las gráficas (`paleta-graficas.ts` sigue con
+  solo dos paletas, claro y oscuro) y los estados de cada pantalla en los
+  temas nuevos.
+
 ## Rediseño de UI (2026-09-22 → 2026-09-23)
 
 Registro reconstruido el 2026-09-25 a partir de los mensajes de commit y los

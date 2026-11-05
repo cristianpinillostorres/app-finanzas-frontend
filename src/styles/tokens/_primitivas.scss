@@ -40,7 +40,7 @@
   --p-gris-200: #e5e5e5; // bordes y rellenos
   --p-gris-300: #d4d4d4; // borde fuerte
   --p-gris-500: #858585; // borde de control — 3:1 sobre la página
-  --p-gris-600: #6b6b6b; // texto atenuado
+  --p-gris-600: #636363; // texto atenuado
   --p-gris-700: #404040; // texto secundario
   --p-gris-950: #0a0a0a; // texto primario y acento
 
@@ -65,6 +65,70 @@
   --p-teal-500: #2e7f85; // brillo y foco del tema claro
   --p-teal-700: #22545b; // acento del tema claro; también su botón sólido
   --p-teal-900: #17383b; // fondo de acento del tema oscuro; panel de marca
+
+  // — medianoche claro (la misma paleta azul sobre blanco con un leve tinte) —
+  --p-noche-claro-100: #f5f5f7; // página
+  --p-noche-claro-200: #e8e9ee; // relleno
+  --p-noche-claro-300: #d4d5da; // borde decorativo
+  --p-noche-claro-350: #bcbdc4; // borde decorativo fuerte
+  --p-noche-claro-500: #85868d; // borde de control — 3:1 sobre la página
+  --p-noche-claro-600: #5f6066; // texto atenuado
+  --p-noche-claro-700: #505156; // texto secundario
+  --p-noche-claro-950: #0e0e0e; // texto primario
+  --p-azul-100: #e8ebff; // fondo de acento, tema claro
+  --p-azul-600: #2d44e0; // acento como texto sobre claro
+
+  // — brasa (ciruela con un coral suave, usado con medida) —
+  --p-ciruela-100: #f6f5fa; // página
+  --p-ciruela-200: #eceaf5; // relleno
+  --p-ciruela-300: #dedcec; // borde decorativo
+  --p-ciruela-350: #c9c6dd; // borde decorativo fuerte
+  --p-ciruela-500: #858499; // borde de control — 3:1 sobre la página
+  --p-ciruela-600: #5b5b76; // texto atenuado
+  --p-ciruela-700: #45455e; // texto secundario
+  --p-ciruela-950: #181824; // texto primario
+  --p-ciruela-ink-950: #181824; // página oscura
+  --p-ciruela-ink-800: #26253b; // superficie oscura; panel de marca
+  --p-ciruela-ink-700: #2d2c46; // superficie elevada oscura
+  --p-ciruela-ink-600: #343352; // relleno y bordes oscuros
+  --p-ciruela-ink-550: #4a4972; // borde fuerte oscuro
+  --p-ciruela-ink-500: #7b7a9c; // borde de control oscuro
+  --p-ciruela-ink-400: #a9a8be; // texto atenuado oscuro
+  --p-ciruela-ink-300: #c4c4d6; // texto secundario oscuro
+  --p-ciruela-ink-50: #f7f7ff; // texto primario oscuro
+  --p-coral-100: #ffe9e5; // fondo de acento, tema claro
+  --p-coral-300: #ff7d6c; // acento como texto sobre oscuro
+  --p-coral-400: #ff6a57; // botón sólido (texto oscuro encima) y foco oscuro
+  --p-coral-500: #ff4a36; // brillo y foco del tema claro
+  --p-coral-700: #c2301f; // acento como texto sobre claro
+  --p-coral-900: #4a2430; // fondo de acento oscuro
+
+  // — marino (azul tinta con azul de señal) —
+  --p-marino-100: #f8f9fb; // página
+  --p-marino-200: #e6ecf4; // relleno
+  --p-marino-300: #d4e0ed; // borde decorativo
+  --p-marino-350: #b8c9dc; // borde decorativo fuerte
+  --p-marino-500: #6f8aa6; // borde de control — 3:1 sobre la página
+  --p-marino-600: #476788; // texto atenuado
+  --p-marino-700: #2f5273; // texto secundario
+  --p-marino-950: #0b3558; // texto primario
+  --p-marino-ink-950: #07182a; // página oscura
+  --p-marino-ink-800: #0d2640; // superficie oscura
+  --p-marino-ink-700: #123150; // superficie elevada oscura
+  --p-marino-ink-600: #173a5f; // relleno oscuro
+  --p-marino-ink-550: #25517f; // borde fuerte oscuro
+  --p-marino-ink-500: #5a82ad; // borde de control oscuro
+  --p-marino-ink-400: #9db4cc; // texto atenuado oscuro
+  --p-marino-ink-300: #c4d4e5; // texto secundario oscuro
+  --p-marino-ink-50: #eaf2fb; // texto primario oscuro
+  --p-senal-100: #e6f0ff; // fondo de acento, tema claro
+  --p-senal-300: #7ab5ff; // acento sobre la superficie invertida oscura
+  --p-senal-400: #4d9bff; // acento oscuro y botón sólido (texto oscuro encima)
+  --p-senal-500: #3a86ff; // brillo y foco claro
+  --p-senal-600: #006bff; // botón sólido, tema claro (blanco encima)
+  --p-senal-700: #0057d1; // acento como texto sobre claro
+  --p-senal-900: #0f3560; // fondo de acento oscuro; panel de marca
+  --p-senal-950: #0b2a4d; // fondo de acento oscuro
 
   // — verde (ingresos) —
   --p-green-700: #2f6e35;

@@ -199,3 +199,18 @@ a:hover {
     animation: none !important;
   }
 }
+
+// Puente entre la bienvenida y el login: mientras la página se recarga
+// (y antes de que Angular pinte), el panel de marca ya está donde lo deja
+// la bienvenida (42 %). El login lo toma desde ahí y lo agranda.
+@media (min-width: 960px) {
+  html[data-puente] body::before {
+    content: '';
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: -1;
+    width: 42%;
+    background: var(--bg-marca);
+    background: var(--bg-marca-degradado);
+  }
+}

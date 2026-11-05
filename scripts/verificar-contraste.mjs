@@ -142,9 +142,30 @@ const semanticos = leer('src/styles/tokens/_semanticos.scss');
 // El bloque `:root` trae los alias comunes a los dos temas (semáforo,
 // `--focus-color`...); cada mixin trae lo que cambia entre temas.
 const comunes = leerAsignaciones(semanticos.slice(semanticos.indexOf(':root {')));
+/**
+ * Asignaciones de un mixin ya con las de los mixins que incluye (`@include`):
+ * primero las heredadas y encima las propias, como lo hace Sass.
+ */
+function asignacionesDelMixin(nombre) {
+  const cuerpo = cuerpoDelMixin(semanticos, nombre);
+  const heredadas = {};
+  for (const [, otro] of cuerpo.matchAll(/@include\s+([\w-]+)\s*;/g)) {
+    Object.assign(heredadas, asignacionesDelMixin(otro));
+  }
+  return { ...heredadas, ...leerAsignaciones(cuerpo) };
+}
+
 const temas = {
-  oscuro: leerAsignaciones(cuerpoDelMixin(semanticos, 'tokens-oscuro')),
-  claro: leerAsignaciones(cuerpoDelMixin(semanticos, 'tokens-claro')),
+  'teal claro': asignacionesDelMixin('tokens-claro'),
+  'teal oscuro': asignacionesDelMixin('tokens-oscuro'),
+  'neutro claro': asignacionesDelMixin('tokens-neutro-claro'),
+  'neutro oscuro': asignacionesDelMixin('tokens-neutro-oscuro'),
+  'medianoche claro': asignacionesDelMixin('tokens-medianoche-claro'),
+  'medianoche oscuro': asignacionesDelMixin('tokens-medianoche-oscuro'),
+  'brasa claro': asignacionesDelMixin('tokens-brasa-claro'),
+  'brasa oscuro': asignacionesDelMixin('tokens-brasa-oscuro'),
+  'marino claro': asignacionesDelMixin('tokens-marino-claro'),
+  'marino oscuro': asignacionesDelMixin('tokens-marino-oscuro'),
 };
 
 let fallos = 0;
@@ -167,4 +188,4 @@ if (fallos > 0) {
   console.error(`\n${fallos} par(es) no llegan a WCAG AA.`);
   process.exit(1);
 }
-console.log('\nTodos los pares cumplen WCAG AA en los dos temas.');
+console.log('\nTodos los pares cumplen WCAG AA en los diez temas.');

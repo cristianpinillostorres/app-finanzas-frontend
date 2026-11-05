@@ -21,7 +21,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
 import { GuiaPaso } from '../../shared/bienvenida/guia-paso';
 import { MontosVisibilityService } from '../../core/montos-visibility.service';
-import { OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
+import { OPCIONES_MODO, OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
 import { AccionesEscritorioService } from '../acciones-escritorio.service';
 import { HeaderActionService } from '../header-action.service';
 import { HeaderSearchService } from '../header-search.service';
@@ -94,6 +94,7 @@ export class Shell {
   );
 
   protected readonly opcionesTema = OPCIONES_TEMA;
+  protected readonly opcionesModo = OPCIONES_MODO;
 
   /** Correo de la sesión, para el avatar y el menú de la cuenta en escritorio. */
   protected readonly correoUsuario = this.auth.email;

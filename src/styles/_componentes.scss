@@ -1831,6 +1831,15 @@ select.input {
 .ios-fila > .input::placeholder {
   color: var(--text-muted);
 }
+// El autocompletado del navegador pinta el campo de azul claro y lo
+// vuelve una caja dentro de la fila: se tapa con el fondo del grupo.
+.ios-fila > .input:-webkit-autofill,
+.ios-fila > .input:-webkit-autofill:hover,
+.ios-fila > .input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-secondary);
+  box-shadow: inset 0 0 0 100px var(--bg-surface);
+  transition: background-color 9999s;
+}
 span.ios-fila__valor,
 output.ios-fila__valor {
   display: block;

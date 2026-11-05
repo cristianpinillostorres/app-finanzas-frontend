@@ -1,4 +1,4 @@
-<div class="login">
+<div class="login" [class.desde-bienvenida]="desdeBienvenida">
   <!-- Panel de marca -->
   <section class="marca-panel" aria-labelledby="marca-lema">
     <div class="marca-panel__nombre">
@@ -38,37 +38,40 @@
       <div class="acceso__opciones">
         <!-- Formulario Correo/Contraseña -->
         <form class="acceso__form" [formGroup]="form" (ngSubmit)="entrar()" novalidate>
-          <div class="field">
-            <label for="l-email">Correo</label>
-            <input
-              class="input"
-              id="l-email"
-              type="email"
-              autocomplete="username"
-              formControlName="email"
-              [attr.aria-invalid]="errorCorreo() ? true : null"
-              [attr.aria-describedby]="errorCorreo() ? 'l-email-error' : null"
-            />
-            @if (errorCorreo(); as error) {
-              <span class="campo-error" id="l-email-error">{{ error }}</span>
-            }
+          <div class="ios-grupo">
+            <div class="ios-fila">
+              <label class="ios-fila__rotulo" for="l-email">Correo</label>
+              <input
+                class="input"
+                id="l-email"
+                type="email"
+                autocomplete="username"
+                placeholder="tu@correo.com"
+                formControlName="email"
+                [attr.aria-invalid]="errorCorreo() ? true : null"
+                [attr.aria-describedby]="errorCorreo() ? 'l-email-error' : null"
+              />
+            </div>
+            <div class="ios-fila">
+              <label class="ios-fila__rotulo" for="l-password">Contraseña</label>
+              <input
+                class="input"
+                id="l-password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Requerida"
+                formControlName="password"
+                [attr.aria-invalid]="errorClave() ? true : null"
+                [attr.aria-describedby]="errorClave() ? 'l-password-error' : null"
+              />
+            </div>
           </div>
-
-          <div class="field">
-            <label for="l-password">Contraseña</label>
-            <input
-              class="input"
-              id="l-password"
-              type="password"
-              autocomplete="current-password"
-              formControlName="password"
-              [attr.aria-invalid]="errorClave() ? true : null"
-              [attr.aria-describedby]="errorClave() ? 'l-password-error' : null"
-            />
-            @if (errorClave(); as error) {
-              <span class="campo-error" id="l-password-error">{{ error }}</span>
-            }
-          </div>
+          @if (errorCorreo(); as error) {
+            <p class="ios-nota err" id="l-email-error">{{ error }}</p>
+          }
+          @if (errorClave(); as error) {
+            <p class="ios-nota err" id="l-password-error">{{ error }}</p>
+          }
 
           <button
             class="btn btn-primary btn-block acceso__boton"
@@ -92,7 +95,7 @@
         <!-- Login con Google -->
         <div class="acceso__google-wrapper">
           <button
-            class="btn btn-outline btn-block acceso__boton"
+            class="btn btn-block acceso__boton acceso__boton--claro"
             type="button"
             [disabled]="auth.iniciandoSesion()"
             (click)="auth.entrarConGoogle()"
@@ -146,11 +149,6 @@
           <span>{{ error }}</span>
         </div>
       }
-
-      <p class="acceso__nota">
-        <mat-icon aria-hidden="true">lock</mat-icon>
-        Control total y privado. No nos conectamos a tus cuentas bancarias.
-      </p>
     </div>
   </main>
 </div>

@@ -33,7 +33,7 @@
   --m-libre: var(--marca-textura);
   --m-pagos: #e6b84e;
   --m-cuotas: #f28b82;
-  --m-suave: #b4e0e3;
+  --m-suave: var(--text-on-marca-secundario);
 
   position: relative;
   isolation: isolate;
@@ -105,7 +105,7 @@
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
   color: #fff;
-  text-shadow: 0 0 32px rgb(127 208 213 / 45%);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--marca-textura) 45%, transparent);
 }
 
 .muestra__barra {

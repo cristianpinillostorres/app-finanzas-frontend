@@ -125,10 +125,11 @@ export class DonutCategorias {
    * Separación de 2px del color de la superficie entre porciones: sin ella,
    * dos categorías de tono parecido se leen como una sola porción grande.
    */
-  protected readonly stroke = computed<ApexStroke>(() => ({
-    width: 2,
-    colors: [leerColorToken('--bg-surface', '#ffffff')],
-  }));
+  protected readonly stroke = computed<ApexStroke>(() => {
+    // Los tokens se vuelven a leer cuando cambia el tema o el modo.
+    this.tema.huella();
+    return { width: 2, colors: [leerColorToken('--bg-surface', '#ffffff')] };
+  });
 
   protected readonly tooltip = computed<ApexTooltip>(() => {
     const oculto = this.oculto();

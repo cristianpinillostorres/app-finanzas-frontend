@@ -20,7 +20,7 @@ import { destinoDeLaSesion } from './shared/bienvenida/sin-recorrido-pendiente.g
   selector: 'app-root',
   imports: [Shell, LoginPage],
   template: `
-    @if (!auth.cargando()) {
+    @if (!auth.cargando() && !transicion.saliendo()) {
       @if (auth.autenticado() && !decidiendo()) {
         <app-shell />
       } @else {
@@ -31,7 +31,7 @@ import { destinoDeLaSesion } from './shared/bienvenida/sin-recorrido-pendiente.g
 })
 export class App {
   protected readonly auth = inject(AuthService);
-  private readonly transicion = inject(TransicionLogin);
+  protected readonly transicion = inject(TransicionLogin);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
 

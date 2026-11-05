@@ -343,14 +343,20 @@
   border-radius: var(--radius-pill);
   box-shadow: inset 0 0 0 1px rgb(127 127 127 / 35%);
 
-  &[data-tema='claro'] {
+  &[data-tema='teal'] {
     background: var(--p-teal-700);
   }
   &[data-tema='neutro'] {
     background: var(--p-gris-950);
   }
-  &[data-tema='oscuro'] {
+  &[data-tema='medianoche'] {
     background: var(--p-azul-500);
+  }
+  &[data-tema='brasa'] {
+    background: var(--p-coral-400);
+  }
+  &[data-tema='marino'] {
+    background: var(--p-senal-600);
   }
 }
 
@@ -360,6 +366,12 @@
   justify-content: space-between;
   gap: var(--space-4);
   min-width: 120px;
+}
+
+.menu-tema__separador {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--border);
 }
 
 .menu-tema__check {

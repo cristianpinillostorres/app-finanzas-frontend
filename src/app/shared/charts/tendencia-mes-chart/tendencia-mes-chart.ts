@@ -51,15 +51,15 @@ export class TendenciaMesChart {
 
   /** Se recalculan con el tema: los tokens de color cambian de valor. */
   protected readonly colorIngreso = computed(() => {
-    this.tema.oscuro();
+    this.tema.huella();
     return leerColorToken('--color-ingreso', '#3ecf8e');
   });
   protected readonly colorGasto = computed(() => {
-    this.tema.oscuro();
+    this.tema.huella();
     return leerColorToken('--color-gasto', '#f27a7d');
   });
   private readonly base = computed(() => {
-    this.tema.oscuro();
+    this.tema.huella();
     return cromaticaBase();
   });
 

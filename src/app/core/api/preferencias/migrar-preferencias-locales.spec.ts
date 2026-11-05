@@ -23,6 +23,8 @@ describe('migrarPreferenciasLocales', () => {
     const actuales: Preferencias = {
       recorrido: { oculto: false, omitidos: ['creditos'] },
       ultimaCuenta: { gasto: 'nueva', ingreso: null },
+      objetivos: [],
+      nombre: null,
     };
 
     expect(migrarPreferenciasLocales('u1', actuales)).toEqual({

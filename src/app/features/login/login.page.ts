@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme.service';
+import { TransicionLogin } from '../../shared/bienvenida/transicion-login';
 
 /**
  * Única pantalla accesible sin sesión — no es una ruta (`app.routes.ts` no
@@ -22,9 +23,13 @@ import { ThemeService } from '../../core/theme.service';
 export class LoginPage {
   private readonly fb = inject(FormBuilder);
   protected readonly auth = inject(AuthService);
+  /** Llega desde la bienvenida ("¿Ya tienes cuenta? Entra"): la puerta se cierra. */
+  protected readonly desdeBienvenida = inject(TransicionLogin).consumirVuelta();
 
   constructor() {
     inject(ThemeService).soloClaro();
+    // El panel propio ya cubre el del puente (`data-puente`, ver index.html).
+    setTimeout(() => document.documentElement.removeAttribute('data-puente'), 800);
   }
 
   /**

@@ -1,3 +1,5 @@
+import type { Objetivo } from '../../core/models';
+
 /**
  * Lo que ya existe en la cuenta del usuario: cada paso de la bienvenida se
  * marca solo con esto, nunca a mano. Cada función nueva que agregue un
@@ -41,7 +43,21 @@ export interface PasoBienvenida {
    * app sirva.
    */
   omitir?: string;
+  /**
+   * Para qué objetivos sirve (ver `Objetivo`): si la persona eligió alguno,
+   * el paso sube en su bloque. Solo tiene efecto en el bloque `extra`.
+   */
+  objetivos?: Objetivo[];
 }
+
+/** Las opciones de "¿Qué quieres lograr?" en la bienvenida, en orden. */
+export const OPCIONES_OBJETIVO: { valor: Objetivo; nombre: string; icono: string }[] = [
+  { valor: 'deudas', nombre: 'Salir de deudas', icono: 'trending_down' },
+  { valor: 'ahorrar', nombre: 'Ahorrar para algo', icono: 'savings' },
+  { valor: 'gastos', nombre: 'Controlar mis gastos', icono: 'speed' },
+  { valor: 'pagos', nombre: 'No olvidar mis pagos', icono: 'event_repeat' },
+  { valor: 'orden', nombre: 'Tener todo en un solo lugar', icono: 'dashboard' },
+];
 
 /**
  * Los pasos de la bienvenida, en orden. Dos bloques:
@@ -117,6 +133,7 @@ export const PASOS_BIENVENIDA: PasoBienvenida[] = [
     destino: { ruta: '/categorias' },
     hecho: (c) => c.presupuestos > 0,
     omitir: 'No me interesa',
+    objetivos: ['gastos'],
   },
 ];
 
@@ -138,23 +155,33 @@ export interface EstadoBienvenida {
  * Qué muestra el panel de bienvenida: el bloque esencial mientras le falte
  * algo; después, el de extras mientras le falte algo; y `null` cuando no
  * queda nada pendiente (o no hay extras todavía).
+ *
+ * En los extras van primero los pasos que sirven a lo que la persona dijo
+ * querer lograr (`objetivos`); entre ellos, y entre los demás, se respeta
+ * el orden de `pasos`. Lo esencial no se reordena: cada paso prepara al
+ * siguiente.
  */
 export function estadoBienvenida(
   pasos: readonly PasoBienvenida[],
   contexto: ContextoBienvenida,
   omitidos: ReadonlySet<string>,
+  objetivos: readonly Objetivo[] = [],
 ): EstadoBienvenida | null {
+  const sirve = (p: PasoBienvenida) => p.objetivos?.some((o) => objetivos.includes(o)) ?? false;
   for (const bloque of ['esencial', 'extra'] as const) {
-    const delBloque: PasoEnPanel[] = pasos
-      .filter((p) => p.bloque === bloque && (p.aplica?.(contexto) ?? true))
-      .map((paso) => ({
-        paso,
-        estado: paso.hecho(contexto)
-          ? 'hecho'
-          : paso.omitir && omitidos.has(paso.id)
-            ? 'omitido'
-            : 'pendiente',
-      }));
+    const aplican = pasos.filter((p) => p.bloque === bloque && (p.aplica?.(contexto) ?? true));
+    const ordenados =
+      bloque === 'extra'
+        ? [...aplican.filter(sirve), ...aplican.filter((p) => !sirve(p))]
+        : aplican;
+    const delBloque: PasoEnPanel[] = ordenados.map((paso) => ({
+      paso,
+      estado: paso.hecho(contexto)
+        ? 'hecho'
+        : paso.omitir && omitidos.has(paso.id)
+          ? 'omitido'
+          : 'pendiente',
+    }));
     const resueltos = delBloque.filter((p) => p.estado !== 'pendiente').length;
     if (resueltos < delBloque.length) return { bloque, pasos: delBloque, resueltos };
   }

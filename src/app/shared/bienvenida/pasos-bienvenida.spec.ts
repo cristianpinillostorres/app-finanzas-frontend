@@ -74,4 +74,25 @@ describe('estadoBienvenida', () => {
       estadoBienvenida([...PASOS_BIENVENIDA, soloConDeudas], contexto, new Set(['creditos'])),
     ).toBeNull();
   });
+
+  it('sube en los extras los pasos que sirven a lo que quiere lograr', () => {
+    const deudas: PasoBienvenida = { ...extra, id: 'deudas', objetivos: ['deudas'] };
+    const ahorro: PasoBienvenida = { ...extra, id: 'ahorro', objetivos: ['ahorrar'] };
+    const pasos = [...PASOS_BIENVENIDA, extra, deudas, ahorro];
+    const ids = (objetivos: Parameters<typeof estadoBienvenida>[3]) =>
+      estadoBienvenida(pasos, completo, new Set(), objetivos)!.pasos.map((p) => p.paso.id);
+
+    expect(ids([])).toEqual(['presupuesto', 'otro', 'deudas', 'ahorro']);
+    expect(ids(['ahorrar', 'deudas'])).toEqual(['deudas', 'ahorro', 'presupuesto', 'otro']);
+  });
+
+  it('no reordena lo esencial', () => {
+    const conObjetivo = PASOS_BIENVENIDA.map((p) =>
+      p.id === 'movimientos' ? { ...p, objetivos: ['gastos' as const] } : p,
+    );
+    const estado = estadoBienvenida(conObjetivo, vacio, new Set(), ['gastos'])!;
+    expect(estado.pasos.map((p) => p.paso.id)).toEqual(
+      PASOS_BIENVENIDA.filter((p) => p.bloque === 'esencial').map((p) => p.id),
+    );
+  });
 });

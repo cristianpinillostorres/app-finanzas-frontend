@@ -5,6 +5,7 @@ import {
   type WritableSignal,
   computed,
   inject,
+  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -36,41 +37,57 @@ import type {
   ExtractoTarjeta,
   GrupoCredito,
   NuevoCredito,
+  Objetivo,
   Movimiento,
   PagoFijo,
   TipoCuenta,
 } from '../../core/models';
 import { Amount } from '../../shared/amount/amount';
 import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
-import { PASOS_BIENVENIDA } from '../../shared/bienvenida/pasos-bienvenida';
+import { OPCIONES_OBJETIVO, PASOS_BIENVENIDA } from '../../shared/bienvenida/pasos-bienvenida';
+import { prefiereMenosMovimiento } from '../../shared/motion/preferencias-movimiento';
 import { TransicionLogin } from '../../shared/bienvenida/transicion-login';
 import { MuestrasGeneral } from './muestras-general/muestras-general';
 import { mostrarErrorGuardado } from '../../shared/guardado/guardado.util';
-import { prefiereMenosMovimiento } from '../../shared/motion/preferencias-movimiento';
 import { AuthService } from '../../core/auth/auth.service';
-import { ThemeService } from '../../core/theme.service';
+import { OPCIONES_TEMA, type Tema, ThemeService } from '../../core/theme.service';
 
 /** 0: presentación · 1-5: los pasos esenciales · 6: resumen. */
-type Paso = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type Paso = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 interface Opcion<T> {
   valor: T;
   nombre: string;
   icono: string;
+  /** Lo que dice el segmentado, donde el nombre completo no cabe. */
+  corto: string;
   /** Lo que sugiere el campo de nombre al elegirla. */
   ejemplo: string;
 }
 
 const TIPOS_CUENTA: Opcion<TipoCuenta>[] = [
-  { valor: 'BANCO', nombre: 'Banco', icono: 'account_balance', ejemplo: 'Mi banco' },
+  {
+    valor: 'BANCO',
+    nombre: 'Banco',
+    corto: 'Banco',
+    icono: 'account_balance',
+    ejemplo: 'Mi banco',
+  },
   {
     valor: 'BILLETERA',
     nombre: 'Billetera digital',
+    corto: 'Billetera',
     icono: 'account_balance_wallet',
     ejemplo: 'Mi billetera',
   },
-  { valor: 'EFECTIVO', nombre: 'Efectivo', icono: 'payments', ejemplo: 'Efectivo' },
-  { valor: 'OTRO', nombre: 'Otro', icono: 'more_horiz', ejemplo: 'Mi cuenta' },
+  {
+    valor: 'EFECTIVO',
+    nombre: 'Efectivo',
+    corto: 'Efectivo',
+    icono: 'payments',
+    ejemplo: 'Efectivo',
+  },
+  { valor: 'OTRO', nombre: 'Otro', corto: 'Otro', icono: 'more_horiz', ejemplo: 'Mi cuenta' },
 ];
 
 /** El color con que nace la cuenta según su tipo; se cambia después en Cuentas. */
@@ -82,15 +99,34 @@ const COLOR_POR_TIPO: Record<TipoCuenta, string> = {
 };
 
 const TIPOS_CREDITO: Opcion<GrupoCredito>[] = [
-  { valor: 'TARJETA', nombre: 'Tarjeta', icono: 'credit_card', ejemplo: 'Mi tarjeta' },
+  {
+    valor: 'TARJETA',
+    nombre: 'Tarjeta',
+    corto: 'Tarjeta',
+    icono: 'credit_card',
+    ejemplo: 'Mi tarjeta',
+  },
   {
     valor: 'PLATAFORMA',
     nombre: 'Compra a cuotas',
+    corto: 'A cuotas',
     icono: 'shopping_bag',
     ejemplo: 'Compra del celular',
   },
-  { valor: 'BANCO', nombre: 'Préstamo de banco', icono: 'account_balance', ejemplo: 'Préstamo' },
-  { valor: 'PERSONA', nombre: 'Una persona', icono: 'person', ejemplo: 'Préstamo de un amigo' },
+  {
+    valor: 'BANCO',
+    nombre: 'Préstamo de banco',
+    corto: 'Préstamo',
+    icono: 'account_balance',
+    ejemplo: 'Préstamo',
+  },
+  {
+    valor: 'PERSONA',
+    nombre: 'Una persona',
+    corto: 'Persona',
+    icono: 'person',
+    ejemplo: 'Préstamo de un amigo',
+  },
 ];
 
 /** Atajos de pago fijo, con la categoría que les corresponde. */
@@ -107,29 +143,36 @@ function compartir<T>(lista$: Observable<T>): Observable<T> {
   return lista$.pipe(shareReplay({ bufferSize: 1, refCount: true }));
 }
 
-/** Título de cada paso del 1 al 5, en el encabezado fijo; `acento` va en verde. */
-const CABEZAS: Record<1 | 2 | 3 | 4 | 5, { antes: string; acento: string; texto: string }> = {
+type PasoConCabeza = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** Título de cada paso del 1 al 6, en el encabezado fijo; `acento` va en verde. */
+const CABEZAS: Record<PasoConCabeza, { antes: string; acento: string; texto: string }> = {
   1: {
-    antes: 'Crea tu primera',
-    acento: 'cuenta',
-    texto: 'Donde tienes tu plata hoy. Después agregas las demás.',
+    antes: 'Cuéntanos de',
+    acento: 'ti',
+    texto: 'Todo es opcional. Así te mostramos primero lo que más te sirve.',
   },
   2: {
+    antes: 'Crea tu primera',
+    acento: 'cuenta',
+    texto: 'Donde tienes tu plata hoy.',
+  },
+  3: {
     antes: 'Ajusta tus',
     acento: 'categorías',
     texto: 'Quita las que no usas. Las demás quedan activas.',
   },
-  3: {
+  4: {
     antes: 'Tus tarjetas y',
     acento: 'créditos',
     texto: 'Así sabes cuánto pagas de cuotas cada mes.',
   },
-  4: {
+  5: {
     antes: 'Tus pagos',
     acento: 'fijos',
     texto: 'Lo que pagas cada mes. Con esto sale cuánto te queda libre.',
   },
-  5: {
+  6: {
     antes: 'Tu primer',
     acento: 'movimiento',
     texto: 'Un gasto o un ingreso. Desde ahora, el botón + está en todas las pantallas.',
@@ -172,7 +215,26 @@ export class BienvenidaPage {
   private readonly movimientosApi = inject(MOVIMIENTOS_API);
 
   /** Solo al llegar desde el login el panel se encoge desde su ancho (ver la hoja de estilos). */
-  protected readonly desdeLogin = inject(TransicionLogin).consumir();
+  private readonly transicion = inject(TransicionLogin);
+  protected readonly desdeLogin = this.transicion.consumir();
+
+  /** "¿Ya tienes cuenta? Entra": sale de la sesión anónima hacia el login, animado. */
+  protected readonly saliendo = signal(false);
+
+  protected volverAlLogin(): void {
+    // Primero se desvanece la bienvenida; después, sin pintar nada, se
+    // cierra la sesión y recarga, y el login entra animado.
+    this.saliendo.set(true);
+    this.transicion.marcarVuelta();
+    setTimeout(
+      () => {
+        document.documentElement.setAttribute('data-puente', '');
+        this.transicion.saliendo.set(true);
+        void this.auth.cerrarSesion();
+      },
+      prefiereMenosMovimiento() ? 0 : 220,
+    );
+  }
 
   // ───────────────────────────── datos reales ─────────────────────────────
 
@@ -202,7 +264,7 @@ export class BienvenidaPage {
   });
   /**
    * Si ya llegó lo que usan los pasos. Mientras no, cada paso muestra su
-   * esqueleto: con las listas vacías por defecto, el paso 1 ofrecía crear
+   * esqueleto: con las listas vacías por defecto, el paso 2 ofrecía crear
    * una cuenta que ya existía, y las categorías aparecían de golpe.
    */
   protected readonly listo = toSignal(
@@ -249,7 +311,7 @@ export class BienvenidaPage {
     ...this.resumenMes().pagados,
   ]);
 
-  /** La cuenta del paso 1: la primera activa. */
+  /** La cuenta del paso 2: la primera activa. */
   protected readonly cuenta = computed(() =>
     this.cuentas().find((c) => !c.archivada && c.cuentaPadreId === null),
   );
@@ -259,18 +321,40 @@ export class BienvenidaPage {
   // ──────────────────────────── panel en vivo ────────────────────────────
 
   /** Mientras no se ha creado la cuenta, el saldo que se está escribiendo ya cuenta. */
-  protected readonly enCuentas = computed(
+  private readonly enCuentasReal = computed(
     () => disponible(this.cuentas(), this.movimientos()) + (this.cuenta() ? 0 : this.saldo()),
   );
-  protected readonly totalPagos = computed(() =>
+  private readonly totalPagosReal = computed(() =>
     this.resumenMes()
       .porPagar.filter((i) => !i.esCredito)
       .reduce((acc, i) => acc + i.monto, 0),
   );
-  protected readonly totalCuotas = computed(() =>
+  private readonly totalCuotasReal = computed(() =>
     this.resumenMes()
       .porPagar.filter((i) => i.esCredito)
       .reduce((acc, i) => acc + i.monto, 0),
+  );
+
+  /**
+   * En "Crea tu cuenta" sin nada agregado (saltó el recorrido), el panel en
+   * cero se veía vacío: muestra un mes de ejemplo, el mismo de la
+   * presentación ($1.240.000 libres).
+   */
+  protected readonly deEjemplo = computed(
+    () =>
+      this.paso() === 7 &&
+      this.enCuentasReal() === 0 &&
+      this.totalPagosReal() + this.totalCuotasReal() === 0,
+  );
+
+  protected readonly enCuentas = computed(() =>
+    this.deEjemplo() ? 3_200_000 : this.enCuentasReal(),
+  );
+  protected readonly totalPagos = computed(() =>
+    this.deEjemplo() ? 1_250_000 : this.totalPagosReal(),
+  );
+  protected readonly totalCuotas = computed(() =>
+    this.deEjemplo() ? 710_000 : this.totalCuotasReal(),
   );
   protected readonly libre = computed(() =>
     libreDelMes(this.enCuentas(), this.totalPagos() + this.totalCuotas()),
@@ -290,6 +374,7 @@ export class BienvenidaPage {
   });
 
   protected readonly frase = computed(() => {
+    if (this.deEjemplo()) return 'Ejemplo: así se verá tu mes.';
     const hayAlgo = this.enCuentas() > 0 || this.totalPagos() + this.totalCuotas() > 0;
     if (!hayAlgo) return 'Aún sin datos. Aquí verás tu mes armarse.';
     if (this.libre() < 0) return 'Tus pagos superan lo que tienes hoy.';
@@ -301,34 +386,22 @@ export class BienvenidaPage {
 
   protected readonly paso = signal<Paso>(0);
   protected readonly guardando = signal(false);
-  protected readonly segmentos = [1, 2, 3, 4, 5];
-  /** Título del paso actual (solo del 1 al 5: la presentación y el final tienen el suyo). */
+  protected readonly segmentos = [1, 2, 3, 4, 5, 6];
+  /** Título del paso actual (solo del 1 al 6: la presentación y el final tienen el suyo). */
   protected readonly cabeza = computed(() => {
     const paso = this.paso();
-    return paso >= 1 && paso <= 5 ? CABEZAS[paso as 1 | 2 | 3 | 4 | 5] : null;
+    return paso >= 1 && paso <= 6 ? CABEZAS[paso as PasoConCabeza] : null;
   });
 
-  /**
-   * Cada paso del 1 al 5 se muestra un momento en esqueleto al llegar,
-   * aunque los datos ya estén (con la caché llegan al instante): así el
-   * cambio de pantalla se lee como una carga y no como un salto.
-   */
-  protected readonly preparando = signal(false);
-  private preparacion?: ReturnType<typeof setTimeout>;
   /** En escritorio el scroll es de esta columna, no de la página. */
   private readonly contenido = viewChild<ElementRef<HTMLElement>>('contenido');
 
   constructor() {
-    inject(ThemeService).soloClaro();
-    inject(DestroyRef).onDestroy(() => clearTimeout(this.preparacion));
+    // La bienvenida se ve siempre en modo claro; el tema sí es el elegido.
+    this.theme.soloModoClaro();
   }
 
   protected ir(paso: Paso): void {
-    if (paso !== this.paso() && paso >= 1 && paso <= 5 && !prefiereMenosMovimiento()) {
-      this.preparando.set(true);
-      clearTimeout(this.preparacion);
-      this.preparacion = setTimeout(() => this.preparando.set(false), 450);
-    }
     this.paso.set(paso);
     window.scrollTo?.({ top: 0 });
     this.contenido()?.nativeElement.scrollTo?.({ top: 0 });
@@ -339,17 +412,65 @@ export class BienvenidaPage {
   }
 
   protected siguiente(): void {
-    this.ir(Math.min(6, this.paso() + 1) as Paso);
+    this.ir(Math.min(7, this.paso() + 1) as Paso);
   }
+
+  /**
+   * Si llegó a crear la cuenta saltándose el recorrido: no agregó nada, así
+   * que el título es "Crea tu cuenta" y no "Guarda tu información".
+   */
+  protected readonly saltoRecorrido = signal(false);
 
   protected saltarRecorrido(): void {
     // Sin cuenta todavía no hay General al cual ir: salta a crearla.
     if (this.auth.anonimo()) {
-      this.ir(6);
+      this.saltoRecorrido.set(true);
+      this.ir(7);
       return;
     }
     this.bienvenida.ocultar();
     void this.router.navigate(['/general']);
+  }
+
+  // ───────────────────────────── 1. sobre ti ─────────────────────────────
+  // Todo opcional y nada financiero. El nombre y los objetivos van a la
+  // cuenta (`preferencias`); los objetivos ordenan "Sácale más provecho".
+  // El tema es del navegador, como en el menú de tema, y se aplica al
+  // instante: la bienvenida sigue el tema elegido, así se ve antes de entrar.
+
+  private readonly theme = inject(ThemeService);
+  protected readonly opcionesObjetivo = OPCIONES_OBJETIVO;
+  protected readonly opcionesTema = OPCIONES_TEMA;
+  protected readonly tema = this.theme.tema;
+  /** El aviso de cómo se usan los datos (habeas data), abierto o cerrado. */
+  protected readonly avisoDatos = signal(false);
+  /** Lo guardado, o el nombre de pila que trae la cuenta de Google. */
+  protected readonly nombre = linkedSignal(
+    () => this.bienvenida.nombre() ?? this.auth.nombreDePila() ?? '',
+  );
+  /** Arranca con lo que ya eligió, si vuelve a pasar por acá. */
+  protected readonly objetivos = linkedSignal<ReadonlySet<Objetivo>>(
+    () => new Set(this.bienvenida.objetivos()),
+  );
+
+  protected alternarObjetivo(objetivo: Objetivo): void {
+    const elegidos = new Set(this.objetivos());
+    if (!elegidos.delete(objetivo)) elegidos.add(objetivo);
+    this.objetivos.set(elegidos);
+  }
+
+  protected elegirTema(tema: Tema): void {
+    this.theme.fijar(tema);
+  }
+
+  /** Los objetivos van en el orden de las opciones, no en el que se tocaron. */
+  protected guardarCaracterizacion(): void {
+    const elegidos = this.objetivos();
+    this.bienvenida.guardarCaracterizacion({
+      nombre: this.nombre().trim() || null,
+      objetivos: OPCIONES_OBJETIVO.map((o) => o.valor).filter((o) => elegidos.has(o)),
+    });
+    this.siguiente();
   }
 
   // ──────────────────────────── crear la cuenta ────────────────────────────
@@ -377,7 +498,7 @@ export class BienvenidaPage {
     void this.router.navigate(['/general']);
   }
 
-  // ─────────────────────────────── 1. cuenta ───────────────────────────────
+  // ─────────────────────────────── 2. cuenta ───────────────────────────────
 
   protected readonly tiposCuenta = TIPOS_CUENTA;
   protected readonly atajosSaldo = ATAJOS_SALDO;
@@ -408,7 +529,7 @@ export class BienvenidaPage {
     );
   }
 
-  // ───────────────────────────── 2. categorías ─────────────────────────────
+  // ───────────────────────────── 3. categorías ─────────────────────────────
 
   /** Ocultas mientras se eligen; se guardan al continuar. */
   private readonly ocultasElegidas = signal<ReadonlySet<string> | null>(null);
@@ -452,7 +573,7 @@ export class BienvenidaPage {
     this.siguiente();
   }
 
-  // ────────────────────────────── 3. créditos ──────────────────────────────
+  // ────────────────────────────── 4. créditos ──────────────────────────────
 
   protected readonly tiposCredito = TIPOS_CREDITO;
   protected readonly grupoCredito = signal<GrupoCredito>('TARJETA');
@@ -559,7 +680,7 @@ export class BienvenidaPage {
     return Math.min(maximo, Math.max(0, Math.trunc(Number(texto.replace(/\D/g, '')) || 0)));
   }
 
-  // ────────────────────────────── 4. pagos fijos ──────────────────────────────
+  // ────────────────────────────── 5. pagos fijos ──────────────────────────────
 
   protected readonly sugerencias = SUGERENCIAS_PAGO;
   protected readonly nombrePago = signal('');
@@ -597,7 +718,7 @@ export class BienvenidaPage {
     });
   }
 
-  // ───────────────────────────── 5. movimiento ─────────────────────────────
+  // ───────────────────────────── 6. movimiento ─────────────────────────────
 
   protected readonly tipoMovimiento = signal<'GASTO' | 'INGRESO'>('GASTO');
   protected readonly montoMovimiento = signal(0);
@@ -638,7 +759,7 @@ export class BienvenidaPage {
     );
   }
 
-  // ─────────────────────────────── 6. resumen ───────────────────────────────
+  // ─────────────────────────────── 7. resumen ───────────────────────────────
 
   protected readonly resumen = computed(() => {
     const cuenta = this.cuenta();
@@ -686,6 +807,11 @@ export class BienvenidaPage {
     return valor ? valor.toLocaleString('es-CO') : '';
   }
 
+  /** El monto como se ve en un campo: "$ 1.500.000", vacío si es 0. */
+  protected plata(valor: number): string {
+    return valor ? `$ ${this.miles(valor)}` : '';
+  }
+
   /** Día del mes: hasta 2 dígitos y nunca más de 31. */
   private soloDia(texto: string): string {
     const digitos = texto.replace(/\D/g, '').slice(0, 2);
@@ -708,11 +834,11 @@ export class BienvenidaPage {
   protected leerMonto(evento: Event, destino: WritableSignal<number>): void {
     const campo = evento.target as HTMLInputElement;
     const valor = this.numero(campo.value);
-    campo.value = this.miles(valor);
+    campo.value = this.plata(valor);
     destino.set(valor);
   }
 
-  /** "Me sirven las que vienen" / "No tengo deudas": lo recuerda la bienvenida y sigue. */
+  /** "Dejarlas así" / "No tengo deudas": lo recuerda la bienvenida y sigue. */
   protected omitir(id: string): void {
     const paso = PASOS_BIENVENIDA.find((p) => p.id === id);
     if (paso) this.bienvenida.omitir(paso);

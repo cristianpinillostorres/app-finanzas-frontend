@@ -2,7 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, defer, map, of, tap } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
-import type { CambiosPreferencias, Preferencias } from '../../models';
+import {
+  type CambiosPreferencias,
+  OBJETIVOS,
+  type Objetivo,
+  type Preferencias,
+} from '../../models';
 import { SincronizacionService } from '../../sync/sincronizador';
 import type { PreferenciasApi } from './preferencias-api';
 import { migrarPreferenciasLocales } from './migrar-preferencias-locales';
@@ -10,7 +15,8 @@ import { migrarPreferenciasLocales } from './migrar-preferencias-locales';
 /** La única fila de `preferencias` de cada persona. */
 const ID = 'app';
 
-type Guardado = Record<string, Record<string, unknown> | undefined>;
+type Guardado = Record<string, unknown>;
+type Grupo = Record<string, unknown> | undefined;
 
 /**
  * Tabla `preferencias`: una fila por persona con todo en `datos` (jsonb).
@@ -51,11 +57,17 @@ export class PreferenciasSupabaseApi implements PreferenciasApi {
         const actuales = (fila?.['datos'] ?? {}) as Guardado;
         const datos: Guardado = { ...actuales };
         if (cambios.recorrido) {
-          datos['recorrido'] = { ...actuales['recorrido'], ...cambios.recorrido };
+          datos['recorrido'] = { ...(actuales['recorrido'] as Grupo), ...cambios.recorrido };
         }
         if (cambios.ultimaCuenta) {
-          datos['ultimaCuenta'] = { ...actuales['ultimaCuenta'], ...cambios.ultimaCuenta };
+          datos['ultimaCuenta'] = {
+            ...(actuales['ultimaCuenta'] as Grupo),
+            ...cambios.ultimaCuenta,
+          };
         }
+        // Una lista: lo elegido reemplaza lo anterior, no se suma.
+        if (cambios.objetivos) datos['objetivos'] = cambios.objetivos;
+        if (cambios.nombre !== undefined) datos['nombre'] = cambios.nombre;
         sesion.guardar('preferencias', { id: ID, datos });
       })
       .catch((error) => console.error('No se pudieron guardar las preferencias', error));
@@ -66,9 +78,11 @@ export class PreferenciasSupabaseApi implements PreferenciasApi {
 /** Completa con los valores iniciales lo que la fila no tenga. */
 function mapearPreferencias(datos: unknown): Preferencias {
   const guardado = (datos ?? {}) as Guardado;
-  const recorrido = guardado['recorrido'] ?? {};
-  const ultimaCuenta = guardado['ultimaCuenta'] ?? {};
+  const recorrido = (guardado['recorrido'] ?? {}) as Record<string, unknown>;
+  const ultimaCuenta = (guardado['ultimaCuenta'] ?? {}) as Record<string, unknown>;
   const omitidos = recorrido['omitidos'];
+  const objetivos = guardado['objetivos'];
+  const nombre = guardado['nombre'];
   return {
     recorrido: {
       oculto: recorrido['oculto'] === true,
@@ -80,5 +94,9 @@ function mapearPreferencias(datos: unknown): Preferencias {
       gasto: typeof ultimaCuenta['gasto'] === 'string' ? ultimaCuenta['gasto'] : null,
       ingreso: typeof ultimaCuenta['ingreso'] === 'string' ? ultimaCuenta['ingreso'] : null,
     },
+    objetivos: Array.isArray(objetivos)
+      ? objetivos.filter((o: unknown): o is Objetivo => OBJETIVOS.includes(o as Objetivo))
+      : [],
+    nombre: typeof nombre === 'string' && nombre.trim() ? nombre.trim() : null,
   };
 }
