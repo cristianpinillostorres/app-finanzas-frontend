@@ -52,6 +52,7 @@
                 [attr.aria-describedby]="errorCorreo() ? 'l-email-error' : null"
               />
             </div>
+            @if (!recuperando()) {
             <div class="ios-fila">
               <label class="ios-fila__rotulo" for="l-password">Contraseña</label>
               <input
@@ -65,6 +66,7 @@
                 [attr.aria-describedby]="errorClave() ? 'l-password-error' : null"
               />
             </div>
+            }
           </div>
           @if (errorCorreo(); as error) {
             <p class="ios-nota err" id="l-email-error">{{ error }}</p>
@@ -76,10 +78,36 @@
           <button
             class="btn btn-primary btn-block acceso__boton"
             type="submit"
-            [disabled]="auth.iniciandoSesion()"
+            [disabled]="auth.iniciandoSesion() || enviando()"
           >
-            {{ auth.iniciandoCon() === 'correo' ? 'Entrando…' : 'Entrar' }}
+            @if (recuperando()) {
+              {{ enviando() ? 'Enviando…' : 'Enviar enlace' }}
+            } @else {
+              {{ auth.iniciandoCon() === 'correo' ? 'Entrando…' : 'Entrar' }}
+            }
           </button>
+
+          @if (recuperando()) {
+            @if (enlaceEnviado()) {
+              <p class="ios-nota" role="status">
+                Si ese correo tiene cuenta, te enviamos un enlace para crear una contraseña nueva.
+                Revisa también el spam.
+              </p>
+            }
+            @if (errorEnvio(); as error) {
+              <div class="err" role="alert">
+                <mat-icon aria-hidden="true" class="err-icon">error_outline</mat-icon>
+                <span>{{ error }}</span>
+              </div>
+            }
+            <button type="button" class="acceso__enlace" (click)="volverAEntrar()">
+              Volver a entrar
+            </button>
+          } @else {
+            <button type="button" class="acceso__enlace" (click)="abrirRecuperacion()">
+              Olvidé mi contraseña
+            </button>
+          }
 
           <!-- Error exclusivo de login por correo -->
           @if (auth.error(); as error) {

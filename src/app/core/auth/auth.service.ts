@@ -94,8 +94,11 @@ export class AuthService {
     const regreso = { redireccion: leerMarca(), errorUrl: errorEnUrl() };
     guardarMarca(null);
     let primerEvento = true;
-    this.supabase.auth.onAuthStateChange((_evento, sesion) => {
+    this.supabase.auth.onAuthStateChange((evento, sesion) => {
       this._usuario.set(sesion?.user ?? null);
+      // Llegó por el enlace del correo de "Olvidé mi contraseña": la sesión
+      // ya es la de la persona, solo falta que escriba la clave nueva.
+      if (evento === 'PASSWORD_RECOVERY') void this.router.navigateByUrl('/nueva-clave');
       if (primerEvento) {
         primerEvento = false;
         this.recogerRedireccion(regreso.redireccion, regreso.errorUrl);
@@ -189,6 +192,30 @@ export class AuthService {
       });
       this._iniciandoCon.set(null);
     }
+  }
+
+  /**
+   * "Olvidé mi contraseña": manda al correo un enlace para crear una clave
+   * nueva. Devuelve `true` si se pidió el envío. No dice si el correo tiene
+   * cuenta (misma razón que en `iniciarSesion`: no dar pistas).
+   */
+  async enviarRecuperacion(email: string): Promise<boolean> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${location.origin}/`,
+    });
+    if (error && codigoDeError(error) === 'network_error') throw error;
+    if (error) console.error('Error al pedir la recuperación', error);
+    return true;
+  }
+
+  /** Guarda la clave nueva de la sesión de recuperación. Devuelve si se pudo. */
+  async cambiarClave(password: string): Promise<boolean> {
+    const { error } = await this.supabase.auth.updateUser({ password });
+    if (error) {
+      console.error('Error al cambiar la clave', error);
+      return false;
+    }
+    return true;
   }
 
   /** Entra con Google, o crea la cuenta si es la primera vez — Supabase no distingue los dos casos. */

@@ -73,8 +73,44 @@ export class LoginPage {
     return control.touched && control.invalid ? 'Escribe tu contraseña.' : null;
   });
 
+  /** "Olvidé mi contraseña": el mismo formulario, solo con el correo. */
+  protected readonly recuperando = signal(false);
+  protected readonly enlaceEnviado = signal(false);
+  protected readonly enviando = signal(false);
+  protected readonly errorEnvio = signal<string | null>(null);
+
+  protected abrirRecuperacion(): void {
+    this.enlaceEnviado.set(false);
+    this.errorEnvio.set(null);
+    this.form.controls.password.disable();
+    this.recuperando.set(true);
+  }
+
+  protected volverAEntrar(): void {
+    this.form.controls.password.enable();
+    this.recuperando.set(false);
+  }
+
+  private async enviarEnlace(): Promise<void> {
+    if (this.form.invalid || this.enviando()) return;
+    this.enviando.set(true);
+    this.errorEnvio.set(null);
+    try {
+      await this.auth.enviarRecuperacion(this.form.controls.email.value.trim());
+      this.enlaceEnviado.set(true);
+    } catch {
+      this.errorEnvio.set('No hay conexión. Revisa tu internet e intenta de nuevo.');
+    } finally {
+      this.enviando.set(false);
+    }
+  }
+
   protected entrar(): void {
     this.form.markAllAsTouched();
+    if (this.recuperando()) {
+      void this.enviarEnlace();
+      return;
+    }
     if (this.form.invalid || this.auth.iniciandoSesion()) return;
 
     const { email, password } = this.form.getRawValue();

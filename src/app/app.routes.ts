@@ -51,5 +51,13 @@ export const routes: Routes = [
     canActivate: [conCuenta, sinRecorridoPendiente],
     title: 'Categorías',
   },
+  {
+    // Destino del enlace de "Olvidé mi contraseña" (ver `AuthService`).
+    path: 'nueva-clave',
+    loadComponent: () =>
+      import('./features/nueva-clave/nueva-clave.page').then((m) => m.NuevaClavePage),
+    canActivate: [conCuenta],
+    title: 'Nueva contraseña',
+  },
   { path: '**', redirectTo: 'general' },
 ];
