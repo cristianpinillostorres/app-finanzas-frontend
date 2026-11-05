@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../../core/auth/auth.service';
 import { LoginPage } from './login.page';
 
-/** Doble de `AuthService` (sin Firebase real), con espías en las acciones. */
+/** Doble de `AuthService` (sin Supabase real), con espías en las acciones. */
 function crearAuthFalso() {
   return {
     iniciandoCon: signal<'correo' | 'google' | null>(null),

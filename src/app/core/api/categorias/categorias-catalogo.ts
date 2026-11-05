@@ -2,8 +2,8 @@ import type { Categoria } from '../../models';
 
 /**
  * Catálogo base de categorías, el mismo para todos. Vive como constante en
- * el código y no en Firestore: lo que cada persona personaliza se guarda
- * aparte, en `usuarios/{uid}/categorias`, y se combina encima (ver
+ * el código y no en la base: lo que cada persona personaliza se guarda
+ * aparte, en la tabla `categorias`, y se combina encima (ver
  * `combinarCategorias`). Así un cambio al catálogo llega a todos sin
  * migrar datos, y los ids `cat-*` de los movimientos viejos siguen valiendo.
  */
@@ -84,7 +84,7 @@ export const ICONOS_CATEGORIA: string[] = [
   'more_horiz',
 ];
 
-/** Lo que guarda Firestore por categoría: completa si es propia, solo los cambios si es del catálogo. */
+/** Lo que se guarda por categoría: completa si es propia, solo los cambios si es del catálogo. */
 export type DocCategoria = Partial<Omit<Categoria, 'id'>>;
 
 /**

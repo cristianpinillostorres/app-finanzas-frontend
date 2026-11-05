@@ -12,7 +12,7 @@ import { destinoDeLaSesion } from './shared/bienvenida/sin-recorrido-pendiente.g
 /**
  * Sin `/login` como ruta ni guard: toda la app está detrás de sesión, así
  * que la raíz decide entre `Shell` (con las 5 pantallas) y
- * `LoginPage` según `AuthService.autenticado()`. Mientras Firebase Auth
+ * `LoginPage` según `AuthService.autenticado()`. Mientras Supabase Auth
  * resuelve la sesión persistida (`cargando()`), no se muestra ninguna de
  * las dos, para no parpadear al login si en realidad sí hay sesión.
  */

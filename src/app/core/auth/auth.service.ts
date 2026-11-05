@@ -263,7 +263,7 @@ export class AuthService {
   /**
    * Además de salir, borra la copia local de los datos: en un computador
    * prestado no puede quedar la plata de nadie guardada en el navegador.
-   * Lo que no se alcanzó a subir se pierde, igual que antes con Firestore.
+   * Lo que no se alcanzó a subir se pierde.
    * Solo cierra la sesión de este dispositivo (`scope: 'local'`). Se recarga
    * la página para arrancar limpia en el login.
    */

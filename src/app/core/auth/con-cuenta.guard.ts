@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
  * pasos. Sin esto podía saltar a General y usar la app con datos que se
  * pierden al cerrar el navegador.
  *
- * Espera a que Firebase lea la sesión: al recargar, el router navega
+ * Espera a que Supabase lea la sesión: al recargar, el router navega
  * antes, y `anonimo()` todavía no dice la verdad.
  */
 export const conCuenta: CanActivateFn = () => {

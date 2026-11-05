@@ -84,8 +84,8 @@ export class BienvenidaService {
 
   /**
    * Lo guardado en la cuenta, pero se puede cambiar al instante: al saltar
-   * el recorrido la app navega enseguida, y si esperara la respuesta de
-   * Firestore el `Shell` alcanzaría a devolverla a la bienvenida.
+   * el recorrido la app navega enseguida, y si esperara la respuesta del
+   * servidor el `Shell` alcanzaría a devolverla a la bienvenida.
    */
   private readonly _oculto = linkedSignal(() => this.preferencias().recorrido.oculto);
   readonly oculto = this._oculto.asReadonly();
@@ -186,7 +186,7 @@ export class BienvenidaService {
   }
 
   /**
-   * La caché de Firestore aplica la escritura al instante, así que
+   * La copia local aplica la escritura al instante, así que
    * `oculto` y `omitidos` cambian sin esperar al servidor.
    */
   private guardarRecorrido(cambios: { oculto?: boolean; omitidos?: string[] }): void {

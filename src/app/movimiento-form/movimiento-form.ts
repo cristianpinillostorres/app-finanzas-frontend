@@ -313,7 +313,7 @@ export class MovimientoForm {
       .pipe(takeUntilDestroyed())
       .subscribe((tipo) => this.actualizarValidadores(tipo));
 
-    // La última cuenta usada, en cuanto llegan las opciones (con Firestore no
+    // La última cuenta usada, en cuanto llegan las opciones (no
     // están al construir el componente). Solo en un movimiento nuevo y si el
     // campo sigue vacío: un atajo ("Pagar", "Agregar compra") o lo que el
     // usuario ya eligió mandan.
@@ -603,7 +603,7 @@ export class MovimientoForm {
   /**
    * Nota: asume que `cuentas`/`creditos`/`compras` ya están disponibles al
    * construir el componente: las pantallas que abren el formulario en modo
-   * edición ya las tienen cargadas (Firestore las sirve desde su caché).
+   * edición ya las tienen cargadas (vienen de la copia local).
    */
   private prellenarDesdeMovimiento(movimiento: Movimiento): void {
     this.form.controls.monto.setValue(movimiento.monto);

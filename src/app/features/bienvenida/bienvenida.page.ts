@@ -239,7 +239,7 @@ export class BienvenidaPage {
   // ───────────────────────────── datos reales ─────────────────────────────
 
   // Cada lista se comparte entre su signal y `listo`: sin esto, `listo`
-  // abría un segundo listener de Firestore por colección.
+  // abría una segunda suscripción por colección.
   private readonly cuentas$ = compartir(this.cuentasApi.listar());
   private readonly categorias$ = compartir(this.categoriasApi.listar());
   private readonly creditos$ = compartir(this.creditosApi.listar());

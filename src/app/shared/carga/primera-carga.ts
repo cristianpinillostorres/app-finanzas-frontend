@@ -8,7 +8,7 @@ import { type Observable, catchError, combineLatest, map, of } from 'rxjs';
  * `toSignal(..., { initialValue: [] })` no distingue "todavía no llegó" de
  * "llegó vacío": sin esta señal, cada pantalla pintaba montos en $0 y
  * estados vacíos ("Todavía no tienes cuentas") durante el primer segundo
- * contra Firestore, que se leían como datos reales. Con ella, mientras
+ * de carga, que se leían como datos reales. Con ella, mientras
  * tanto van esqueletos con la forma de lo que viene.
  *
  * Si una fuente falla, se da por cargada: un esqueleto eterno esconde el

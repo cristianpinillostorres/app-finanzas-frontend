@@ -299,8 +299,8 @@
   overflow: hidden;
   background: var(--bg-subtle);
   border-radius: var(--radius-xs);
-  // Invisible los primeros 150ms: si los datos llegan antes (caché de
-  // Firestore, o una lista vacía), el esqueleto no alcanza a asomarse y no
+  // Invisible los primeros 150ms: si los datos llegan antes (copia
+  // local, o una lista vacía), el esqueleto no alcanza a asomarse y no
   // hay pestañeo esqueleto → pantalla.
   animation: skeleton-aparece 0.2s var(--ease-out) 0.15s both;
 

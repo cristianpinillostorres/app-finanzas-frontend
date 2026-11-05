@@ -6,7 +6,7 @@ import { Component, computed, input } from '@angular/core';
  * derecha), para que el contenido no "salte" al llegar.
  *
  * Se prefiere sobre un spinner porque comunica la forma de lo que viene, y
- * sobre dejar el hueco vacío porque en Firestore la primera carga tarda lo
+ * sobre dejar el hueco vacío porque la primera carga tarda lo
  * suficiente como para que la pantalla se vea rota.
  *
  * Respeta `prefers-reduced-motion` vía el patrón `.skeleton` global: el

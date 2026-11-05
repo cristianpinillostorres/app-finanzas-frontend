@@ -36,7 +36,7 @@ const ENTORNO_NAVEGADOR: Entorno = {
 
 /**
  * Los datos de una sesión, primero en el dispositivo y después en
- * Supabase — lo que antes hacía sola la caché persistente de Firestore:
+ * Supabase:
  *
  * 1. Al abrir, carga la copia local (IndexedDB) y las pantallas la ven al
  *    instante, aun sin señal.

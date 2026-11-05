@@ -6,7 +6,7 @@
 
 web
 
-PWA instalable (iOS y Android) sobre Angular + Firebase. Celular primero: la
+PWA instalable (iOS y Android) sobre Angular + Supabase. Celular primero: la
 mayoría la usará instalada en el teléfono; el escritorio es secundario.
 
 ## Users
@@ -72,8 +72,6 @@ calcula "lo libre del mes" restando lo que ya está comprometido.
 - **Ocultar montos** con un botón, y tema claro/oscuro manual.
 - Todo el cálculo vive en `core/domain`, puro y con pruebas.
 - **Decisiones abiertas para distribuir** (no inventar respuestas):
-  - No hay registro de usuarios en la app: hoy el único usuario se crea a mano
-    en la consola de Firebase.
   - No hay primer uso / onboarding ("Configura tu mes" quedó fuera de alcance).
   - No hay pantallas de Ajustes, Categorías editables ni Exportar datos.
   - Modelo de negocio, precio y canal de distribución: sin definir.

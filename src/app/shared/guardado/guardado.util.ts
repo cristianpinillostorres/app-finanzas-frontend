@@ -11,7 +11,7 @@ const MENSAJE_ERROR = 'No se pudo guardar. Intenta de nuevo.';
  * `guardarConFeedback` y por los formularios con guardados encadenados
  * (`movimiento-form`, que no encaja en `guardarConFeedback` por tener más
  * de un paso). El detalle técnico solo va a la consola: al usuario no le
- * sirve un mensaje de Firestore, y podría revelar de más.
+ * sirve un mensaje de la base, y podría revelar de más.
  */
 export function mostrarErrorGuardado(snackBar: MatSnackBar, error: unknown): void {
   console.error('Error al guardar', error);
@@ -25,10 +25,10 @@ export function mostrarErrorGuardado(snackBar: MatSnackBar, error: unknown): voi
  * cerrar el diálogo) o de error (sin cerrar nada, para poder reintentar).
  *
  * Antes cada formulario llamaba `.subscribe(() => {...})` a mano, con un
- * solo callback y sin manejar el error: si el guardado fallaba (permisos
- * de Firestore, red...), ese callback nunca corría, `guardando` se
+ * solo callback y sin manejar el error: si el guardado fallaba (permisos,
+ * red...), ese callback nunca corría, `guardando` se
  * quedaba en `true` para siempre y el formulario no se cerraba ni avisaba
- * nada (un guardado en Firestore sí puede fallar).
+ * nada (un guardado sí puede fallar).
  */
 export function guardarConFeedback<T>(
   snackBar: MatSnackBar,

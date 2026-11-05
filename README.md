@@ -2,9 +2,8 @@
 
 Versión pública (multiusuario) de la app de finanzas. Angular (zoneless,
 standalone) + Supabase (Auth + Postgres con RLS) + Cloudflare Pages — sin
-backend propio, ver "Arquitectura" abajo. Las pantallas son las mismas de
-la versión personal (`../../frontend`, que sigue en Firebase); aquí solo
-cambian el almacenamiento y el login.
+backend propio, ver "Arquitectura" abajo. Cada persona tiene su cuenta y sus
+datos.
 
 Especificación funcional/técnica: `../../notas-app-finanzas.md` y
 `../../notas-tecnicas-app-finanzas.md`. Decisiones de la versión personal:

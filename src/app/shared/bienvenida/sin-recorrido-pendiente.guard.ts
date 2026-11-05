@@ -18,7 +18,7 @@ const ESPERA_MAXIMA = 300;
  * copia local suele estar en unos milisegundos), así un usuario nuevo no
  * alcanza a ver un esqueleto que enseguida desaparece.
  *
- * Al recargar, el router navega antes de que Firebase lea la sesión: por
+ * Al recargar, el router navega antes de que Supabase lea la sesión: por
  * eso primero espera a que se sepa si hay sesión. Sin sesión deja pasar
  * (se muestra el login, que decide al entrar: ver `App`).
  *
