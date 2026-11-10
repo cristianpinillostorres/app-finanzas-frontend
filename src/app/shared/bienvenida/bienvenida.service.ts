@@ -21,7 +21,7 @@ import {
 } from './pasos-bienvenida';
 
 /** Secciones que no sirven de nada sin una cuenta: ahí se registra la plata que sale y entra. */
-const SECCIONES_QUE_PIDEN_CUENTA = ['movimientos', 'pagos-fijos'];
+const SECCIONES_QUE_PIDEN_CUENTA = ['movimientos', 'pagos-fijos', 'ahorro'];
 
 /** Parámetro de la URL que abre la franja guía de un paso (`?guia=categorias`). */
 export const PARAM_GUIA = 'guia';

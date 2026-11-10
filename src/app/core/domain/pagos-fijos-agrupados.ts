@@ -11,7 +11,7 @@ import type { AnioMes } from './fechas';
 import { periodoIso } from './fechas';
 import { aplicaEnMes, fechaLimiteEnMes } from './pagos-fijos';
 import type { EstadoSemaforo } from './semaforo';
-import { semaforo } from './semaforo';
+import { semaforo, type UmbralesAviso } from './semaforo';
 
 /** Datos que necesita `agruparPagosFijosDelMes`, además de los pagos fijos propios. */
 export interface ContextoPagosFijosMes {
@@ -26,6 +26,8 @@ export interface ContextoPagosFijosMes {
    * mismo crédito muestra una cuota en Créditos y otra distinta acá.
    */
   cambiosTasa?: CambioTasa[];
+  /** Con cuántos días de anticipación cambia el color de un pago; por defecto los de siempre. */
+  umbrales?: UmbralesAviso;
   /** Para pruebas; por defecto la fecha real. */
   hoy?: Date;
 }
@@ -72,6 +74,7 @@ function itemsPropios(
   pagosFijos: PagoFijo[],
   movimientos: Movimiento[],
   mes: AnioMes,
+  umbrales?: UmbralesAviso,
 ): ItemPagoFijoMes[] {
   const periodo = periodoIso(mes);
 
@@ -96,7 +99,7 @@ function itemsPropios(
         fechaLimite,
         monto: movimientoPago ? movimientoPago.monto : p.monto,
         esEstimado: p.esVariable && !pagado,
-        estado: semaforo(fechaLimite, new Date(), pagado),
+        estado: semaforo(fechaLimite, new Date(), pagado, umbrales),
         periodo,
         pagoFijoId: p.id,
         cuentaDefaultId: p.cuentaDefaultId,
@@ -139,7 +142,12 @@ function itemsCreditos(contexto: ContextoPagosFijosMes, mes: AnioMes): ItemPagoF
       fechaLimite: estadoPago.fechaLimite,
       monto,
       esEstimado: false,
-      estado: semaforo(estadoPago.fechaLimite, new Date(), estadoPago.pagadoEsteMes),
+      estado: semaforo(
+        estadoPago.fechaLimite,
+        new Date(),
+        estadoPago.pagadoEsteMes,
+        contexto.umbrales,
+      ),
       periodo,
       creditoId: credito.id,
     });
@@ -159,7 +167,7 @@ export function agruparPagosFijosDelMes(
   mes: AnioMes,
 ): ResumenPagosFijosMes {
   const todos = [
-    ...itemsPropios(pagosFijos, contexto.movimientos, mes),
+    ...itemsPropios(pagosFijos, contexto.movimientos, mes, contexto.umbrales),
     ...itemsCreditos(contexto, mes),
   ];
 

@@ -1,0 +1,128 @@
+<div class="grid-12" appAparicionEscalonada [attr.aria-busy]="!listo() || null">
+  <app-page-head class="col-md-12" titulo="Ahorro" [detalle]="detalle()">
+    <!-- Con la pantalla vacía, la acción ya está en su presentación. -->
+    @if (!listo() || !sinMetas()) {
+      <button class="btn btn-tonal" type="button" (click)="nuevaMeta()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Nueva meta
+      </button>
+    }
+  </app-page-head>
+
+  @if (listo() && sinMetas()) {
+    <app-pantalla-vacia
+      class="col-md-12"
+      icono="savings"
+      titulo="Junta para lo que quieres"
+      descripcion="Ponle nombre a lo que quieres lograr, di cuánto vas a apartar cada mes y mira cómo avanzas."
+      [puntos]="[
+        'Lo que apartas se descuenta de lo que puedes gastar hoy',
+        'Tu ahorro vive en un bolsillo de Cuentas, sin anotarlo dos veces',
+        'Ves cuántos meses te faltan al ritmo de tu aporte',
+      ]"
+    >
+      <button class="btn btn-primary" type="button" (click)="nuevaMeta()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Crear mi primera meta
+      </button>
+    </app-pantalla-vacia>
+  } @else {
+    <section class="hero hero--pantalla col-md-12">
+      <div class="hero__cabeza">
+        <span class="t-meta">Llevas ahorrado</span>
+        <span class="t-hero amt">
+          <app-amount [valor]="totalAhorrado()" [animar]="true" [cargando]="!listo()" />
+        </span>
+      </div>
+      <div class="desglose desglose--columnas">
+        <div>
+          <span class="t-meta">Apartado desde el {{ desdeCuando() }}</span>
+          <app-amount class="amt" [valor]="apartadoEnCiclo()" [cargando]="!listo()" />
+        </div>
+        <div>
+          <span class="t-meta">Falta apartar hasta tu pago</span>
+          <app-amount class="amt" [valor]="faltaApartar()" [cargando]="!listo()" />
+        </div>
+        @if (hayObjetivos()) {
+          <div>
+            <span class="t-meta">Falta para tus metas</span>
+            <app-amount class="amt" [valor]="totalFalta()" [cargando]="!listo()" />
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="col-md-12" aria-labelledby="titulo-metas">
+      <div class="group-head">
+        <h2 class="group-head__titulo" id="titulo-metas">Tus metas</h2>
+      </div>
+      <div class="panel">
+        @if (!listo()) {
+          <app-skeleton-rows [filas]="2" [conIcono]="false" />
+        } @else {
+          <div class="rows">
+            @for (p of progresos(); track p.meta.id) {
+              <div class="row row--estatica fila-meta">
+                <div class="hd">
+                  <span class="t-row">{{ p.meta.nombre }}</span>
+                  <span class="t-sec tnum">
+                    @if (p.sinObjetivo) {
+                      Llevas <app-amount [valor]="p.ahorrado" />
+                    } @else {
+                      <app-amount [valor]="p.ahorrado" /> de <app-amount [valor]="p.meta.objetivo" />
+                    }
+                  </span>
+                </div>
+                @if (!p.sinObjetivo) {
+                  <div
+                    class="bar"
+                    role="img"
+                    [attr.aria-label]="'Llevas el ' + (p.proporcion * 100).toFixed(0) + ' % de ' + p.meta.nombre"
+                  >
+                    <i [style.--progreso]="progresoDe(p.proporcion)"></i>
+                  </div>
+                }
+                <div class="fila-meta__pie">
+                  <span class="t-meta">{{ textoDe(p) }}</span>
+                  <span class="fila-meta__acciones">
+                    @if (!p.sinBolsillo && !p.cumplida) {
+                      <button class="btn btn-tonal" type="button" (click)="apartar(p)">
+                        <mat-icon aria-hidden="true">savings</mat-icon>
+                        Apartar
+                      </button>
+                    }
+                    <button
+                      class="btn btn-text"
+                      type="button"
+                      [attr.aria-label]="'Más acciones de ' + p.meta.nombre"
+                      [matMenuTriggerFor]="menuMeta"
+                    >
+                      <mat-icon aria-hidden="true">more_horiz</mat-icon>
+                    </button>
+                    <mat-menu #menuMeta="matMenu" xPosition="before">
+                      @if (!p.sinBolsillo) {
+                        <button mat-menu-item type="button" (click)="editar(p.meta)">
+                          <mat-icon aria-hidden="true">edit</mat-icon>
+                          <span>Editar</span>
+                        </button>
+                      }
+                      <button
+                        mat-menu-item
+                        type="button"
+                        class="accion-peligro"
+                        (click)="quitar(p.meta)"
+                      >
+                        <mat-icon aria-hidden="true">delete</mat-icon>
+                        <span>Quitar meta</span>
+                      </button>
+                    </mat-menu>
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

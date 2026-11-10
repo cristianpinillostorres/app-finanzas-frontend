@@ -1,0 +1,230 @@
+<div class="grid-12">
+  <app-page-head
+    class="col-md-12"
+    titulo="Configuración"
+    detalle="Cómo cuenta la app tu mes y tu cuenta"
+  />
+
+  <div class="columna col-md-12 col-lg-6">
+    <section class="panel" aria-labelledby="cfg-mes">
+      <div class="panel-head">
+        <h2 id="cfg-mes">Tu mes</h2>
+      </div>
+      <ul class="rows lista">
+        <li class="row row--estatica">
+          <span class="row-main">
+            <label class="t-row" for="cfg-fijo">Día de pago fijo</label>
+            <span class="t-meta">
+              Si te pagan el mismo día cada mes, en General verás cuánto te queda libre hasta ese
+              día y no hasta fin de mes.
+            </span>
+          </span>
+          <input
+            class="ios-interruptor"
+            id="cfg-fijo"
+            type="checkbox"
+            [checked]="diaDePago() !== null"
+            (change)="alternarDiaFijo($any($event.target).checked)"
+          />
+        </li>
+        @if (diaDePago(); as dia) {
+          <li class="row row--estatica">
+            <span class="row-main">
+              <span class="t-row" id="cfg-dia-rotulo">Día del mes</span>
+            </span>
+            <ng-container
+              *ngTemplateOutlet="
+                contador;
+                context: { valor: dia, rotulo: 'cfg-dia-rotulo', mover: moverDia }
+              "
+            />
+          </li>
+        }
+      </ul>
+      @if (diaDePago() !== null) {
+        <p class="t-meta nota">Tu próximo pago es el {{ textoProximoPago() }}.</p>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="cfg-avisos">
+      <div class="panel-head">
+        <h2 id="cfg-avisos">Avisos de pagos</h2>
+      </div>
+      <ul class="rows lista">
+        <li class="row row--estatica">
+          <span class="row-main">
+            <span class="t-row" id="cfg-amarillo-rotulo">Pasa a amarillo</span>
+            <span class="t-meta">
+              Un pago se pone amarillo {{ textoAviso(avisos().amarillo) }} de su fecha límite.
+            </span>
+          </span>
+          <ng-container
+            *ngTemplateOutlet="
+              contador;
+              context: {
+                valor: avisos().amarillo,
+                rotulo: 'cfg-amarillo-rotulo',
+                mover: moverAmarillo,
+              }
+            "
+          />
+        </li>
+        <li class="row row--estatica">
+          <span class="row-main">
+            <span class="t-row" id="cfg-rojo-rotulo">Pasa a rojo</span>
+            <span class="t-meta">
+              Se pone rojo {{ textoAviso(avisos().rojo) }}, y sigue rojo si ya venció.
+            </span>
+          </span>
+          <ng-container
+            *ngTemplateOutlet="
+              contador;
+              context: {
+                valor: avisos().rojo,
+                rotulo: 'cfg-rojo-rotulo',
+                mover: moverRojo,
+              }
+            "
+          />
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-labelledby="cfg-datos">
+      <div class="panel-head">
+        <h2 id="cfg-datos">Mis datos</h2>
+      </div>
+      <ul class="rows lista">
+        <li class="row row--estatica row--objetivos">
+          <span class="row-main">
+            <span class="t-row" id="cfg-pdf-rotulo">Movimientos en PDF</span>
+            <span class="t-meta">
+              Un documento con tus movimientos y el resumen de ingresos y gastos del periodo.
+            </span>
+            <span class="objetivos" role="radiogroup" aria-labelledby="cfg-pdf-rotulo">
+              @for (opcion of periodos; track opcion.valor) {
+                <button
+                  type="button"
+                  class="objetivo"
+                  role="radio"
+                  [attr.aria-checked]="periodo() === opcion.valor"
+                  [class.objetivo--elegido]="periodo() === opcion.valor"
+                  (click)="periodo.set(opcion.valor)"
+                >
+                  {{ opcion.nombre }}
+                </button>
+              }
+            </span>
+            <span class="accion-fila">
+              <button
+                class="btn btn-tonal"
+                type="button"
+                [disabled]="descargando()"
+                (click)="descargarMovimientosPdf()"
+              >
+                <mat-icon aria-hidden="true">download</mat-icon>
+                {{ descargando() ? 'Armando el PDF…' : 'Descargar PDF' }}
+              </button>
+            </span>
+          </span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="columna col-md-12 col-lg-6">
+    <section class="panel" aria-labelledby="cfg-cuenta">
+      <div class="panel-head">
+        <h2 id="cfg-cuenta">Mi cuenta</h2>
+      </div>
+      <ul class="rows lista">
+        @if (correo(); as correoActual) {
+          <li class="row row--estatica">
+            <span class="row-main">
+              <span class="t-row">Correo</span>
+              <span class="t-meta">{{ correoActual }}</span>
+            </span>
+          </li>
+        }
+        <li class="row row--estatica">
+          <span class="row-main">
+            <label class="t-row" for="cfg-nombre">Nombre</label>
+            <span class="t-meta">Así te llamamos en la app.</span>
+          </span>
+          <input
+            class="input control"
+            id="cfg-nombre"
+            type="text"
+            autocomplete="given-name"
+            placeholder="Tu nombre"
+            maxlength="40"
+            [value]="nombre() ?? ''"
+            (change)="cambiarNombre($any($event.target).value)"
+          />
+        </li>
+        <li class="row row--estatica row--objetivos">
+          <span class="row-main">
+            <span class="t-row" id="cfg-objetivos-rotulo">Lo que quieres lograr</span>
+            <span class="t-meta">Ordena lo que la app te sugiere primero.</span>
+            <span class="objetivos" role="group" aria-labelledby="cfg-objetivos-rotulo">
+              @for (objetivo of opcionesObjetivo; track objetivo.valor) {
+                <button
+                  type="button"
+                  class="objetivo"
+                  role="checkbox"
+                  [attr.aria-checked]="estaElegido(objetivo.valor)"
+                  [class.objetivo--elegido]="estaElegido(objetivo.valor)"
+                  (click)="alternarObjetivo(objetivo.valor)"
+                >
+                  <mat-icon aria-hidden="true">{{
+                    estaElegido(objetivo.valor) ? 'check' : objetivo.icono
+                  }}</mat-icon>
+                  {{ objetivo.nombre }}
+                </button>
+              }
+            </span>
+          </span>
+        </li>
+        @if (!tieneGoogle()) {
+          <li class="row row--estatica">
+            <span class="row-main">
+              <span class="t-row">Google</span>
+              <span class="t-meta">Vincula tu cuenta de Google para entrar con un toque.</span>
+            </span>
+            <button
+              class="btn btn-tonal"
+              type="button"
+              [disabled]="vinculando()"
+              (click)="vincularGoogle()"
+            >
+              Vincular
+            </button>
+          </li>
+        }
+        <li class="row row--estatica">
+          <span class="row-main">
+            <span class="t-row">Sesión</span>
+            <span class="t-meta">Sales de la app en este dispositivo.</span>
+          </span>
+          <button class="btn btn-text" type="button" (click)="cerrarSesion()">
+            <mat-icon aria-hidden="true">logout</mat-icon>
+            Cerrar sesión
+          </button>
+        </li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<!-- Un contador − / + con el número en medio, para el día de pago y los días de aviso. -->
+<ng-template #contador let-valor="valor" let-rotulo="rotulo" let-mover="mover">
+  <div class="contador" role="group" [attr.aria-labelledby]="rotulo">
+    <button type="button" class="contador__boton" aria-label="Menos" (click)="mover(-1)">
+      <mat-icon aria-hidden="true">remove</mat-icon>
+    </button>
+    <output class="contador__valor" aria-live="polite">{{ valor }}</output>
+    <button type="button" class="contador__boton" aria-label="Más" (click)="mover(1)">
+      <mat-icon aria-hidden="true">add</mat-icon>
+    </button>
+  </div>
+</ng-template>

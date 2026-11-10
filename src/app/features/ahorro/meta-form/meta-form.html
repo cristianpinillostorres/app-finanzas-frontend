@@ -1,0 +1,95 @@
+<app-hoja-cabecera
+  [titulo]="modoEdicion ? 'Editar meta' : 'Nueva meta'"
+  [cerrarDeshabilitado]="guardando()"
+  (cerrar)="cerrar()"
+/>
+
+<form class="ios-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="ios-grupo">
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="m-nombre">Nombre</label>
+      <input
+        autocomplete="off"
+        class="input"
+        id="m-nombre"
+        placeholder="Nombre de la meta"
+        formControlName="nombre"
+        [attr.aria-invalid]="invalido(form.controls.nombre) || null"
+      />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="m-objetivo">Quiero juntar</label>
+      <input
+        class="input"
+        id="m-objetivo"
+        appMonto
+        placeholder="Opcional"
+        formControlName="objetivo"
+      />
+    </div>
+    <div class="ios-fila">
+      <label class="ios-fila__rotulo" for="m-aporte">Apartar cada mes</label>
+      <input
+        class="input"
+        id="m-aporte"
+        appMonto
+        placeholder="Opcional"
+        formControlName="aporteMensual"
+      />
+    </div>
+  </div>
+  @if (invalido(form.controls.nombre)) {
+    <p class="ios-nota err">Ponle un nombre a la meta.</p>
+  } @else {
+    <p class="ios-nota">
+      Déjalo vacío si solo quieres ahorrar, sin una cifra final. Lo que apartes cada mes se
+      descuenta de lo que puedes gastar hoy; con $0 queda en pausa.
+    </p>
+  }
+
+  @if (!modoEdicion) {
+    <h3 class="ios-seccion">Dónde está la plata</h3>
+    <div class="ios-grupo">
+      @if (bolsillosLibres().length > 0) {
+        <div class="ios-fila">
+          <label class="ios-fila__rotulo" for="m-destino">Bolsillo</label>
+          <app-selector
+            inputId="m-destino"
+            formControlName="destino"
+            [opciones]="opcionesDestino()"
+          />
+        </div>
+      }
+      @if (creaBolsillo()) {
+        <div class="ios-fila">
+          <label class="ios-fila__rotulo" for="m-cuenta">En la cuenta</label>
+          <app-selector
+            inputId="m-cuenta"
+            formControlName="cuentaId"
+            [opciones]="opcionesCuenta()"
+            placeholder="Elige una cuenta"
+          />
+        </div>
+      }
+    </div>
+    @if (creaBolsillo() && faltaCuenta() && !form.controls.cuentaId.value) {
+      <p class="ios-nota err">Elige la cuenta donde está la plata.</p>
+    } @else if (creaBolsillo()) {
+      <p class="ios-nota">
+        Se crea un bolsillo reservado con el nombre de la meta. La plata se mueve ahí desde
+        "Apartar" y sigue siendo tuya en esa cuenta.
+      </p>
+    } @else {
+      <p class="ios-nota">
+        La meta cuenta lo que ya tiene ese bolsillo. Si no estaba reservado, se reserva: esa plata
+        deja de contar como disponible para gastar.
+      </p>
+    }
+  }
+
+  <button class="btn btn-primary btn-block" type="submit" [disabled]="guardando()">
+    {{ modoEdicion ? 'Guardar cambios' : 'Crear meta' }}
+  </button>
+</form>
+
+<app-guardando-overlay [visible]="guardando()" />

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -51,7 +52,8 @@ import { HojaCabecera } from '../shared/hoja-cabecera/hoja-cabecera';
  */
 @Component({
   selector: 'app-movimiento-form',
-  imports: [HojaCabecera, 
+  imports: [HojaCabecera,
+    NgTemplateOutlet,
     ReactiveFormsModule,
     MatIconModule,
     MatButtonModule,
@@ -290,7 +292,7 @@ export class MovimientoForm {
   /** "Mercado" si ya eligió la categoría: es lo que se guarda si no escribe nada. */
   protected readonly placeholderDescripcion = computed(() => {
     const categoria = this.categorias().find((c) => c.id === this.valorFormulario().categoriaId);
-    return categoria ? `${categoria.nombre}, si no escribes nada` : 'Ej.: almuerzo con el equipo';
+    return categoria ? `${categoria.nombre}, si no escribes nada` : 'Descripción';
   });
 
   protected readonly formularioValido = computed(

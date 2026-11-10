@@ -8,14 +8,18 @@ import { combineLatest, map, of, switchMap } from 'rxjs';
 
 import { cambiosTasaDeBancos } from '../../core/api/creditos/cambios-tasa.util';
 import { COMPRAS_API } from '../../core/api/compras/compras-api';
+import { CUENTAS_API } from '../../core/api/cuentas/cuentas-api';
 import { CREDITOS_API } from '../../core/api/creditos/creditos-api';
 import { MOVIMIENTOS_API } from '../../core/api/movimientos/movimientos-api';
+import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
 import {
   agruparCreditosPorTipo,
+  armarReporteCredito,
   creditosConCuotasPendientes,
   cuotasFaltantesCompra,
   cuotasPagadasBanco,
   diasEntre,
+  semaforo,
   inicioDelDia,
   tablaAmortizacion,
   tasaEaVigente,
@@ -27,10 +31,12 @@ import type {
   CambioTasa,
   CompraCuotas,
   Credito,
+  Cuenta,
   CreditoBanco,
   ExtractoTarjeta,
   Movimiento,
 } from '../../core/models';
+import { PREFERENCIAS_INICIALES } from '../../core/models';
 import { HeaderActionService } from '../../layout/header-action.service';
 import { NuevoMovimientoService } from '../../layout/nuevo-movimiento/nuevo-movimiento.service';
 import { Amount } from '../../shared/amount/amount';
@@ -75,8 +81,10 @@ export class CreditosPage {
   private readonly creditosApi = inject(CREDITOS_API);
   private readonly comprasApi = inject(COMPRAS_API);
   private readonly movimientosApi = inject(MOVIMIENTOS_API);
+  private readonly cuentasApi = inject(CUENTAS_API);
   private readonly nuevoMovimiento = inject(NuevoMovimientoService);
   private readonly dialog = inject(MatDialog);
+  private readonly preferenciasApi = inject(PREFERENCIAS_API);
   private readonly headerAction = inject(HeaderActionService);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -89,6 +97,7 @@ export class CreditosPage {
   private readonly movimientos = toSignal(this.movimientosApi.listar(), {
     initialValue: [] as Movimiento[],
   });
+  private readonly cuentas = toSignal(this.cuentasApi.listar(), { initialValue: [] as Cuenta[] });
   /** Si ya llegó lo que pinta la pantalla; mientras tanto, esqueletos (ver `primeraCarga`). */
   protected readonly listo = primeraCarga(
     this.creditosApi.listar(),
@@ -198,14 +207,18 @@ export class CreditosPage {
   }
 
   /**
-   * "Registrar pago" en relleno solo cuando urge (vencida o vence en menos
-   * de 5 días, el amarillo/rojo del semáforo); el resto en contorno. Con
+   * "Registrar pago" en relleno solo cuando urge (vencida o ya en amarillo
+   * o rojo, según los días de aviso de Configuración); el resto en contorno. Con
    * cinco botones primarios iguales nada decía por dónde empezar.
    */
   protected urgente(item: CreditoConEstado): boolean {
     if (!item.estadoPago || item.estadoPago.pagadoEsteMes) return false;
-    return diasEntre(new Date(), item.estadoPago.fechaLimite) < 5;
+    return diasEntre(new Date(), item.estadoPago.fechaLimite) <= this.preferencias().avisos.amarillo;
   }
+
+  private readonly preferencias = toSignal(this.preferenciasApi.obtener(), {
+    initialValue: PREFERENCIAS_INICIALES,
+  });
 
   /** La que está abierta: una a la vez, abrir otra cierra la anterior. */
   private readonly abierta = signal<string | null>(null);
@@ -239,10 +252,7 @@ export class CreditosPage {
 
   protected claseBadge(item: CreditoConEstado): string {
     if (!item.estadoPago) return '';
-    const dias = diasEntre(new Date(), item.estadoPago.fechaLimite);
-    if (dias >= 5) return 'sem-verde';
-    if (dias >= 2) return 'sem-amarillo';
-    return 'sem-rojo';
+    return `sem-${semaforo(item.estadoPago.fechaLimite, new Date(), false, this.preferencias().avisos)}`;
   }
 
   protected cupoDisponible(credito: Credito, deuda: number): number {
@@ -349,6 +359,34 @@ export class CreditosPage {
 
   protected fechaTexto(fechaIso: string): string {
     return formatearDiaMes(fechaIso);
+  }
+
+  /** Qué tarjeta se está armando para descargar, para mostrarlo en su botón. */
+  protected readonly descargando = signal<string | null>(null);
+
+  /** Descarga las compras a cuotas y los pagos de una tarjeta o plataforma, para ponerlos junto al extracto. */
+  protected async descargarCompras(credito: Credito): Promise<void> {
+    if (this.descargando()) return;
+    this.descargando.set(credito.id);
+    try {
+      const reporte = armarReporteCredito(
+        credito,
+        this.compras(),
+        this.movimientos(),
+        this.cuentas(),
+      );
+      // Se carga solo ahora: la librería de PDF no pesa mientras no se descargue nada.
+      const { descargarPdfCredito } = await import('../../shared/pdf/pdf-credito');
+      await descargarPdfCredito(reporte);
+      this.snackBar.open('PDF descargado', undefined, { duration: 2500 });
+    } catch (error) {
+      console.error('No se pudo armar el PDF del crédito', error);
+      this.snackBar.open('No se pudo armar el PDF. Intenta de nuevo.', undefined, {
+        duration: 4000,
+      });
+    } finally {
+      this.descargando.set(null);
+    }
   }
 
   protected agregarCompra(credito: Credito): void {

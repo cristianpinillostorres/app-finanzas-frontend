@@ -61,8 +61,8 @@ interface Opcion<T> {
   icono: string;
   /** Lo que dice el segmentado, donde el nombre completo no cabe. */
   corto: string;
-  /** Lo que sugiere el campo de nombre al elegirla. */
-  ejemplo: string;
+  /** Lo que dice el campo de nombre vacío, para saber qué va ahí. */
+  placeholder: string;
 }
 
 const TIPOS_CUENTA: Opcion<TipoCuenta>[] = [
@@ -71,23 +71,29 @@ const TIPOS_CUENTA: Opcion<TipoCuenta>[] = [
     nombre: 'Banco',
     corto: 'Banco',
     icono: 'account_balance',
-    ejemplo: 'Mi banco',
+    placeholder: 'Nombre del banco',
   },
   {
     valor: 'BILLETERA',
     nombre: 'Billetera digital',
     corto: 'Billetera',
     icono: 'account_balance_wallet',
-    ejemplo: 'Mi billetera',
+    placeholder: 'Nombre de la billetera',
   },
   {
     valor: 'EFECTIVO',
     nombre: 'Efectivo',
     corto: 'Efectivo',
     icono: 'payments',
-    ejemplo: 'Efectivo',
+    placeholder: 'Nombre de la cuenta',
   },
-  { valor: 'OTRO', nombre: 'Otro', corto: 'Otro', icono: 'more_horiz', ejemplo: 'Mi cuenta' },
+  {
+    valor: 'OTRO',
+    nombre: 'Otro',
+    corto: 'Otro',
+    icono: 'more_horiz',
+    placeholder: 'Nombre de la cuenta',
+  },
 ];
 
 /** El color con que nace la cuenta según su tipo; se cambia después en Cuentas. */
@@ -104,28 +110,28 @@ const TIPOS_CREDITO: Opcion<GrupoCredito>[] = [
     nombre: 'Tarjeta',
     corto: 'Tarjeta',
     icono: 'credit_card',
-    ejemplo: 'Mi tarjeta',
+    placeholder: 'Nombre de la tarjeta',
   },
   {
     valor: 'PLATAFORMA',
     nombre: 'Compra a cuotas',
     corto: 'A cuotas',
     icono: 'shopping_bag',
-    ejemplo: 'Compra del celular',
+    placeholder: 'Nombre de la compra',
   },
   {
     valor: 'BANCO',
     nombre: 'Préstamo de banco',
     corto: 'Préstamo',
     icono: 'account_balance',
-    ejemplo: 'Préstamo',
+    placeholder: 'Nombre del préstamo',
   },
   {
     valor: 'PERSONA',
     nombre: 'Una persona',
     corto: 'Persona',
     icono: 'person',
-    ejemplo: 'Préstamo de un amigo',
+    placeholder: 'Nombre de la persona',
   },
 ];
 
@@ -505,8 +511,13 @@ export class BienvenidaPage {
   protected readonly tipoCuenta = signal<TipoCuenta>('BANCO');
   protected readonly nombreCuenta = signal('');
   protected readonly saldo = signal(0);
-  protected readonly ejemploCuenta = computed(
-    () => TIPOS_CUENTA.find((t) => t.valor === this.tipoCuenta())!.ejemplo,
+  protected readonly placeholderCuenta = computed(
+    () => TIPOS_CUENTA.find((t) => t.valor === this.tipoCuenta())!.placeholder,
+  );
+
+  /** El nombre y el saldo son obligatorios: así la cuenta queda con el nombre que tú le pones. */
+  protected readonly cuentaLista = computed(
+    () => this.nombreCuenta().trim() !== '' && this.saldo() > 0,
   );
 
   protected crearCuenta(): void {
@@ -514,8 +525,8 @@ export class BienvenidaPage {
       this.siguiente();
       return;
     }
-    if (this.saldo() <= 0 || this.guardando()) return;
-    const nombre = this.nombreCuenta().trim() || this.ejemploCuenta();
+    if (!this.cuentaLista() || this.guardando()) return;
+    const nombre = this.nombreCuenta().trim();
     const tipo = this.tipoCuenta();
     this.guardar(
       this.cuentasApi.crear({
@@ -591,8 +602,8 @@ export class BienvenidaPage {
   protected readonly diaPagoCredito = signal('15');
   protected readonly diaCorteCredito = signal('20');
 
-  protected readonly ejemploCredito = computed(
-    () => TIPOS_CREDITO.find((t) => t.valor === this.grupoCredito())!.ejemplo,
+  protected readonly placeholderCredito = computed(
+    () => TIPOS_CREDITO.find((t) => t.valor === this.grupoCredito())!.placeholder,
   );
 
   /** Tasa escrita como "21,5" o "21.5"; `null` si no es un número. */
@@ -602,6 +613,7 @@ export class BienvenidaPage {
   });
 
   protected readonly creditoListo = computed(() => {
+    if (this.nombreCredito().trim() === '') return false;
     switch (this.grupoCredito()) {
       case 'TARJETA':
       case 'PLATAFORMA':
@@ -632,7 +644,7 @@ export class BienvenidaPage {
   protected agregarCredito(): void {
     if (!this.creditoListo() || this.guardando()) return;
     const base = {
-      nombre: this.nombreCredito().trim() || this.ejemploCredito(),
+      nombre: this.nombreCredito().trim(),
       diaPago: this.entero(this.diaPagoCredito(), 31) || 15,
     };
     let datos: NuevoCredito;

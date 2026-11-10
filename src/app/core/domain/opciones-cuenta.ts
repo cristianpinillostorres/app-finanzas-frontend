@@ -4,7 +4,14 @@ import type { Credito, Cuenta, GrupoCredito } from '../models';
 export interface OpcionMovimiento {
   id: string;
   tipo: 'cuenta' | 'credito';
+  /** El nombre completo ("Bancolombia › Viaje" en un bolsillo), para el valor ya elegido. */
   etiqueta: string;
+  /** Solo en un bolsillo: su propio nombre ("Viaje"), para mostrarlo bajo su cuenta en la lista. */
+  nombre?: string;
+  /** Solo en un bolsillo: el nombre de la cuenta a la que pertenece ("Bancolombia"). */
+  bolsilloDe?: string;
+  /** Solo en una cuenta que tiene bolsillos: cuántos, para avisarlo en la lista. */
+  bolsillos?: number;
 }
 
 export interface GrupoOpcionesMovimiento {
@@ -22,13 +29,20 @@ export function opcionesCuentasYBolsillos(cuentas: Cuenta[]): OpcionMovimiento[]
   const opciones: OpcionMovimiento[] = [];
 
   for (const raiz of raices) {
-    opciones.push({ id: raiz.id, tipo: 'cuenta', etiqueta: raiz.nombre });
     const bolsillos = activas.filter((c) => c.cuentaPadreId === raiz.id);
+    opciones.push({
+      id: raiz.id,
+      tipo: 'cuenta',
+      etiqueta: raiz.nombre,
+      ...(bolsillos.length > 0 ? { bolsillos: bolsillos.length } : {}),
+    });
     for (const bolsillo of bolsillos) {
       opciones.push({
         id: bolsillo.id,
         tipo: 'cuenta',
         etiqueta: `${raiz.nombre} › ${bolsillo.nombre}`,
+        nombre: bolsillo.nombre,
+        bolsilloDe: raiz.nombre,
       });
     }
   }

@@ -24,6 +24,12 @@ export const routes: Routes = [
     title: 'Créditos',
   },
   {
+    path: 'ahorro',
+    loadComponent: () => import('./features/ahorro/ahorro.page').then((m) => m.AhorroPage),
+    canActivate: [conCuenta, sinRecorridoPendiente],
+    title: 'Ahorro',
+  },
+  {
     path: 'movimientos',
     loadComponent: () =>
       import('./features/movimientos/movimientos.page').then((m) => m.MovimientosPage),
@@ -50,6 +56,13 @@ export const routes: Routes = [
       import('./features/categorias/categorias.page').then((m) => m.CategoriasPage),
     canActivate: [conCuenta, sinRecorridoPendiente],
     title: 'Categorías',
+  },
+  {
+    path: 'configuracion',
+    loadComponent: () =>
+      import('./features/configuracion/configuracion.page').then((m) => m.ConfiguracionPage),
+    canActivate: [conCuenta, sinRecorridoPendiente],
+    title: 'Configuración',
   },
   {
     // Destino del enlace de "Olvidé mi contraseña" (ver `AuthService`).

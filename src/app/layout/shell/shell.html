@@ -82,19 +82,19 @@
             <mat-icon aria-hidden="true">sell</mat-icon>
             <span class="nav__texto">Categorías</span>
           </a>
-          @if (!tieneGoogle()) {
-            <button
-              type="button"
-              class="nav__item"
-              aria-label="Vincular con Google"
-              title="Vincular con Google"
-              [disabled]="vinculando()"
-              (click)="vincularGoogle()"
-            >
-              <mat-icon aria-hidden="true">link</mat-icon>
-              <span class="nav__texto">Vincular con Google</span>
-            </button>
-          }
+          <a
+            class="nav__item"
+            routerLink="/configuracion"
+            routerLinkActive="nav__item--activo"
+            #activoConfiguracion="routerLinkActive"
+            [attr.aria-current]="activoConfiguracion.isActive ? 'page' : null"
+            aria-label="Configuración"
+            title="Configuración"
+          >
+            <span class="nav__fondo" aria-hidden="true"></span>
+            <mat-icon aria-hidden="true">settings</mat-icon>
+            <span class="nav__texto">Configuración</span>
+          </a>
         </div>
       </aside>
 
@@ -180,11 +180,18 @@
             <mat-icon aria-hidden="true">contrast</mat-icon>
             <span>Tema</span>
           </button>
+          <a mat-menu-item routerLink="/ahorro">
+            <mat-icon aria-hidden="true">savings</mat-icon>
+            <span>Ahorro</span>
+          </a>
           <a mat-menu-item routerLink="/categorias">
             <mat-icon aria-hidden="true">sell</mat-icon>
             <span>Categorías</span>
           </a>
-          <ng-container *ngTemplateOutlet="vincular" />
+          <a mat-menu-item routerLink="/configuracion">
+            <mat-icon aria-hidden="true">settings</mat-icon>
+            <span>Configuración</span>
+          </a>
           <button mat-menu-item type="button" class="menu-cuenta__salir" (click)="cerrarSesion()">
             <mat-icon aria-hidden="true">logout</mat-icon>
             <span>Cerrar sesión</span>
@@ -211,7 +218,7 @@
     }
 
     <nav class="barra-inferior" aria-label="Navegación principal">
-      @for (item of navItems; track item.path) {
+      @for (item of navItemsMovil; track item.path) {
         <a
           [class.bloqueado]="bienvenida.seccionBloqueada(item.path)"
           [matTooltip]="bienvenida.seccionBloqueada(item.path) ? bienvenida.motivoBloqueo : ''"
@@ -272,18 +279,6 @@
     </button>
   }
 </mat-menu>
-
-<!-- Para las cuentas de correo y contraseña (creadas a mano antes del
-     registro con Google): une Google al mismo usuario, con los mismos
-     datos. Con Google ya vinculado no hay nada que hacer y no se muestra. -->
-<ng-template #vincular>
-  @if (!tieneGoogle()) {
-    <button mat-menu-item type="button" [disabled]="vinculando()" (click)="vincularGoogle()">
-      <mat-icon aria-hidden="true">link</mat-icon>
-      <span>Vincular con Google</span>
-    </button>
-  }
-</ng-template>
 
 <!-- Botones globales de escritorio: el ojo, que se usa a diario, y la
      cuenta. `PageHead` los dibuja dentro de la tarjeta del título de cada

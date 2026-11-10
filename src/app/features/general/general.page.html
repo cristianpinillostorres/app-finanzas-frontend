@@ -28,23 +28,79 @@
   }
 
   <!--
-    Héroe: la pregunta que responde toda la pantalla es "¿cuánto me queda
-    libre?", así que ese número manda y el resto es contexto. Debajo va la
-    cuenta que lo produce —disponible menos lo que falta pagar—, dicha en
-    una frase y en cifras, para que nadie tenga que adivinar de dónde sale.
-    "Reservado" ya no va acá: no entra en la resta, y se repetía con su
-    tarjeta de abajo.
+    Héroe: la pregunta que responde toda la pantalla es "¿cuánto puedo
+    gastar hoy?". Con día de pago, lo libre hasta ese día se reparte en los
+    días que faltan y ese es el número grande; debajo, la cuenta que lo
+    produce y cómo va el ritmo de la última semana contra él. Sin día de pago,
+    o si lo que vence antes del pago ya es más de lo que hay, queda la cifra
+    de lo libre y su explicación de siempre.
   -->
   <!-- Cuenta nueva: solo la bienvenida. Tarjetas en $0 y gráficas vacías
        no dicen nada todavía; cada panel aparece cuando tiene qué mostrar. -->
   @if (!datosListos() || !cuentaNueva()) {
     <section class="hero hero--pantalla hero--libre col-md-12">
       <div class="hero__cabeza">
-        <span class="t-meta">Te queda libre este mes</span>
-        <span class="t-hero amt" [class.mon-out]="libreDelMes() < 0">
-          <app-amount [valor]="libreDelMes()" [animar]="true" [cargando]="!datosListos()" />
+        @if (gastoDiario() !== null) {
+          <span class="t-meta">Hoy puedes gastar</span>
+          <span class="t-hero amt">
+            <app-amount [valor]="gastoDiario()!" [animar]="true" [cargando]="!datosListos()" />
+            <span class="hero__por-dia">por día</span>
+          </span>
+          <!-- Una sola frase: dos párrafos hacían este héroe ~50px más alto que
+               el de las otras pantallas. -->
+          <p class="hero__explica">
+            Te quedan <app-amount [valor]="libreParaGastar()" /> libres hasta tu pago del
+            {{ fechaProximoPago() }} ({{
+              diasHastaPago() === 1 ? 'queda 1 día' : 'quedan ' + diasHastaPago() + ' días'
+            }}).
+            @if (datosListos() && ritmo() > 0) {
+              <span
+                class="hero__ritmo"
+                [class.hero__ritmo--cerca]="estadoRitmo() === 'cerca'"
+                [class.hero__ritmo--pasado]="estadoRitmo() === 'pasado'"
+              >
+                @switch (estadoRitmo()) {
+                  @case ('pasado') {
+                    Te estás pasando: esta semana gastaste <app-amount [valor]="ritmo()" /> por
+                    día y así no te alcanza.
+                  }
+                  @case ('cerca') {
+                    Vas justo: esta semana gastaste <app-amount [valor]="ritmo()" /> por día.
+                  }
+                  @default {
+                    Vas bien: esta semana gastaste <app-amount [valor]="ritmo()" /> por día.
+                  }
+                }
+              </span>
+            }
+          </p>
+        } @else {
+        <span class="t-meta">
+          {{ hastaPago() ? 'Te queda libre hasta tu pago' : 'Te queda libre este mes' }}
         </span>
-        @if (libreDelMes() < 0) {
+        <span class="t-hero amt" [class.mon-out]="libreMostrado() < 0">
+          <app-amount [valor]="libreMostrado()" [animar]="true" [cargando]="!datosListos()" />
+        </span>
+        @if (hastaPago(); as pago) {
+          @if (libreMostrado() < 0) {
+            <p class="hero__explica">
+              Lo que vence antes de tu pago del {{ fechaProximoPago() }} es más de lo que tienes
+              disponible.
+              <a routerLink="/pagos-fijos">Mira qué vence primero</a> y qué puedes aplazar.
+            </p>
+          } @else {
+            <p class="hero__explica">
+              Es lo que tienes disponible menos lo que vence antes de tu pago del
+              {{ fechaProximoPago() }}.
+            </p>
+          }
+          @if (pago.totalDespues > 0) {
+            <p class="hero__explica">
+              Después de tu pago vencen <app-amount [valor]="pago.totalDespues" />
+              ({{ nombresDespuesDelPago() }}): resérvalos de ese ingreso.
+            </p>
+          }
+        } @else if (libreDelMes() < 0) {
           <p class="hero__explica">
             Lo que falta pagar este mes es más de lo que tienes disponible.
             <a routerLink="/pagos-fijos">Mira qué vence primero</a> y qué puedes aplazar.
@@ -54,6 +110,7 @@
             Es lo que tienes disponible menos lo que falta pagar este mes.
           </p>
         }
+        }
       </div>
       <div class="desglose desglose--columnas">
         <div>
@@ -61,67 +118,88 @@
           <app-amount class="amt" [valor]="disponible()" [cargando]="!datosListos()" />
         </div>
         <div>
-          <span class="t-meta">Falta por pagar este mes</span>
+          <span class="t-meta">
+            {{ hastaPago() ? 'Falta por pagar antes de tu pago' : 'Falta por pagar este mes' }}
+          </span>
           @if (datosListos()) {
-            <span class="amt mon-out">−<app-amount [valor]="faltaPorPagarMes()" /></span>
+            <span class="amt mon-out">−<app-amount [valor]="faltaMostrada()" /></span>
           } @else {
             <app-amount class="amt" [valor]="0" [cargando]="true" />
           }
         </div>
+        @if (apartadoParaMetas() > 0) {
+          <div>
+            <a class="t-meta" routerLink="/ahorro">Apartas para tus metas</a>
+            <span class="amt mon-out">−<app-amount [valor]="apartadoParaMetas()" /></span>
+          </div>
+        }
+        @if (gastoDiario() !== null) {
+          <div>
+            <span class="t-meta">Libre hasta tu pago</span>
+            <app-amount class="amt" [valor]="libreParaGastar()" [cargando]="!datosListos()" />
+          </div>
+        }
       </div>
     </section>
 
+    <!--
+      Lo que entró y salió, sin que una cosa tape a la otra: los pagos de
+      deuda van aparte de los gastos (son plata que salió aunque no sea una
+      compra) y los reembolsos aparte de los ingresos (no los ganaste, te
+      los devolvieron). "Reservado" y "Deuda total" ya no van acá: la deuda
+      total vive en Créditos y lo reservado, en Cuentas.
+    -->
     <div class="kpis col-md-12">
       <app-stat-card
         etiqueta="Ingresos"
         icono="trending_up"
         tono="ingreso"
-        [valor]="resumenMes().ingresos"
+        [valor]="entradasSalidas().ingresos"
+        [nota]="notaIngresos()"
         [cargando]="!datosListos()"
       />
       <app-stat-card
         etiqueta="Gastos"
         icono="trending_down"
         tono="gasto"
-        [valor]="resumenMes().gastos"
+        [valor]="entradasSalidas().gastos"
         [cargando]="!datosListos()"
       />
       <app-stat-card
-        etiqueta="Reservado"
-        icono="savings"
-        tono="neutro"
-        [valor]="reservado()"
-        [cargando]="!datosListos()"
-      />
-      <app-stat-card
-        etiqueta="Deuda total"
+        etiqueta="Pagos de deuda"
         icono="credit_card"
         tono="deuda"
-        [valor]="deudaTotal()"
+        [valor]="entradasSalidas().pagosDeuda"
+        [cargando]="!datosListos()"
+      />
+      <app-stat-card
+        etiqueta="Te devolvieron"
+        icono="undo"
+        tono="neutro"
+        [valor]="entradasSalidas().reembolsos"
         [cargando]="!datosListos()"
       />
     </div>
 
     <!--
-    Debajo de las cifras, filas de dos tarjetas que empiezan y terminan a
-    la misma altura: el mes (gráfica y pagos), el detalle (movimientos y
-    categorías) y el seguimiento (cuotas y presupuestos). Si falta una de
-    la pareja, la otra toma la fila entera. El orden del DOM es el del
-    celular, que va en una sola columna; en escritorio lo recoloca `order`
-    (ver el scss).
+    Debajo de las cifras, dos filas en escritorio: a la izquierda lo que
+    viene, a la derecha cuánto sueldo van las cuotas y los topes; y debajo,
+    los últimos movimientos y los gastos por categoría. El orden del DOM es
+    el del celular, que va en una sola columna. Si falta una de la pareja,
+    la otra toma la fila entera.
 
     "¿Qué tengo que pagar y cuándo?": la franja muestra el mes entero con
     hoy marcado (lo vencido a la izquierda, lo que viene a la derecha) y
-    debajo van los tres pendientes más urgentes.
+    debajo van los pendientes más urgentes.
   -->
     @if (mostrarPagos()) {
       <section
         class="seccion g-pagos col-md-12"
-        [class.col-lg-5]="mostrarTendencia()"
+        [class.col-lg-7]="mostrarLateral()"
         aria-labelledby="titulo-pagos"
       >
         <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-pagos">Pagos del mes</h2>
+          <h2 class="group-head__titulo" id="titulo-pagos">Lo que viene</h2>
           <a class="btn btn-text" routerLink="/pagos-fijos">Ver el mes</a>
         </div>
         <div class="panel panel--enlace" (click)="abrir('/pagos-fijos')">
@@ -140,24 +218,33 @@
             </app-empty-state>
           } @else {
             <app-franja-mes class="panel-franja" [linea]="lineaMes()" />
+            <!-- La plata de hoy, cada pago que vence y el sueldo cuando llega,
+                 con lo que quedaría en cuentas después de cada paso: así se ve
+                 cuándo aprieta, no solo cuánto hay que pagar. -->
             <div class="rows" auto-animate>
-              @for (item of proximosPagos(); track item.id) {
+              @for (evento of proyeccion(); track evento.id) {
                 <div class="row row--estatica">
                   <span class="row-main">
-                    <span class="t-row">{{ item.nombre }}</span>
-                    <app-semaforo-badge
-                      [estado]="item.estado"
-                      [texto]="textoVencimientoDe(item.fechaLimite)"
-                    />
+                    <span class="t-row">{{ evento.nombre }}</span>
+                    @if (evento.esIngreso) {
+                      <span class="t-meta">{{ diaCortoDe(evento.fecha) }}</span>
+                    } @else if (evento.estado && evento.vence) {
+                      <app-semaforo-badge
+                        [estado]="evento.estado"
+                        [texto]="textoVencimientoDe(evento.vence)"
+                      />
+                    }
                   </span>
                   <span class="row-end">
-                    <span class="t-row amt">
-                      @if (item.esEstimado) {
-                        <span aria-hidden="true">~</span
+                    <span class="t-row amt" [class.mon-in]="evento.esIngreso">
+                      {{ evento.esIngreso ? '+' : '−'
+                      }}@if (evento.esEstimado) {<span aria-hidden="true">~</span
                         ><span class="sr-only">aproximadamente </span>
-                      }
-                      <app-amount [valor]="item.monto"
+                      }<app-amount [valor]="absoluto(evento.monto)"
                     /></span>
+                    <span class="t-meta" [class.mon-out]="evento.saldoDespues < 0">
+                      Te quedan <app-amount [valor]="evento.saldoDespues" />
+                    </span>
                   </span>
                 </div>
               } @empty {
@@ -174,32 +261,89 @@
       </section>
     }
 
-    @if (mostrarTendencia()) {
-      <section
-        class="seccion g-tendencia col-md-12"
-        [class.col-lg-7]="mostrarPagos()"
-        aria-labelledby="titulo-tendencia"
-      >
+    <!-- Cuánto del sueldo ya está tomado por las cuotas: una sola cifra que
+         dice si hay margen para vivir. Reemplaza al gráfico de ingresos vs
+         gastos, que a mitad de mes no decía nada. -->
+    @if (mostrarLateral()) {
+    <div class="g-lateral col-md-12" [class.col-lg-5]="mostrarPagos()">
+    @if (mostrarComprometido()) {
+      <section class="g-comprometido" aria-labelledby="titulo-comprometido">
         <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-tendencia">Ingresos vs gastos</h2>
-          <span class="t-meta">Acumulado de {{ nombreMesActual }}</span>
+          <h2 class="group-head__titulo" id="titulo-comprometido">Tu sueldo y las cuotas</h2>
+          <a class="btn btn-text" routerLink="/creditos">Ver créditos</a>
         </div>
-        <div class="panel">
+        <div class="panel panel--comprometido">
           @if (!datosListos()) {
             <div class="skeleton skeleton-grafica" aria-hidden="true"></div>
-          } @else if (tendencia().length === 0) {
-            <app-empty-state
-              icono="show_chart"
-              titulo="Sin ingresos ni gastos este mes"
-              descripcion="La tendencia aparece con el primer ingreso o gasto registrado."
-            />
           } @else {
-            <app-tendencia-mes-chart [puntos]="tendencia()" />
+            <span
+              class="t-hero amt"
+              [class.mon-deuda]="estadoComprometido() === 'cerca'"
+              [class.mon-out]="estadoComprometido() === 'pasado'"
+              >{{ porcentajeComprometido() }}&nbsp;%</span
+            >
+            <p class="hero__explica">
+              de tu último sueldo (<app-amount [valor]="sueldoDeReferencia()!" />) se va en cuotas
+              de créditos este mes: <app-amount [valor]="cuotasDelMes()" />.
+            </p>
+            <div
+              class="bar"
+              [class.bar--cerca]="estadoComprometido() === 'cerca'"
+              [class.bar--pasado]="estadoComprometido() === 'pasado'"
+              role="img"
+              [attr.aria-label]="porcentajeComprometido() + ' % del sueldo en cuotas'"
+            >
+              <i [style.--progreso]="progresoDe(comprometido() ?? 0)"></i>
+            </div>
+            <span class="t-meta">{{ mensajeComprometido() }}</span>
           }
         </div>
       </section>
+    }
 
-      <section class="seccion g-ultimos col-md-12 col-lg-7" aria-labelledby="titulo-ultimos">
+    @if (presupuestos().length > 0) {
+      <section class="g-presupuestos" aria-labelledby="titulo-presupuestos">
+        <div class="group-head">
+          <h2 class="group-head__titulo" id="titulo-presupuestos">Presupuestos del mes</h2>
+          <a class="btn btn-text" routerLink="/categorias">Ajustar</a>
+        </div>
+        <div class="panel">
+          <div class="rows">
+            @for (p of presupuestos(); track p.categoria.id) {
+              <div class="row row--estatica fila-presupuesto">
+                <div class="hd">
+                  <span class="t-row">{{ p.categoria.nombre }}</span>
+                  <span class="t-sec tnum"
+                    ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
+                  /></span>
+                </div>
+                <div
+                  class="bar"
+                  [class.bar--cerca]="p.estado === 'cerca'"
+                  [class.bar--pasado]="p.estado === 'pasado'"
+                >
+                  <i [style.--progreso]="progresoDe(p.proporcion)"></i>
+                </div>
+                <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
+                  {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
+                  <app-amount [valor]="absoluto(p.restante)" />
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+    </div>
+    }
+
+    <!-- Solo los últimos tres: confirman que lo que acabas de anotar quedó
+         registrado. La lista completa vive en Movimientos. -->
+    @if (mostrarDetalle()) {
+      <section
+        class="seccion seccion--natural g-ultimos col-md-12 col-lg-7"
+        aria-labelledby="titulo-ultimos"
+      >
         <div class="group-head">
           <h2 class="group-head__titulo" id="titulo-ultimos">Últimos movimientos</h2>
           <a class="btn btn-text" routerLink="/movimientos">Ver todos</a>
@@ -240,86 +384,7 @@
       </section>
     }
 
-    @if (mostrarCuotas()) {
-      <section
-        class="seccion g-cuotas col-md-12"
-        [class.col-lg-7]="presupuestos().length > 0"
-        aria-labelledby="titulo-cuotas"
-      >
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-cuotas">Cuotas de tus créditos</h2>
-          <a class="btn btn-text" routerLink="/creditos">Ver créditos</a>
-        </div>
-        <div class="panel panel--enlace" (click)="abrir('/creditos')">
-          @if (!datosListos()) {
-            <app-skeleton-rows [filas]="2" [conIcono]="false" />
-          } @else {
-            <div class="rows" auto-animate>
-              @for (item of cuotasQueFaltan(); track item.credito.id) {
-                <div class="row row--estatica fila-cuotas">
-                  <div class="hd">
-                    <span class="t-row">{{ item.credito.nombre }}</span>
-                    <!-- Texto y barra miden lo mismo (lo pagado): antes decía "8 de 12"
-                   (las que faltan) sobre una barra llena al 33 % (las pagadas). -->
-                    <span class="t-sec tnum"
-                      >{{ item.total - item.faltan }} de {{ item.total }} pagadas</span
-                    >
-                  </div>
-                  <div class="bar"><i [style.--progreso]="item.progreso / 100"></i></div>
-                </div>
-              } @empty {
-                <app-empty-state
-                  icono="credit_score"
-                  titulo="Sin cuotas pendientes"
-                  descripcion="Ningún crédito tiene cuotas por delante."
-                  [compacto]="true"
-                />
-              }
-            </div>
-          }
-        </div>
-      </section>
-    }
-
-    @if (presupuestos().length > 0) {
-      <section
-        class="seccion g-presupuestos col-md-12"
-        [class.col-lg-5]="mostrarCuotas()"
-        aria-labelledby="titulo-presupuestos"
-      >
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-presupuestos">Presupuestos del mes</h2>
-          <a class="btn btn-text" routerLink="/categorias">Ajustar</a>
-        </div>
-        <div class="panel">
-          <div class="rows">
-            @for (p of presupuestos(); track p.categoria.id) {
-              <div class="row row--estatica fila-presupuesto">
-                <div class="hd">
-                  <span class="t-row">{{ p.categoria.nombre }}</span>
-                  <span class="t-sec tnum"
-                    ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
-                  /></span>
-                </div>
-                <div
-                  class="bar"
-                  [class.bar--cerca]="p.estado === 'cerca'"
-                  [class.bar--pasado]="p.estado === 'pasado'"
-                >
-                  <i [style.--progreso]="progresoDe(p.proporcion)"></i>
-                </div>
-                <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
-                  {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
-                  <app-amount [valor]="absoluto(p.restante)" />
-                </span>
-              </div>
-            }
-          </div>
-        </div>
-      </section>
-    }
-
-    @if (mostrarTendencia()) {
+    @if (mostrarDetalle()) {
       <section class="seccion g-categorias col-md-12 col-lg-5" aria-labelledby="titulo-categorias">
         <div class="group-head">
           <h2 class="group-head__titulo" id="titulo-categorias">Gastos por categoría</h2>

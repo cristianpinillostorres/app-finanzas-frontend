@@ -14,6 +14,7 @@ import { CUENTAS_API } from '../../core/api/cuentas/cuentas-api';
 import { CREDITOS_API } from '../../core/api/creditos/creditos-api';
 import { MOVIMIENTOS_API } from '../../core/api/movimientos/movimientos-api';
 import { PAGOS_FIJOS_API } from '../../core/api/pagos-fijos/pagos-fijos-api';
+import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
 import {
   agruparPagosFijosDelMes,
   anioMesDe,
@@ -32,6 +33,7 @@ import type {
   Movimiento,
   PagoFijo,
 } from '../../core/models';
+import { PREFERENCIAS_INICIALES } from '../../core/models';
 import { HeaderActionService } from '../../layout/header-action.service';
 import { NuevoMovimientoService } from '../../layout/nuevo-movimiento/nuevo-movimiento.service';
 import { Amount } from '../../shared/amount/amount';
@@ -86,6 +88,7 @@ import { SkeletonRows } from '../../shared/skeleton-rows/skeleton-rows';
 })
 export class PagosFijosPage {
   private readonly pagosFijosApi = inject(PAGOS_FIJOS_API);
+  private readonly preferenciasApi = inject(PREFERENCIAS_API);
   private readonly creditosApi = inject(CREDITOS_API);
   private readonly comprasApi = inject(COMPRAS_API);
   private readonly movimientosApi = inject(MOVIMIENTOS_API);
@@ -180,6 +183,10 @@ export class PagosFijosPage {
   // pagar". Esta pantalla no edita tasas, así que no necesita refresco.
   private readonly cambiosTasa = cambiosTasaDeBancos(this.creditos);
 
+  private readonly preferencias = toSignal(this.preferenciasApi.obtener(), {
+    initialValue: PREFERENCIAS_INICIALES,
+  });
+
   protected readonly resumen = computed(() =>
     agruparPagosFijosDelMes(
       this.pagosFijos(),
@@ -189,6 +196,7 @@ export class PagosFijosPage {
         extractos: this.extractos(),
         movimientos: this.movimientos(),
         cambiosTasa: this.cambiosTasa(),
+        umbrales: this.preferencias().avisos,
       },
       this.mesSeleccionado(),
     ),

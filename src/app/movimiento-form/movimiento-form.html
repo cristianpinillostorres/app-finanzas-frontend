@@ -228,14 +228,9 @@
         [attr.aria-checked]="opcion.id === valorPagarCon()"
         (click)="elegir('pagarConId', opcion.id)"
       >
-        <span class="menu-opciones__fila">
-          {{ opcion.etiqueta }}
-          @if (opcion.id === valorPagarCon()) {
-            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
-              >check</span
-            >
-          }
-        </span>
+        <ng-container
+          *ngTemplateOutlet="filaCuenta; context: { $implicit: opcion, marcada: opcion.id === valorPagarCon() }"
+        />
       </button>
     }
   }
@@ -252,14 +247,9 @@
         [attr.aria-checked]="opcion.id === valorHacia()"
         (click)="elegir('haciaId', opcion.id)"
       >
-        <span class="menu-opciones__fila">
-          {{ opcion.etiqueta }}
-          @if (opcion.id === valorHacia()) {
-            <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
-              >check</span
-            >
-          }
-        </span>
+        <ng-container
+          *ngTemplateOutlet="filaCuenta; context: { $implicit: opcion, marcada: opcion.id === valorHacia() }"
+        />
       </button>
     }
   }
@@ -274,14 +264,9 @@
       [attr.aria-checked]="opcion.id === valorDestino()"
       (click)="elegir('destinoId', opcion.id)"
     >
-      <span class="menu-opciones__fila">
-        {{ opcion.etiqueta }}
-        @if (opcion.id === valorDestino()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
-            >check</span
-          >
-        }
-      </span>
+      <ng-container
+          *ngTemplateOutlet="filaCuenta; context: { $implicit: opcion, marcada: opcion.id === valorDestino() }"
+        />
     </button>
   }
 </mat-menu>
@@ -295,14 +280,9 @@
       [attr.aria-checked]="opcion.id === valorDesde()"
       (click)="elegir('desdeId', opcion.id)"
     >
-      <span class="menu-opciones__fila">
-        {{ opcion.etiqueta }}
-        @if (opcion.id === valorDesde()) {
-          <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true"
-            >check</span
-          >
-        }
-      </span>
+      <ng-container
+          *ngTemplateOutlet="filaCuenta; context: { $implicit: opcion, marcada: opcion.id === valorDesde() }"
+        />
     </button>
   }
 </mat-menu>
@@ -327,3 +307,33 @@
     </button>
   }
 </mat-menu>
+
+<!-- Una cuenta o un bolsillo en las listas de cuentas. El bolsillo va con
+     sangría, una flecha de rama y la etiqueta "Bolsillo", para que se vea cuál
+     es la cuenta y cuál es el bolsillo de esa cuenta. -->
+<ng-template #filaCuenta let-opcion let-marcada="marcada">
+  <span class="menu-opciones__fila" [class.menu-opciones__fila--bolsillo]="opcion.bolsilloDe">
+    <span class="menu-opciones__texto">
+      @if (opcion.bolsilloDe) {
+        <mat-icon class="menu-opciones__rama" aria-hidden="true"
+          >subdirectory_arrow_right</mat-icon
+        >
+        {{ opcion.nombre }}
+        <span class="sr-only">, bolsillo de {{ opcion.bolsilloDe }}</span>
+      } @else {
+        {{ opcion.etiqueta }}
+        @if (opcion.bolsillos) {
+          <span class="menu-opciones__contiene">
+            {{ opcion.bolsillos === 1 ? '1 bolsillo' : opcion.bolsillos + ' bolsillos' }}
+          </span>
+        }
+      }
+    </span>
+    @if (opcion.bolsilloDe) {
+      <span class="menu-opciones__marca" aria-hidden="true">Bolsillo</span>
+    }
+    @if (marcada) {
+      <span class="material-symbols-outlined menu-opciones__check" aria-hidden="true">check</span>
+    }
+  </span>
+</ng-template>

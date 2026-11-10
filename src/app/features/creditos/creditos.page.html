@@ -259,6 +259,19 @@
                         </span>
                         Agregar <br />compra
                       </button>
+                      <button
+                        class="accion-redonda"
+                        type="button"
+                        [disabled]="descargando() !== null"
+                        (click)="descargarCompras(item.credito)"
+                      >
+                        <span class="accion-redonda__circulo">
+                          <mat-icon aria-hidden="true">{{
+                            descargando() === item.credito.id ? 'hourglass_top' : 'download'
+                          }}</mat-icon>
+                        </span>
+                        Descargar <br />PDF
+                      </button>
                     }
                     @if (item.credito.grupo === 'BANCO' && item.credito.tipoTasa === 'VARIABLE') {
                       <button

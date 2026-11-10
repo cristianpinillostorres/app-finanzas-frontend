@@ -32,6 +32,31 @@ const nequi = cuenta({ id: 'nequi', nombre: 'Nequi' });
 const archivada = cuenta({ id: 'vieja', nombre: 'Vieja', archivada: true });
 
 describe('opcionesCuentasYBolsillos', () => {
+  it('marca cada bolsillo con su nombre y su cuenta madre; las cuentas no llevan marca', () => {
+    const opciones = opcionesCuentasYBolsillos([bancolombia, viaje, nequi]);
+    expect(opciones.map((o) => [o.nombre, o.bolsilloDe])).toEqual([
+      [undefined, undefined],
+      ['Viaje', 'Bancolombia'],
+      [undefined, undefined],
+    ]);
+  });
+
+  it('avisa cuántos bolsillos tiene una cuenta, y no dice nada si no tiene', () => {
+    const opciones = opcionesCuentasYBolsillos([bancolombia, viaje, emergencias, nequi]);
+    expect(opciones.map((o) => [o.id, o.bolsillos])).toEqual([
+      ['bancolombia', 2],
+      ['viaje', undefined],
+      ['emergencias', undefined],
+      ['nequi', undefined],
+    ]);
+  });
+
+  it('no cuenta los bolsillos archivados', () => {
+    const bolsilloViejo = cuenta({ id: 'v', nombre: 'Viejo', cuentaPadreId: 'nequi', archivada: true });
+    const opciones = opcionesCuentasYBolsillos([nequi, bolsilloViejo]);
+    expect(opciones[0].bolsillos).toBeUndefined();
+  });
+
   it('pone cada bolsillo justo después de su cuenta madre, con el formato "Madre › Bolsillo"', () => {
     const opciones = opcionesCuentasYBolsillos([bancolombia, viaje, emergencias, nequi]);
     expect(opciones.map((o) => o.etiqueta)).toEqual([

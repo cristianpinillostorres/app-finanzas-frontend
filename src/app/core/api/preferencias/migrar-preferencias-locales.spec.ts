@@ -25,6 +25,9 @@ describe('migrarPreferenciasLocales', () => {
       ultimaCuenta: { gasto: 'nueva', ingreso: null },
       objetivos: [],
       nombre: null,
+      diaDePago: null,
+      avisos: { amarillo: 4, rojo: 1 },
+      metasAhorro: [],
     };
 
     expect(migrarPreferenciasLocales('u1', actuales)).toEqual({

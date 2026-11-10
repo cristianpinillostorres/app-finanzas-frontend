@@ -16,7 +16,7 @@
         autocomplete="off"
         class="input"
         id="cr-nombre"
-        [placeholder]="ejemploNombre()"
+        [placeholder]="placeholderNombre()"
         formControlName="nombre"
         [attr.aria-invalid]="invalido(form.controls.nombre) || null"
       />
@@ -28,7 +28,7 @@
           autocomplete="off"
           class="input"
           id="cr-entidad"
-          [placeholder]="ejemploEntidad()"
+          [placeholder]="placeholderEntidad()"
           formControlName="entidad"
         />
       </div>
@@ -51,7 +51,7 @@
             class="input"
             id="cr-ultimos4"
             inputmode="numeric"
-            placeholder="9021"
+            placeholder="Opcional"
             maxlength="4"
             formControlName="ultimos4"
           />
@@ -144,7 +144,7 @@
           type="number"
           inputmode="decimal"
           step="0.01"
-          placeholder="21,50"
+          placeholder="0,00"
           formControlName="tasaEaPorcentaje"
           aria-describedby="cr-tasa-ayuda"
           [attr.aria-invalid]="invalido(form.controls.tasaEaPorcentaje) || null"

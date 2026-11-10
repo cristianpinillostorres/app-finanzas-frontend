@@ -14,11 +14,12 @@ import { guardarConFeedback } from '../../../shared/guardado/guardado.util';
 import { GuardandoOverlay } from '../../../shared/guardando-overlay/guardando-overlay';
 import type { CreditoFormData } from './credito-form-data';
 
-const EJEMPLOS: Record<GrupoCredito, { nombre: string; entidad: string }> = {
-  TARJETA: { nombre: 'Visa Oro', entidad: 'Bancolombia' },
-  BANCO: { nombre: 'Crédito de vivienda', entidad: 'Davivienda' },
-  PLATAFORMA: { nombre: 'Compras en Addi', entidad: 'Addi' },
-  PERSONA: { nombre: 'Préstamo de Juan', entidad: '' },
+/** Lo que dicen los campos de nombre y entidad vacíos, según el tipo de crédito. */
+const ROTULOS: Record<GrupoCredito, { nombre: string; entidad: string }> = {
+  TARJETA: { nombre: 'Nombre de la tarjeta', entidad: 'Banco que la emitió' },
+  BANCO: { nombre: 'Nombre del crédito', entidad: 'Banco que lo otorgó' },
+  PLATAFORMA: { nombre: 'Nombre de la compra o plataforma', entidad: 'Empresa que financia' },
+  PERSONA: { nombre: 'Nombre de la persona', entidad: '' },
 };
 import { Selector } from '../../../shared/forms/selector';
 import { HojaCabecera } from '../../../shared/hoja-cabecera/hoja-cabecera';
@@ -155,9 +156,9 @@ export class CreditoForm {
   });
   protected readonly pideEntidad = computed(() => !this.esPersona());
 
-  /** Ejemplos del tipo elegido: "Crédito de vivienda" para una tarjeta despistaba. */
-  protected readonly ejemploNombre = computed(() => EJEMPLOS[this.grupoSeleccionado()].nombre);
-  protected readonly ejemploEntidad = computed(() => EJEMPLOS[this.grupoSeleccionado()].entidad);
+  /** Lo que dicen los campos vacíos según el tipo elegido. */
+  protected readonly placeholderNombre = computed(() => ROTULOS[this.grupoSeleccionado()].nombre);
+  protected readonly placeholderEntidad = computed(() => ROTULOS[this.grupoSeleccionado()].entidad);
 
   constructor() {
     if (this.modoEdicion) {

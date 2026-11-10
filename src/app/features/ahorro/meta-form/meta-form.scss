@@ -1,0 +1,12 @@
+// Sin ancho máximo propio: lo da el diálogo (480px). Con uno menor, el
+// contenido quedaba corto y sobraba una franja vacía a la derecha.
+:host {
+  display: block;
+  padding: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  :host {
+    padding: var(--space-6);
+  }
+}

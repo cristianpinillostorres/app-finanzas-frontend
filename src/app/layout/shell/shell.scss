@@ -101,7 +101,11 @@
 // del navegador abierta) no cabe entera: ahí se desplaza sola en vez de
 // cortar la última sección. Siempre mide lo mismo (el alto de la ventana,
 // no el de su contenido), así no cambia de tamaño entre pantallas.
+// Con nombre propio sale de la capa "root" de la transición de vista: la
+// página se funde al cambiar de pestaña, pero la barra no, y sus textos no
+// pestañean.
 .lateral {
+  view-transition-name: barra-lateral;
   position: sticky;
   top: var(--space-4);
   flex: none;
@@ -280,10 +284,10 @@
   }
 }
 
-// El fondo de la sección activa es una pieza aparte, detrás del texto, con
-// nombre propio en la transición de vista: al cambiar de sección se desliza
-// de un ítem al otro en vez de apagarse en uno y prenderse en el otro. Solo
-// el activo lo muestra, así que el nombre nunca está repetido.
+// El fondo de la sección activa es una pieza aparte, detrás del texto.
+// No lleva nombre de transición de vista: un elemento con nombre viaja por
+// encima de todo lo demás durante el cambio de pestaña y tapaba el nombre
+// de la sección. Sin nombre, el fondo se funde con el resto de la página.
 .nav__fondo {
   display: none;
   position: absolute;
@@ -302,7 +306,6 @@
 
   .nav__fondo {
     display: block;
-    view-transition-name: nav-activo;
   }
 
   mat-icon {
@@ -426,6 +429,7 @@
 // ─────────────────────── barra inferior (móvil) ───────────────────────
 
 .barra-inferior {
+  view-transition-name: barra-inferior;
   position: fixed;
   left: 0;
   right: 0;

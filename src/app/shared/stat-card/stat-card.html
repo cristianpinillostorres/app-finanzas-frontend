@@ -8,4 +8,7 @@
   <span class="t-kpi amt" [class]="claseMonto()">
     <app-amount [valor]="valor()" [animar]="true" [cargando]="cargando()" />
   </span>
+  @if (nota()) {
+    <span class="t-meta">{{ nota() }}</span>
+  }
 </div>

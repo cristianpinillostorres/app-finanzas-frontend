@@ -235,7 +235,7 @@
                       class="input"
                       id="bv-cuenta"
                       autocomplete="off"
-                      [placeholder]="ejemploCuenta()"
+                      [placeholder]="placeholderCuenta()"
                       [value]="nombreCuenta()"
                       (input)="nombreCuenta.set($any($event.target).value)"
                     />
@@ -265,7 +265,7 @@
                 <button
                   type="button"
                   class="btn btn-primary boton-grande"
-                  [disabled]="(!cuenta() && saldo() <= 0) || guardando()"
+                  [disabled]="(!cuenta() && !cuentaLista()) || guardando()"
                   (click)="crearCuenta()"
                 >
                   Continuar
@@ -353,7 +353,7 @@
                     class="input"
                     id="bv-credito"
                     autocomplete="off"
-                    [placeholder]="ejemploCredito()"
+                    [placeholder]="placeholderCredito()"
                     [value]="nombreCredito()"
                     (input)="nombreCredito.set($any($event.target).value)"
                   />
@@ -381,7 +381,7 @@
                         class="input"
                         id="bv-credito-plazo"
                         inputmode="numeric"
-                        placeholder="36"
+                        placeholder="Número de meses"
                         [value]="plazoCredito()"
                         (input)="plazoCredito.set($any($event.target).value)"
                       />
@@ -407,7 +407,7 @@
                         class="input"
                         id="bv-credito-tasa"
                         inputmode="decimal"
-                        placeholder="21,5"
+                        placeholder="Tasa anual"
                         [value]="tasaCredito()"
                         (input)="tasaCredito.set($any($event.target).value)"
                       />
@@ -452,7 +452,7 @@
                     id="bv-credito-dia"
                     inputmode="numeric"
                     maxlength="2"
-                    placeholder="5"
+                    placeholder="Día del mes"
                     [value]="diaPagoCredito()"
                     (input)="leerDia($event, diaPagoCredito)"
                   />
@@ -466,7 +466,7 @@
                       id="bv-credito-corte"
                       inputmode="numeric"
                       maxlength="2"
-                      placeholder="20"
+                      placeholder="Día del mes"
                       [value]="diaCorteCredito()"
                       (input)="leerDia($event, diaCorteCredito)"
                     />
@@ -571,7 +571,7 @@
                     class="input"
                     id="bv-pago-dia"
                     inputmode="numeric"
-                    placeholder="5"
+                    placeholder="Día del mes"
                     maxlength="2"
                     [value]="diaPago()"
                     (input)="leerDia($event, diaPago)"
@@ -727,7 +727,7 @@
                         id="bv-correo"
                         type="email"
                         autocomplete="email"
-                        placeholder="tu@correo.com"
+                        placeholder="Correo electrónico"
                         [value]="correo()"
                         (input)="correo.set($any($event.target).value)"
                       />

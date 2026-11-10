@@ -1,15 +1,6 @@
 // La pantalla arma su layout con `.grid-12` en la plantilla; acá solo lo
 // que es propio de General.
 
-// La fila de "Cuotas que faltan" apila nombre y barra en vez de alinearlos
-// en una línea, así que rompe el `display: flex` horizontal de `.row`.
-.fila-cuotas {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-2);
-  padding-block: var(--space-3);
-}
-
 // Etiqueta, monto y frase van juntos arriba; el desglose queda anclado
 // abajo (ver `.hero--pantalla`), sin una frase flotando en medio.
 .hero__cabeza {
@@ -22,9 +13,42 @@
 // una línea de lectura.
 .hero__explica {
   margin: 0;
-  max-width: 48ch;
   font-size: var(--text-sm);
   color: var(--text-secondary);
+}
+
+// "por día" junto al número grande: una leyenda, no otra cifra.
+.hero__por-dia {
+  margin-left: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-secondary);
+}
+
+// El ritmo de la última semana contra lo permitido. El color acompaña a la
+// frase ("Vas bien", "Vas justo", "Te estás pasando"), que ya lo dice solo.
+.hero__ritmo--cerca {
+  color: var(--color-deuda);
+}
+.hero__ritmo--pasado {
+  color: var(--color-gasto);
+}
+
+// El panel de "Tu sueldo y las cuotas": cifra, frase, barra y una nota
+// apilados con aire entre sí.
+.panel--comprometido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+
+  .bar {
+    align-self: stretch;
+  }
 }
 
 // La franja del mes va arriba de la lista, con el aire del panel y una
@@ -48,32 +72,26 @@
   }
 }
 
-// El orden del DOM es el del celular: héroe, cifras, pagos del mes,
-// gráfica, movimientos, cuotas, presupuestos y categorías. Es el que se lee
-// en una sola columna y el que siguen los lectores de pantalla.
+// El orden del DOM es el del celular y el de escritorio: héroe, cifras, lo
+// que viene, y a su lado (o debajo en el celular) la columna de cuánto sueldo
+// van las cuotas y los topes; después movimientos y categorías.
 //
-// En escritorio, debajo del héroe y las cifras, van filas de dos con un
-// tema cada una: el mes (gráfica y pagos), el detalle (movimientos y
-// categorías) y el seguimiento (cuotas y presupuestos). Se recoloca con
-// `order` porque el DOM solo puede coincidir con uno de los dos tamaños.
+// La columna lateral apila sus dos paneles con el mismo aire que el resto.
+.g-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// Los últimos movimientos son tres filas: su panel mide lo que miden ellas,
+// sin estirarse al alto de la gráfica de categorías que va al lado.
 @media (min-width: 1024px) {
-  .g-tendencia {
-    order: 1;
-  }
-  .g-pagos {
-    order: 2;
-  }
-  .g-ultimos {
-    order: 3;
-  }
-  .g-categorias {
-    order: 4;
-  }
-  .g-cuotas {
-    order: 5;
-  }
-  .g-presupuestos {
-    order: 6;
+  .seccion--natural {
+    align-self: start;
+
+    > .panel {
+      flex: none;
+    }
   }
 }
 

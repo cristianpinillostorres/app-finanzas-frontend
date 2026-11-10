@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   computed,
@@ -38,7 +37,6 @@ import { ViewportService } from '../services/viewport.service';
 @Component({
   selector: 'app-shell',
   imports: [
-    NgTemplateOutlet,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -53,6 +51,8 @@ import { ViewportService } from '../services/viewport.service';
 })
 export class Shell {
   protected readonly navItems = NAV_ITEMS;
+  /** La barra de abajo del celular: solo lo que cabe en cinco lugares. */
+  protected readonly navItemsMovil = NAV_ITEMS.filter((item) => !item.soloEscritorio);
   protected readonly viewport = inject(ViewportService);
   protected readonly montos = inject(MontosVisibilityService);
   protected readonly tema = inject(ThemeService);
@@ -101,8 +101,6 @@ export class Shell {
   protected readonly inicialUsuario = computed(() =>
     (this.correoUsuario() ?? '?').trim().charAt(0).toUpperCase(),
   );
-  protected readonly tieneGoogle = this.auth.tieneGoogle;
-  protected readonly vinculando = this.auth.vinculando;
 
   constructor() {
     // Autofocus imperativo: la barra de búsqueda entra/sale con `@if`, así
@@ -161,14 +159,11 @@ export class Shell {
     // Categorías no es tab (vive en el menú de Cuenta), pero el header
     // móvil igual necesita su título.
     if (segmento === 'categorias') return 'Categorías';
+    if (segmento === 'configuracion') return 'Configuración';
     return this.navItems.find((item) => item.path === segmento)?.label ?? '';
   }
 
   cerrarSesion(): void {
     this.auth.cerrarSesion();
-  }
-
-  vincularGoogle(): void {
-    this.auth.vincularGoogle();
   }
 }

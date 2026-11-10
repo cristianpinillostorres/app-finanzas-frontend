@@ -1,0 +1,39 @@
+// Etiqueta y monto arriba, la barra en medio y, abajo, lo que dice el ritmo
+// con las acciones a la derecha.
+.hero__cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fila-meta {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+
+  .hd {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+}
+
+.fila-meta__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.fila-meta__acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.accion-peligro,
+.accion-peligro mat-icon {
+  color: var(--color-gasto);
+}

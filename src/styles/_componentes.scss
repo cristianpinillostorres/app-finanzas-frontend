@@ -1752,6 +1752,46 @@ select.input {
   font-weight: var(--weight-semibold);
   color: var(--text-muted);
 }
+// Cuenta y bolsillo en la misma lista: el bolsillo va con sangría, una flecha
+// de rama, un tono más suave y la etiqueta "Bolsillo", para distinguirlo de
+// las cuentas a primera vista.
+.menu-opciones__texto {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.menu-opciones__fila--bolsillo {
+  padding-left: var(--space-5);
+  .menu-opciones__texto {
+    color: var(--text-secondary);
+  }
+}
+.mat-mdc-menu-panel.menu-opciones .mat-mdc-menu-item .menu-opciones__rama {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+// En una cuenta que tiene bolsillos: "1 bolsillo", suave, junto a su nombre.
+.menu-opciones__contiene {
+  flex: none;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular, 400);
+  color: var(--text-muted);
+}
+.menu-opciones__marca {
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
 
 // ─────────────── formularios en diálogos y hojas (estilo iOS) ───────────────
 // La hoja va sobre el color de la página y los campos en blanco encima, sin
@@ -1854,7 +1894,23 @@ output.ios-fila__valor {
 .ios-fila__valor::-webkit-calendar-picker-indicator {
   opacity: 0.5;
 }
-.ios-fila__chevron {
+// El calendario de una fecha ocupa la misma ranura de 18 px que la flecha de
+// las demás filas (mismo ancho, mismo desborde a la derecha y mismo hueco al
+// texto): así los íconos y el final de los textos quedan en una sola línea.
+.ios-fila__valor[type='date'] {
+  margin-right: -5px;
+}
+.ios-fila__valor[type='date']::-webkit-calendar-picker-indicator {
+  width: 18px;
+  height: 18px;
+  margin: 0 0 0 4px;
+  padding: 0;
+}
+// `.ios-fila .ios-fila__chevron` y no solo la clase: un `<mat-icon>` trae su
+// propia regla de 24 px (`.mat-icon`, misma fuerza) y ganaba, así que la flecha
+// quedaba en una caja de 24 px con el glifo pegado arriba, más alto que el
+// texto de su fila.
+.ios-fila .ios-fila__chevron {
   flex: none;
   width: 18px;
   height: 18px;
@@ -1863,6 +1919,7 @@ output.ios-fila__valor {
   // adentro que el final de los valores de las demás filas.
   margin-right: -5px;
   font-size: 18px;
+  line-height: 18px;
   color: var(--text-muted);
 }
 .ios-fila:has(.ios-interruptor) .ios-fila__rotulo {

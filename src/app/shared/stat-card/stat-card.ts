@@ -41,6 +41,8 @@ export class StatCard {
   icono = input<string>('');
   /** Mientras la pantalla espera sus datos: esqueleto en vez del monto. */
   cargando = input(false);
+  /** Una línea corta bajo el monto, para explicar un valor que sorprende (un $0, por ejemplo). */
+  nota = input<string>('');
 
   /** En cero no hay nada que señalar: "$0" en ámbar parecía una alerta. */
   protected claseMonto(): string {

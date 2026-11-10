@@ -1,0 +1,157 @@
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// El control va a la derecha de su fila y no se estira: el texto de la
+// izquierda es el que manda el ancho.
+.control {
+  flex: none;
+  width: 11rem;
+}
+
+// Contador de día, como el de Ajustes de iOS: un − y un + redondos a los
+// lados del número.
+.contador {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.contador__boton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+
+.contador__boton:active {
+  background: var(--border);
+}
+
+.contador__boton:focus-visible {
+  outline: 2px solid var(--accent-brillo);
+  outline-offset: 2px;
+}
+
+// El número ancho fijo: de 9 a 10 el contador no se mueve.
+.contador__valor {
+  min-width: 2.25rem;
+  text-align: center;
+  font-size: var(--text-fila);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.nota {
+  margin: 0;
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+// En pantallas angostas el campo de texto baja debajo de su explicación; el
+// interruptor y el contador son chicos y se quedan a la derecha.
+@media (max-width: 36rem) {
+  .row:has(> .control) {
+    flex-wrap: wrap;
+  }
+
+  .control {
+    width: 100%;
+  }
+}
+
+// "Lo que quieres lograr": las opciones de la bienvenida como casillas que se
+// tocan, a lo ancho debajo de su explicación.
+.row--objetivos {
+  align-items: flex-start;
+}
+
+.objetivos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.objetivo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.objetivo mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.objetivo--elegido {
+  border-color: var(--accent-solid);
+  background: var(--accent-solid);
+  color: var(--p-white);
+}
+
+.objetivo--elegido mat-icon {
+  color: inherit;
+}
+
+.objetivo:focus-visible {
+  outline: 2px solid var(--accent-brillo);
+  outline-offset: 2px;
+}
+
+// Las explicaciones de cada ajuste se leen completas: en las filas de lista
+// el texto de apoyo se corta con puntos suspensivos, y aquí es justo lo que
+// hay que leer para decidir.
+.row-main .t-meta {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+// El botón de una fila apilada va debajo de las opciones, alineado a la izquierda.
+.accion-fila {
+  display: flex;
+  margin-top: var(--space-4);
+}
+
+// Dos columnas en pantalla ancha: lo del mes, avisos y datos a la izquierda,
+// y la cuenta a la derecha. Cada columna apila sus bloques con el mismo hueco.
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .columna {
+    gap: var(--space-5);
+  }
+}

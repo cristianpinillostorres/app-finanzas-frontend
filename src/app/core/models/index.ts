@@ -6,4 +6,5 @@ export * from './cambio-tasa.model';
 export * from './pago-fijo.model';
 export * from './movimiento.model';
 export * from './categoria.model';
+export * from './meta-ahorro.model';
 export * from './preferencias.model';
