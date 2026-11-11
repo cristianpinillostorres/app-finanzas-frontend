@@ -1,4 +1,10 @@
-import { libreHastaProximoPago, proximoPago } from './ciclo-pago';
+import {
+  avanceDelCiclo,
+  libreHastaProximoPago,
+  periodoDelCiclo,
+  proximoPago,
+} from './ciclo-pago';
+import { perteneceAlPeriodo } from './fechas';
 import type { ItemPagoFijoMes } from './pagos-fijos-agrupados';
 
 function item(nombre: string, fechaLimite: Date, monto: number): ItemPagoFijoMes {
@@ -15,6 +21,34 @@ function item(nombre: string, fechaLimite: Date, monto: number): ItemPagoFijoMes
     periodo: '2026-11',
   };
 }
+
+describe('periodoDelCiclo', () => {
+  it('va del último día de pago al próximo, sin incluirlo', () => {
+    expect(periodoDelCiclo(new Date(2026, 10, 10), 20)).toEqual({
+      desde: '2026-10-20',
+      hasta: '2026-11-20',
+    });
+  });
+
+  it('el mismo día de pago el ciclo ya es el nuevo', () => {
+    expect(periodoDelCiclo(new Date(2026, 10, 20), 20)).toEqual({
+      desde: '2026-11-20',
+      hasta: '2026-12-20',
+    });
+  });
+
+  it('sin día de pago es el mes calendario', () => {
+    expect(periodoDelCiclo(new Date(2026, 10, 10), null)).toEqual({ anio: 2026, mes: 11 });
+  });
+
+  it('el sueldo del día de pago cuenta dentro del ciclo y el del siguiente no', () => {
+    const ciclo = periodoDelCiclo(new Date(2026, 10, 10), 20);
+    expect(perteneceAlPeriodo('2026-10-20', ciclo)).toBe(true);
+    expect(perteneceAlPeriodo('2026-11-19', ciclo)).toBe(true);
+    expect(perteneceAlPeriodo('2026-11-20', ciclo)).toBe(false);
+    expect(perteneceAlPeriodo('2026-10-19', ciclo)).toBe(false);
+  });
+});
 
 describe('proximoPago', () => {
   it('es este mes si el día de pago todavía no llegó', () => {
@@ -36,6 +70,25 @@ describe('proximoPago', () => {
   it('un 31 cae en el último día de los meses más cortos', () => {
     expect(proximoPago(new Date(2027, 1, 10), 31)).toEqual(new Date(2027, 1, 28));
     expect(proximoPago(new Date(2026, 3, 10), 31)).toEqual(new Date(2026, 3, 30));
+  });
+});
+
+describe('avanceDelCiclo', () => {
+  it('cuenta el día del ciclo desde el último pago hasta el próximo', () => {
+    // Ciclo del 20 de octubre al 20 de noviembre: 31 días; el 9 de noviembre va en el día 21.
+    expect(avanceDelCiclo(new Date(2026, 10, 9), 20)).toEqual({
+      dia: 21,
+      duracion: 31,
+      diasHastaPago: 11,
+      proximoPago: new Date(2026, 10, 20),
+    });
+  });
+
+  it('el día de pago empieza un ciclo nuevo en el día 1', () => {
+    const avance = avanceDelCiclo(new Date(2026, 10, 20), 20);
+    expect(avance.dia).toBe(1);
+    expect(avance.duracion).toBe(30);
+    expect(avance.diasHastaPago).toBe(30);
   });
 });
 

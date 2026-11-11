@@ -59,6 +59,66 @@ describe('presupuestosDelMes', () => {
     expect(resultado[0].restante).toBe(-30);
   });
 
+  it('lo que no tiene tope propio descuenta de "Otros gastos" si ese tiene tope', () => {
+    const categorias = [
+      categoria({ id: 'rest', topeMensual: 300 }),
+      categoria({ id: 'cat-otros-gastos', topeMensual: 150 }),
+      categoria({ id: 'servicios' }),
+    ];
+    const movimientos = [
+      gasto({ categoriaId: 'rest', monto: 100 }),
+      gasto({ categoriaId: 'servicios', monto: 38 }),
+      gasto({ categoriaId: 'cat-otros-gastos', monto: 10 }),
+      gasto({ monto: 5 }),
+    ];
+
+    const otros = presupuestosDelMes(categorias, movimientos, octubre).find(
+      (p) => p.categoria.id === 'cat-otros-gastos',
+    )!;
+
+    expect(otros.gastado).toBe(53);
+    expect(otros.deOtras).toBe(43);
+    expect(otros.restante).toBe(97);
+  });
+
+  it('sin tope en "Otros gastos", lo suelto no se cuenta en ningún lado', () => {
+    const categorias = [categoria({ id: 'rest', topeMensual: 300 }), categoria({ id: 'servicios' })];
+    const movimientos = [gasto({ categoriaId: 'servicios', monto: 38 })];
+
+    const [rest] = presupuestosDelMes(categorias, movimientos, octubre);
+
+    expect(rest.gastado).toBe(0);
+  });
+
+  describe('ritmo de gasto', () => {
+    const categorias = [categoria({ id: 'rest', topeMensual: 200 })];
+    const gastar = (monto: number) => [gasto({ categoriaId: 'rest', monto })];
+    const primerTercio = 10 / 30;
+
+    it('avisa antes del 80 % si se gasta más de 1,2 veces más rápido que el mes', () => {
+      const [p] = presupuestosDelMes(categorias, gastar(140), octubre, primerTercio);
+      expect(p.ritmoAlto).toBe(true);
+      expect(p.estado).toBe('cerca');
+    });
+
+    it('no avisa si el ritmo va con el mes', () => {
+      const [p] = presupuestosDelMes(categorias, gastar(140), octubre, 20 / 30);
+      expect(p.ritmoAlto).toBe(false);
+      expect(p.estado).toBe('bien');
+    });
+
+    it('no avisa con menos de la mitad del tope ni en los primeros días', () => {
+      expect(presupuestosDelMes(categorias, gastar(90), octubre, primerTercio)[0].ritmoAlto).toBe(
+        false,
+      );
+      expect(presupuestosDelMes(categorias, gastar(150), octubre, 2 / 30)[0].ritmoAlto).toBe(false);
+    });
+
+    it('sin el avance del mes no hay aviso por ritmo', () => {
+      expect(presupuestosDelMes(categorias, gastar(140), octubre)[0].ritmoAlto).toBe(false);
+    });
+  });
+
   it('deja fuera las ocultas y las de ingreso', () => {
     const categorias = [
       categoria({ id: 'oculta', topeMensual: 100, archivada: true }),

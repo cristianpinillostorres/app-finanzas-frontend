@@ -50,7 +50,6 @@ import { TransicionLogin } from '../../shared/bienvenida/transicion-login';
 import { MuestrasGeneral } from './muestras-general/muestras-general';
 import { mostrarErrorGuardado } from '../../shared/guardado/guardado.util';
 import { AuthService } from '../../core/auth/auth.service';
-import { OPCIONES_TEMA, type Tema, ThemeService } from '../../core/theme.service';
 
 /** 0: presentación · 1-5: los pasos esenciales · 6: resumen. */
 type Paso = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -402,11 +401,6 @@ export class BienvenidaPage {
   /** En escritorio el scroll es de esta columna, no de la página. */
   private readonly contenido = viewChild<ElementRef<HTMLElement>>('contenido');
 
-  constructor() {
-    // La bienvenida se ve siempre en modo claro; el tema sí es el elegido.
-    this.theme.soloModoClaro();
-  }
-
   protected ir(paso: Paso): void {
     this.paso.set(paso);
     window.scrollTo?.({ top: 0 });
@@ -441,41 +435,25 @@ export class BienvenidaPage {
   // ───────────────────────────── 1. sobre ti ─────────────────────────────
   // Todo opcional y nada financiero. El nombre y los objetivos van a la
   // cuenta (`preferencias`); los objetivos ordenan "Sácale más provecho".
-  // El tema es del navegador, como en el menú de tema, y se aplica al
-  // instante: la bienvenida sigue el tema elegido, así se ve antes de entrar.
-
-  private readonly theme = inject(ThemeService);
   protected readonly opcionesObjetivo = OPCIONES_OBJETIVO;
-  protected readonly opcionesTema = OPCIONES_TEMA;
-  protected readonly tema = this.theme.tema;
   /** El aviso de cómo se usan los datos (habeas data), abierto o cerrado. */
   protected readonly avisoDatos = signal(false);
   /** Lo guardado, o el nombre de pila que trae la cuenta de Google. */
   protected readonly nombre = linkedSignal(
     () => this.bienvenida.nombre() ?? this.auth.nombreDePila() ?? '',
   );
-  /** Arranca con lo que ya eligió, si vuelve a pasar por acá. */
-  protected readonly objetivos = linkedSignal<ReadonlySet<Objetivo>>(
-    () => new Set(this.bienvenida.objetivos()),
+  /** Un solo objetivo; arranca con el que ya eligió, si vuelve a pasar por acá. */
+  protected readonly objetivo = linkedSignal<Objetivo | null>(() =>
+    this.bienvenida.objetivoPrincipal(),
   );
 
-  protected alternarObjetivo(objetivo: Objetivo): void {
-    const elegidos = new Set(this.objetivos());
-    if (!elegidos.delete(objetivo)) elegidos.add(objetivo);
-    this.objetivos.set(elegidos);
+  /** Tocar el elegido lo quita. */
+  protected elegirObjetivo(objetivo: Objetivo): void {
+    this.objetivo.update((actual) => (actual === objetivo ? null : objetivo));
   }
 
-  protected elegirTema(tema: Tema): void {
-    this.theme.fijar(tema);
-  }
-
-  /** Los objetivos van en el orden de las opciones, no en el que se tocaron. */
   protected guardarCaracterizacion(): void {
-    const elegidos = this.objetivos();
-    this.bienvenida.guardarCaracterizacion({
-      nombre: this.nombre().trim() || null,
-      objetivos: OPCIONES_OBJETIVO.map((o) => o.valor).filter((o) => elegidos.has(o)),
-    });
+    this.bienvenida.guardarCaracterizacion(this.nombre().trim() || null, this.objetivo());
     this.siguiente();
   }
 

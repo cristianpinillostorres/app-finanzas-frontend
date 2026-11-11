@@ -1,70 +1,70 @@
-// Capa 2 — Semánticos: referencian primitivas. Ningún componente escribe un
-// hex ni un px suelto; todo sale de acá.
+// Capa 2 — Semánticos: referencian la paleta de la marca (`--rv-*`, copia de
+// `Marca/ranvi-lab.css` en `src/assets/base/`) y los colores de estado de
+// `_primitivas.scss`. Ningún componente escribe un hex ni un px suelto; todo
+// sale de acá.
 //
-// Hay cinco temas (Teal, Neutro, Medianoche, Brasa, Marino), cada uno en
-// modo claro y oscuro. Se eligen por separado con `data-theme` y
-// `data-modo` en `<html>` (`ThemeService`, menú "···" del `Shell`). Sin
-// atributos manda Teal claro: no se sigue al sistema operativo.
+// La app tiene un solo estilo, el de la marca, en claro y en oscuro. El modo
+// lo decide el sistema (`prefers-color-scheme`) y se puede fijar en
+// Configuración (Claro / Oscuro / Sistema); no hay más paletas.
+//
+// — Claro —
+// Página en Bruma suave y tarjetas blancas; texto Medianoche; botón primario
+// Coral con texto Medianoche. Los enlaces y el texto de acento van en Pizarra:
+// el Coral sobre blanco no llega a contraste, así que queda para el relleno.
+// — Oscuro —
+// Página Abismo, tarjetas Pizarra, campos y rellenos hundidos en Medianoche,
+// bordes y enlaces en Bruma/Niebla, foco en Blanco, sin sombra de tarjeta.
 //
 // — Contraste WCAG AA —
 // Los pares texto/fondo y borde-de-control/fondo están verificados en los
-// dos temas (`npm run verificar:contraste`): texto normal >= 4.5:1,
-// componentes de interfaz >= 3:1. Los más ajustados, y por eso los que hay
-// que re-verificar ante cualquier cambio de paleta, son en claro:
-// `--text-muted` y `--color-deuda` sobre `--bg-subtle` (4.67:1 y 4.89:1) y
-// `--border-control` sobre la página (3.10:1).
+// dos modos (`npm run verificar:contraste`): texto normal >= 4.5:1,
+// componentes de interfaz >= 3:1. Re-verificar ante cualquier cambio.
 //
-// — Bordes —
-// Mi Semana dibuja todos sus bordes con el mismo gris claro. Acá eso vale
-// para tarjetas, botones y chips (`--border`), que se identifican por su
-// texto; los campos de texto, cuyo borde es la única señal de "acá se
-// escribe", usan `--border-control`, que llega a 3:1.
+// — Colores de estado —
+// La marca todavía no define éxito, alerta ni error: los de ingreso, gasto y
+// deuda son provisionales (ver `_primitivas.scss`).
 
-// --------------------------- tema oscuro ---------------------------
+// --------------------------- modo oscuro ---------------------------
 @mixin tokens-oscuro {
   color-scheme: dark;
+  --borde-superficie: transparent;
 
   // superficies
-  --bg-page: var(--p-ink-950);
-  --bg-surface: var(--p-ink-800);
-  --bg-raised: var(--p-ink-700);
-  // Campos de texto: hundidos con el color de la página, como en Mi Semana.
-  --bg-sunken: var(--p-ink-950);
-  --bg-subtle: var(--p-ink-600);
-  --bg-hover: var(--p-ink-700);
+  --bg-page: var(--rv-abismo);
+  --bg-surface: var(--rv-pizarra);
+  // Diálogos, hojas y menús: Pizarra como la tarjeta; se separan de lo que
+  // tienen detrás por la sombra elevada y el borde.
+  --bg-raised: var(--rv-pizarra);
+  // Campos de texto y rellenos: hundidos, más oscuros que la tarjeta.
+  --bg-sunken: var(--rv-medianoche);
+  --bg-subtle: var(--rv-medianoche);
+  // Al pasar el cursor la fila se hunde un paso; más claro bajaría el contraste del texto.
+  --bg-hover: color-mix(in srgb, var(--rv-pizarra) 70%, var(--rv-abismo));
 
   // texto
-  --text-primary: var(--p-ink-50);
-  --text-secondary: var(--p-ink-300);
-  --text-muted: var(--p-ink-400);
+  --text-primary: var(--rv-blanco);
+  --text-secondary: var(--rv-bruma);
+  --text-muted: var(--rv-niebla);
 
   // bordes
-  --border: var(--p-ink-600);
-  --border-strong: var(--p-ink-550);
-  --border-control: var(--p-ink-500);
+  --border: var(--rv-acero);
+  --border-strong: var(--rv-niebla);
+  --border-control: var(--rv-niebla);
 
-  // acento
-  --accent: var(--p-teal-300);
-  --accent-bg: var(--p-teal-900);
-  --accent-solid: var(--p-teal-300);
-  // Brillo de marca: bordes de lo seleccionado, foco y el halo de la
-  // acción primaria. No se usa como texto.
-  --accent-brillo: var(--p-teal-400);
-  // Texto oscuro sobre el teal claro: el blanco sobre este tono no llega a
-  // AA, y oscurecer el teal para salvar el blanco lo vuelve turbio sobre
-  // fondo oscuro. Es lo mismo que hace Mi Semana.
-  --text-on-accent: var(--p-ink-950);
+  // acento: el relleno es Coral; el texto y los enlaces, Bruma.
+  --accent: var(--rv-bruma);
+  --accent-bg: color-mix(in srgb, var(--rv-coral) 22%, var(--rv-pizarra));
+  --accent-solid: var(--rv-coral);
+  --accent-brillo: var(--rv-blanco);
+  --text-on-accent: var(--rv-medianoche);
 
   // Superficie invertida: la usan los avisos transitorios (snack bar), que
-  // contrastan con el resto de la interfaz a propósito: un aviso que se ve
-  // igual que una tarjeta se pierde entre el contenido.
-  --bg-inverse: var(--p-ink-50);
-  --text-on-inverse: var(--p-ink-950);
-  // El acento también se invierte: el teal claro del tema oscuro sobre una
-  // superficie clara no llegaría a contraste.
-  --accent-on-inverse: var(--p-teal-700);
+  // contrastan con el resto de la interfaz a propósito.
+  --bg-inverse: var(--rv-blanco);
+  --text-on-inverse: var(--rv-medianoche);
+  --accent-on-inverse: var(--rv-pizarra);
 
-  // semántica de montos
+  // semántica de montos (provisionales: la marca no define estados)
   --color-ingreso: var(--p-green-300);
   --color-ingreso-bg: var(--p-green-950);
   --color-gasto: var(--p-red-300);
@@ -73,43 +73,68 @@
   --color-deuda-bg: var(--p-amber-950);
   --color-neutro: var(--text-primary);
 
-  // Textura de billete de `.hero`: sobre fondo oscuro el acento claro se
-  // pierde más, así que necesita más presencia que en el tema claro.
+  // Textura de billete de `.hero`.
+  --vivo-ingreso: var(--color-ingreso);
+  --vivo-gasto: var(--color-gasto);
+  --vivo-deuda: var(--color-deuda);
+
   --textura-opacidad: 0.2;
 
-  // sombras y brillo — en fondo oscuro la sombra es negro casi opaco
+  // sin sombra de tarjeta en oscuro; la elevada sí se conserva
   --shadow-color: rgb(0 0 0 / 45%);
-  --glow-color: rgb(79 179 184 / 55%);
+  --glow-color: rgb(255 127 92 / 45%);
+
+  // panel de marca (login y bienvenida)
+  --bg-marca: var(--rv-abismo);
+  --bg-marca-degradado:
+    radial-gradient(120% 70% at 0% 35%, rgb(var(--rv-coral-rgb) / 20%) 0%, transparent 60%),
+    linear-gradient(
+      165deg,
+      var(--rv-pizarra) 0%,
+      var(--rv-abismo) 50%,
+      var(--rv-medianoche) 100%
+    );
+  --text-on-marca: var(--rv-blanco);
+  --text-on-marca-secundario: var(--rv-bruma);
+  --marca-textura: var(--rv-coral);
 }
 
-// --------------------------- tema claro ----------------------------
+// --------------------------- modo claro ----------------------------
 @mixin tokens-claro {
   color-scheme: light;
 
-  --bg-page: var(--p-neutral-100);
-  --bg-surface: var(--p-neutral-50);
-  --bg-raised: var(--p-neutral-50);
-  --bg-sunken: var(--p-neutral-100);
-  --bg-subtle: var(--p-neutral-200);
-  --bg-hover: var(--p-neutral-100);
+  // Página en Bruma muy suave y tarjetas blancas encima: así se ve dónde
+  // empieza cada tarjeta. Todo opaco: una superficie que deja ver lo de atrás
+  // se ensucia en la barra fija y en los diálogos.
+  --bg-page: color-mix(in srgb, var(--rv-bruma) 10%, var(--rv-blanco));
+  // Línea fina que separa cada tarjeta blanca de la página casi blanca; en
+  // oscuro no hace falta (la tarjeta ya es más clara que la página).
+  --borde-superficie: color-mix(in srgb, var(--rv-bruma) 55%, var(--rv-blanco));
+  --bg-surface: var(--rv-blanco);
+  --bg-raised: var(--rv-blanco);
+  // Campos de texto: el tono de la página dentro de la tarjeta blanca.
+  --bg-sunken: color-mix(in srgb, var(--rv-bruma) 35%, var(--rv-blanco));
+  --bg-subtle: color-mix(in srgb, var(--rv-bruma) 60%, var(--rv-blanco));
+  --bg-hover: color-mix(in srgb, var(--rv-bruma) 35%, var(--rv-blanco));
 
-  --text-primary: var(--p-neutral-950);
-  --text-secondary: var(--p-neutral-700);
-  --text-muted: var(--p-neutral-600);
+  --text-primary: var(--rv-medianoche);
+  --text-secondary: var(--rv-pizarra);
+  --text-muted: var(--rv-acero);
 
-  --border: var(--p-neutral-300);
-  --border-strong: var(--p-neutral-350);
-  --border-control: var(--p-neutral-500);
+  --border: var(--rv-bruma);
+  --border-strong: var(--rv-niebla);
+  // El borde de un campo es su única señal de "acá se escribe": 3:1.
+  --border-control: color-mix(in srgb, var(--rv-niebla) 40%, var(--rv-acero));
 
-  --accent: var(--p-teal-700);
-  --accent-bg: var(--p-teal-100);
-  --accent-solid: var(--p-teal-700);
-  --accent-brillo: var(--p-teal-500);
-  --text-on-accent: var(--p-white);
+  --accent: var(--rv-pizarra);
+  --accent-bg: color-mix(in srgb, var(--rv-coral) 16%, var(--rv-blanco));
+  --accent-solid: var(--rv-coral);
+  --accent-brillo: var(--rv-medianoche);
+  --text-on-accent: var(--rv-medianoche);
 
-  --bg-inverse: var(--p-neutral-950);
-  --text-on-inverse: var(--p-neutral-100);
-  --accent-on-inverse: var(--p-teal-300);
+  --bg-inverse: var(--rv-abismo);
+  --text-on-inverse: var(--rv-blanco);
+  --accent-on-inverse: var(--rv-coral);
 
   --color-ingreso: var(--p-green-700);
   --color-ingreso-bg: var(--p-green-50);
@@ -118,11 +143,30 @@
   --color-deuda: var(--p-amber-800);
   --color-deuda-bg: var(--p-amber-50);
   --color-neutro: var(--text-primary);
+  // Versión viva de los tres colores de estado, SOLO para cifras grandes (KPI,
+  // porcentaje del héroe): el texto grande pide 3:1 y no 4.5:1, así que puede
+  // ser más saturado que el de las filas. Así las tarjetas no se ven apagadas.
+  --vivo-ingreso: #1f9d55;
+  --vivo-gasto: #e5533d;
+  --vivo-deuda: #d97706;
 
   --textura-opacidad: 0.14;
 
-  --shadow-color: rgb(14 20 20 / 12%);
-  --glow-color: rgb(46 127 133 / 45%);
+  --shadow-color: rgb(var(--rv-medianoche-rgb) / 12%);
+  --glow-color: rgb(var(--rv-coral-rgb) / 45%);
+
+  --bg-marca: var(--rv-abismo);
+  --bg-marca-degradado:
+    radial-gradient(120% 70% at 0% 35%, rgb(var(--rv-coral-rgb) / 20%) 0%, transparent 60%),
+    linear-gradient(
+      165deg,
+      var(--rv-pizarra) 0%,
+      var(--rv-abismo) 50%,
+      var(--rv-medianoche) 100%
+    );
+  --text-on-marca: var(--rv-blanco);
+  --text-on-marca-secundario: var(--rv-bruma);
+  --marca-textura: var(--rv-coral);
 }
 
 :root {
@@ -131,7 +175,7 @@
   // -- datos --
   // Las barras de avance y de reparto van en tinta neutra, la misma en los
   // tres temas: el acento es de lo que se toca (botones, enlaces, foco) y
-  // con él una cuota pagada salía teal, negra o azul según el tema. El
+  // con él una cuota pagada salía de un color distinto según el tema. El
   // color en un dato queda para cuando dice algo: ámbar si va cerca del
   // límite, rojo si se pasó (`.bar--cerca`, `.bar--pasado`).
   --dato: var(--text-muted);
@@ -141,8 +185,8 @@
   // del acento: lo reservado es la misma plata apartada, así que es el mismo
   // color, más claro, y no otro (antes era el verde de ingreso, que junto al
   // teal no se distinguía).
-  --dato-heroe: var(--accent);
-  --dato-heroe-suave: color-mix(in srgb, var(--accent) 40%, var(--bg-subtle));
+  --dato-heroe: var(--rv-coral);
+  --dato-heroe-suave: color-mix(in srgb, var(--rv-coral) 40%, var(--bg-subtle));
 
   // -- alias por tipo de movimiento --
   // Transferencias y ajustes no tienen color propio: una transferencia no
@@ -165,24 +209,9 @@
   --semaforo-pagado-text: var(--text-secondary);
   --semaforo-pagado-bg: var(--bg-subtle);
 
-  // -- panel de marca (login y bienvenida) --
-  // Teal profundo con texto claro. Es la única superficie de color de la
-  // app. El login va siempre en Teal; la bienvenida sigue el tema elegido,
-  // así que Neutro y Medianoche traen su propio panel.
-  --bg-marca: var(--p-teal-900);
-  // El mismo teal con profundidad: un brillo arriba a la izquierda (donde
-  // van la marca y la cifra) que se apaga hacia abajo. Un color plano se
-  // leía como un bloque muerto.
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(46 127 133 / 55%) 0%, transparent 60%),
-    linear-gradient(165deg, #1d4549 0%, var(--p-teal-900) 45%, #0f2629 100%);
-  --text-on-marca: var(--p-ink-50);
-  --text-on-marca-secundario: var(--p-teal-200);
-  --marca-textura: var(--p-teal-300);
-
   // -- sombras y brillo (los mismos de Mi Semana) --
   // Una sola tinta por tema (`--shadow-color`) a distintas distancias. El
-  // brillo es el halo teal de la acción primaria y de la sección activa:
+  // brillo es el halo de la acción primaria y de la sección activa:
   // es la firma visual de las dos apps.
   --shadow-xs: 0 1px 2px var(--shadow-color);
   --shadow-sm: 0 2px 6px var(--shadow-color);
@@ -197,11 +226,11 @@
   --shadow-overlay: var(--shadow-lg);
 
   // -- tipografía --
-  // Plus Jakarta Sans para todo y Anton (condensada, en mayúsculas) solo
+  // Inter para todo y Anton (condensada, en mayúsculas) solo
   // para la marca y los títulos de pantalla y de diálogo, como en Mi
   // Semana. Las dos van servidas desde `public/fonts` (ver `styles.scss`).
   --font-sans:
-    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
   --font-display: 'Anton', 'League Gothic', Impact, 'Arial Narrow', sans-serif;
   // Escala usada en toda la app. Los nombres describen el rol, no el px,
   // para poder afinar un paso sin renombrar nada.
@@ -300,7 +329,7 @@
   // contenido solo queda en ~1150px, lo mismo que tenía antes la columna
   // única de 1200px.
   --layout-max: 1440px;
-  --ancho-lateral: 220px;
+  --ancho-lateral: 264px;
   --ancho-lateral-iconos: 76px;
   --layout-gutter: var(--space-4);
   --altura-topbar: 56px;
@@ -320,368 +349,17 @@
   }
 }
 
-// Cinco temas (paletas) × dos modos (claro y oscuro). El tema y el modo se
-// eligen por separado (`ThemeService`) y viven en dos atributos de `<html>`:
-// `data-theme` (teal, neutro, medianoche, brasa, marino) y `data-modo`
-// (claro, oscuro). Sin atributos manda Teal claro (`tokens-claro`, en
-// `:root`): es el tema de la app, no se sigue al sistema.
-//
-// Cada mixin parte del claro o del oscuro de Teal y reasigna todo lo que
-// tiene color de marca: superficies, texto, bordes, acento, la superficie
-// invertida y el panel de marca. Los colores de monto (ingreso, gasto,
-// deuda) son los mismos en todos los temas.
-
-// ---------------------------- Neutro ----------------------------
-// Blanco y negro, sin tinte: el claro con grises puros y el acento en negro.
-@mixin tokens-neutro-claro {
-  @include tokens-claro;
-
-  --bg-page: var(--p-gris-100);
-  --bg-surface: var(--p-white);
-  --bg-raised: var(--p-white);
-  --bg-sunken: var(--p-gris-100);
-  --bg-subtle: var(--p-gris-200);
-  --bg-hover: var(--p-gris-100);
-
-  --text-primary: var(--p-gris-950);
-  --text-secondary: var(--p-gris-700);
-  --text-muted: var(--p-gris-600);
-
-  --border: var(--p-gris-200);
-  --border-strong: var(--p-gris-300);
-  --border-control: var(--p-gris-500);
-
-  --accent: var(--p-gris-950);
-  --accent-bg: var(--p-gris-200);
-  --accent-solid: var(--p-gris-950);
-  --accent-brillo: var(--p-gris-700);
-  --text-on-accent: var(--p-gris-50);
-  --accent-on-inverse: var(--p-gris-200);
-
-  // Panel de marca en carbón: el mismo negro del acento, con un brillo blanco.
-  --bg-marca: var(--p-gris-950);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(255 255 255 / 9%) 0%, transparent 60%),
-    linear-gradient(165deg, #262626 0%, var(--p-gris-950) 50%, #000 100%);
-  --text-on-marca: var(--p-gris-50);
-  --text-on-marca-secundario: var(--p-gris-300);
-  --marca-textura: var(--p-gris-300);
-  --glow-color: rgb(0 0 0 / 0%);
+// El modo oscuro sigue al sistema, igual que en `Marca/ranvi-lab.css`, salvo
+// que la persona haya fijado uno en Configuración (`data-theme` en `<html>`, el de Marca,
+// ver `ThemeService`): "claro" desactiva la regla del sistema y "oscuro" la
+// fuerza aunque el sistema esté en claro.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include tokens-oscuro;
+  }
 }
-
-// El carbón de Medianoche con el acento en blanco: la inversión exacta del
-// Neutro claro.
-@mixin tokens-neutro-oscuro {
+:root[data-theme='dark'] {
   @include tokens-oscuro;
-
-  --bg-page: var(--p-noche-950);
-  --bg-surface: var(--p-noche-800);
-  --bg-raised: var(--p-noche-700);
-  --bg-sunken: var(--p-noche-950);
-  --bg-subtle: var(--p-noche-600);
-  --bg-hover: var(--p-noche-700);
-
-  --text-primary: var(--p-gris-50);
-  --text-secondary: var(--p-noche-300);
-  --text-muted: var(--p-noche-400);
-
-  --border: var(--p-noche-600);
-  --border-strong: var(--p-noche-550);
-  --border-control: var(--p-noche-500);
-
-  --accent: var(--p-gris-50);
-  --accent-bg: var(--p-noche-600);
-  --accent-solid: var(--p-gris-50);
-  --accent-brillo: var(--p-gris-300);
-  --text-on-accent: var(--p-gris-950);
-
-  --bg-inverse: var(--p-gris-50);
-  --text-on-inverse: var(--p-gris-950);
-  --accent-on-inverse: var(--p-gris-700);
-
-  --bg-marca: var(--p-noche-700);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(255 255 255 / 9%) 0%, transparent 60%),
-    linear-gradient(165deg, #333 0%, var(--p-noche-700) 50%, #111 100%);
-  --text-on-marca: var(--p-gris-50);
-  --text-on-marca-secundario: var(--p-gris-300);
-  --marca-textura: var(--p-gris-300);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-// -------------------------- Medianoche --------------------------
-// Negro profundo con el azul eléctrico como única voz.
-@mixin tokens-medianoche-oscuro {
-  @include tokens-oscuro;
-
-  --bg-page: var(--p-noche-950);
-  --bg-surface: var(--p-noche-800);
-  --bg-raised: var(--p-noche-700);
-  --bg-sunken: var(--p-noche-950);
-  --bg-subtle: var(--p-noche-600);
-  --bg-hover: var(--p-noche-700);
-
-  --text-primary: var(--p-white);
-  --text-secondary: var(--p-noche-300);
-  --text-muted: var(--p-noche-400);
-
-  --border: var(--p-noche-600);
-  --border-strong: var(--p-noche-550);
-  --border-control: var(--p-noche-500);
-
-  --accent: var(--p-azul-400);
-  --accent-bg: var(--p-azul-900);
-  --accent-solid: var(--p-azul-500);
-  --accent-brillo: var(--p-azul-400);
-  --text-on-accent: var(--p-white);
-  --accent-on-inverse: var(--p-azul-600);
-
-  // Panel de marca en azul noche, con el brillo del azul eléctrico.
-  --bg-marca: var(--p-azul-900);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(64 91 255 / 35%) 0%, transparent 60%),
-    linear-gradient(165deg, #232b66 0%, var(--p-azul-900) 45%, #0d1030 100%);
-  --text-on-marca: var(--p-white);
-  --text-on-marca-secundario: var(--p-noche-300);
-  --marca-textura: var(--p-azul-400);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-// Blanco con un tinte frío mínimo, texto casi negro y el azul eléctrico.
-@mixin tokens-medianoche-claro {
-  @include tokens-claro;
-
-  --bg-page: var(--p-noche-claro-100);
-  --bg-surface: var(--p-white);
-  --bg-raised: var(--p-white);
-  --bg-sunken: var(--p-noche-claro-100);
-  --bg-subtle: var(--p-noche-claro-200);
-  --bg-hover: var(--p-noche-claro-100);
-
-  --text-primary: var(--p-noche-claro-950);
-  --text-secondary: var(--p-noche-claro-700);
-  --text-muted: var(--p-noche-claro-600);
-
-  --border: var(--p-noche-claro-300);
-  --border-strong: var(--p-noche-claro-350);
-  --border-control: var(--p-noche-claro-500);
-
-  --accent: var(--p-azul-600);
-  --accent-bg: var(--p-azul-100);
-  --accent-solid: var(--p-azul-500);
-  --accent-brillo: var(--p-azul-500);
-  --text-on-accent: var(--p-white);
-
-  --bg-inverse: var(--p-noche-950);
-  --text-on-inverse: var(--p-noche-claro-100);
-  --accent-on-inverse: var(--p-azul-400);
-
-  --bg-marca: var(--p-azul-900);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(64 91 255 / 35%) 0%, transparent 60%),
-    linear-gradient(165deg, #232b66 0%, var(--p-azul-900) 45%, #0d1030 100%);
-  --text-on-marca: var(--p-white);
-  --text-on-marca-secundario: var(--p-noche-300);
-  --marca-textura: var(--p-azul-400);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-// ----------------------------- Brasa -----------------------------
-// Ciruela con un coral suave. El coral va en lo que se toca (botón
-// primario, foco, selección) y no en el resto de la interfaz. Sobre el
-// coral va texto ciruela oscuro (el blanco no llega a AA); como texto o
-// enlace se usa un coral más profundo (`coral-700`) en claro y uno más
-// claro (`coral-300`) en oscuro.
-@mixin tokens-brasa-claro {
-  @include tokens-claro;
-
-  --bg-page: var(--p-ciruela-100);
-  --bg-surface: var(--p-white);
-  --bg-raised: var(--p-white);
-  --bg-sunken: var(--p-ciruela-100);
-  --bg-subtle: var(--p-ciruela-200);
-  --bg-hover: var(--p-ciruela-100);
-
-  --text-primary: var(--p-ciruela-950);
-  --text-secondary: var(--p-ciruela-700);
-  --text-muted: var(--p-ciruela-600);
-
-  --border: var(--p-ciruela-300);
-  --border-strong: var(--p-ciruela-350);
-  --border-control: var(--p-ciruela-500);
-
-  --accent: var(--p-coral-700);
-  --accent-bg: var(--p-coral-100);
-  --accent-solid: var(--p-coral-400);
-  --accent-brillo: var(--p-coral-500);
-  --text-on-accent: var(--p-ciruela-950);
-
-  --bg-inverse: var(--p-ciruela-950);
-  --text-on-inverse: var(--p-ciruela-100);
-  --accent-on-inverse: var(--p-coral-300);
-
-  --bg-marca: var(--p-ciruela-ink-800);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(255 106 87 / 26%) 0%, transparent 60%),
-    linear-gradient(165deg, #34335a 0%, var(--p-ciruela-ink-800) 50%, var(--p-ciruela-ink-950) 100%);
-  --text-on-marca: var(--p-ciruela-ink-50);
-  --text-on-marca-secundario: var(--p-ciruela-ink-300);
-  --marca-textura: var(--p-coral-300);
-  --shadow-color: rgb(24 24 36 / 12%);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-@mixin tokens-brasa-oscuro {
-  @include tokens-oscuro;
-
-  --bg-page: var(--p-ciruela-ink-950);
-  --bg-surface: var(--p-ciruela-ink-800);
-  --bg-raised: var(--p-ciruela-ink-700);
-  --bg-sunken: var(--p-ciruela-ink-950);
-  --bg-subtle: var(--p-ciruela-ink-600);
-  --bg-hover: var(--p-ciruela-ink-700);
-
-  --text-primary: var(--p-ciruela-ink-50);
-  --text-secondary: var(--p-ciruela-ink-300);
-  --text-muted: var(--p-ciruela-ink-400);
-
-  --border: var(--p-ciruela-ink-600);
-  --border-strong: var(--p-ciruela-ink-550);
-  --border-control: var(--p-ciruela-ink-500);
-
-  --accent: var(--p-coral-300);
-  --accent-bg: var(--p-coral-900);
-  --accent-solid: var(--p-coral-400);
-  --accent-brillo: var(--p-coral-400);
-  --text-on-accent: var(--p-ciruela-950);
-
-  --bg-inverse: var(--p-ciruela-ink-50);
-  --text-on-inverse: var(--p-ciruela-950);
-  --accent-on-inverse: var(--p-coral-700);
-
-  --bg-marca: var(--p-ciruela-ink-800);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(255 106 87 / 24%) 0%, transparent 60%),
-    linear-gradient(165deg, #34335a 0%, var(--p-ciruela-ink-800) 50%, var(--p-ciruela-ink-950) 100%);
-  --text-on-marca: var(--p-ciruela-ink-50);
-  --text-on-marca-secundario: var(--p-ciruela-ink-300);
-  --marca-textura: var(--p-coral-300);
-  --shadow-color: rgb(0 0 0 / 40%);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-// ----------------------------- Marino -----------------------------
-// Texto en azul tinta en vez de negro, azul de señal como acento y la
-// sombra tintada de azul.
-@mixin tokens-marino-claro {
-  @include tokens-claro;
-
-  --bg-page: var(--p-marino-100);
-  --bg-surface: var(--p-white);
-  --bg-raised: var(--p-white);
-  --bg-sunken: var(--p-marino-100);
-  --bg-subtle: var(--p-marino-200);
-  --bg-hover: var(--p-marino-100);
-
-  --text-primary: var(--p-marino-950);
-  --text-secondary: var(--p-marino-700);
-  --text-muted: var(--p-marino-600);
-
-  --border: var(--p-marino-300);
-  --border-strong: var(--p-marino-350);
-  --border-control: var(--p-marino-500);
-
-  --accent: var(--p-senal-700);
-  --accent-bg: var(--p-senal-100);
-  --accent-solid: var(--p-senal-600);
-  --accent-brillo: var(--p-senal-500);
-  --text-on-accent: var(--p-white);
-
-  --bg-inverse: var(--p-marino-950);
-  --text-on-inverse: var(--p-marino-100);
-  --accent-on-inverse: var(--p-senal-300);
-
-  --bg-marca: var(--p-marino-950);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(0 107 255 / 40%) 0%, transparent 60%),
-    linear-gradient(165deg, #12446f 0%, var(--p-marino-950) 50%, #061f35 100%);
-  --text-on-marca: var(--p-white);
-  --text-on-marca-secundario: var(--p-marino-ink-300);
-  --marca-textura: var(--p-senal-400);
-  --shadow-color: rgb(71 103 136 / 16%);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-@mixin tokens-marino-oscuro {
-  @include tokens-oscuro;
-
-  --bg-page: var(--p-marino-ink-950);
-  --bg-surface: var(--p-marino-ink-800);
-  --bg-raised: var(--p-marino-ink-700);
-  --bg-sunken: var(--p-marino-ink-950);
-  --bg-subtle: var(--p-marino-ink-600);
-  --bg-hover: var(--p-marino-ink-700);
-
-  --text-primary: var(--p-marino-ink-50);
-  --text-secondary: var(--p-marino-ink-300);
-  --text-muted: var(--p-marino-ink-400);
-
-  --border: var(--p-marino-ink-600);
-  --border-strong: var(--p-marino-ink-550);
-  --border-control: var(--p-marino-ink-500);
-
-  --accent: var(--p-senal-400);
-  --accent-bg: var(--p-senal-950);
-  --accent-solid: var(--p-senal-400);
-  --accent-brillo: var(--p-senal-400);
-  --text-on-accent: var(--p-marino-ink-950);
-
-  --bg-inverse: var(--p-marino-ink-50);
-  --text-on-inverse: var(--p-marino-ink-950);
-  --accent-on-inverse: var(--p-senal-700);
-
-  --bg-marca: var(--p-senal-900);
-  --bg-marca-degradado:
-    radial-gradient(120% 70% at 0% 35%, rgb(77 155 255 / 30%) 0%, transparent 60%),
-    linear-gradient(165deg, #1b4a85 0%, var(--p-senal-900) 45%, #081c35 100%);
-  --text-on-marca: var(--p-marino-ink-50);
-  --text-on-marca-secundario: var(--p-marino-ink-300);
-  --marca-textura: var(--p-senal-400);
-  --shadow-color: rgb(0 6 20 / 50%);
-  --glow-color: rgb(0 0 0 / 0%);
-}
-
-// Una regla por tema y modo. El mismo atributo `data-theme` lo fija el
-// script de `index.html` antes del primer pintado y luego `ThemeService`.
-:root[data-theme='teal'][data-modo='claro'] {
-  @include tokens-claro;
-}
-:root[data-theme='teal'][data-modo='oscuro'] {
-  @include tokens-oscuro;
-}
-:root[data-theme='neutro'][data-modo='claro'] {
-  @include tokens-neutro-claro;
-}
-:root[data-theme='neutro'][data-modo='oscuro'] {
-  @include tokens-neutro-oscuro;
-}
-:root[data-theme='medianoche'][data-modo='claro'] {
-  @include tokens-medianoche-claro;
-}
-:root[data-theme='medianoche'][data-modo='oscuro'] {
-  @include tokens-medianoche-oscuro;
-}
-:root[data-theme='brasa'][data-modo='claro'] {
-  @include tokens-brasa-claro;
-}
-:root[data-theme='brasa'][data-modo='oscuro'] {
-  @include tokens-brasa-oscuro;
-}
-:root[data-theme='marino'][data-modo='claro'] {
-  @include tokens-marino-claro;
-}
-:root[data-theme='marino'][data-modo='oscuro'] {
-  @include tokens-marino-oscuro;
 }
 
 // Accesibilidad: quien pide menos movimiento no recibe ninguna animación no

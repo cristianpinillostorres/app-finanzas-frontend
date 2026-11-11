@@ -4,7 +4,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { ThemeService } from '../../core/theme.service';
 import { TransicionLogin } from '../../shared/bienvenida/transicion-login';
 
 /**
@@ -27,7 +26,6 @@ export class LoginPage {
   protected readonly desdeBienvenida = inject(TransicionLogin).consumirVuelta();
 
   constructor() {
-    inject(ThemeService).soloClaro();
     // Al corregir un dato, el error del intento anterior ya no aplica.
     this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.auth.limpiarError());
     // El panel propio ya cubre el del puente (`data-puente`, ver index.html).

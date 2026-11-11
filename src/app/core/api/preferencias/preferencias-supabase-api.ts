@@ -69,6 +69,9 @@ export class PreferenciasSupabaseApi implements PreferenciasApi {
         }
         // Una lista: lo elegido reemplaza lo anterior, no se suma.
         if (cambios.objetivos) datos['objetivos'] = cambios.objetivos;
+        if (cambios.objetivoPrincipal !== undefined) {
+          datos['objetivoPrincipal'] = cambios.objetivoPrincipal;
+        }
         if (cambios.nombre !== undefined) datos['nombre'] = cambios.nombre;
         if (cambios.diaDePago !== undefined) datos['diaDePago'] = cambios.diaDePago;
         if (cambios.avisos) {
@@ -76,6 +79,9 @@ export class PreferenciasSupabaseApi implements PreferenciasApi {
         }
         // Otra lista completa, como los objetivos.
         if (cambios.metasAhorro) datos['metasAhorro'] = cambios.metasAhorro;
+        if (cambios.categoriasDeIngreso !== undefined) {
+          datos['categoriasDeIngreso'] = cambios.categoriasDeIngreso;
+        }
         sesion.guardar('preferencias', { id: ID, datos });
       })
       .catch((error) => console.error('No se pudieron guardar las preferencias', error));
@@ -107,6 +113,9 @@ function mapearPreferencias(datos: unknown): Preferencias {
     objetivos: Array.isArray(objetivos)
       ? objetivos.filter((o: unknown): o is Objetivo => OBJETIVOS.includes(o as Objetivo))
       : [],
+    objetivoPrincipal: OBJETIVOS.includes(guardado['objetivoPrincipal'] as Objetivo)
+      ? (guardado['objetivoPrincipal'] as Objetivo)
+      : null,
     nombre: typeof nombre === 'string' && nombre.trim() ? nombre.trim() : null,
     diaDePago:
       typeof diaDePago === 'number' && Number.isInteger(diaDePago) && diaDePago >= 1 && diaDePago <= 31
@@ -114,6 +123,9 @@ function mapearPreferencias(datos: unknown): Preferencias {
         : null,
     avisos: mapearAvisos(avisos),
     metasAhorro: mapearMetas(guardado['metasAhorro']),
+    categoriasDeIngreso: Array.isArray(guardado['categoriasDeIngreso'])
+      ? guardado['categoriasDeIngreso'].filter((id: unknown): id is string => typeof id === 'string')
+      : null,
   };
 }
 

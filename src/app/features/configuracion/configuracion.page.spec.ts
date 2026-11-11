@@ -59,7 +59,7 @@ describe('ConfiguracionPage', () => {
       moverDia(paso: 1 | -1): void;
       moverAmarillo(paso: 1 | -1): void;
       moverRojo(paso: 1 | -1): void;
-      alternarObjetivo(objetivo: string): void;
+      elegirPrincipal(objetivo: string): void;
       cambiarNombre(texto: string): void;
       diaDePago(): number | null;
       avisos(): { amarillo: number; rojo: number };
@@ -164,17 +164,17 @@ describe('ConfiguracionPage', () => {
 
   });
 
-  describe('objetivos', () => {
-    it('marcar uno lo guarda, siempre en el orden de la bienvenida', () => {
-      const { pagina } = crear({ objetivos: ['ahorrar'] });
-      pagina.alternarObjetivo('deudas');
-      expect(guardados).toEqual([{ objetivos: ['deudas', 'ahorrar'] }]);
+  describe('objetivo', () => {
+    it('elegir uno lo guarda como el único objetivo', () => {
+      const { pagina } = crear({ objetivoPrincipal: 'ahorrar', objetivos: ['ahorrar'] });
+      pagina.elegirPrincipal('deudas');
+      expect(guardados).toEqual([{ objetivoPrincipal: 'deudas', objetivos: ['deudas'] }]);
     });
 
-    it('tocar uno ya marcado lo quita', () => {
-      const { pagina } = crear({ objetivos: ['deudas', 'ahorrar'] });
-      pagina.alternarObjetivo('deudas');
-      expect(guardados).toEqual([{ objetivos: ['ahorrar'] }]);
+    it('tocar el elegido lo quita', () => {
+      const { pagina } = crear({ objetivoPrincipal: 'deudas', objetivos: ['deudas'] });
+      pagina.elegirPrincipal('deudas');
+      expect(guardados).toEqual([{ objetivoPrincipal: null, objetivos: [] }]);
     });
   });
 });

@@ -19,4 +19,6 @@ export const NAV_ITEMS: NavItem[] = [
   { path: 'ahorro', label: 'Ahorro', icon: 'savings', soloEscritorio: true },
   { path: 'movimientos', label: 'Movimientos', icon: 'swap_horiz' },
   { path: 'pagos-fijos', label: 'Pagos fijos', icon: 'event_repeat' },
+  // En el teléfono vive en el menú de la cuenta; en escritorio es una sección más.
+  { path: 'categorias', label: 'Categorías', icon: 'sell', soloEscritorio: true },
 ];

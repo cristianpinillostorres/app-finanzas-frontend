@@ -1,0 +1,10 @@
+{
+  "aviso": "Generado por Base-desarrollo/scripts/sincronizar_app.py. No editar a mano.",
+  "sincronizado": "2026-11-09",
+  "marca_sha256": "65858f83ba187dc25af54624e23bda2ff12b73b541044cae40187d990d9e5790",
+  "archivos": {
+    "src/assets/base/ranvi-lab.tokens.css": "9bc2d51cd3694664478815c4c41b5c812f659ceab0327ae9b886e7efdcc163a9",
+    "src/assets/base/base-desarrollo.css": "923576db9bee9dc106d69613e4f97b6eb33f5f075751be1bed5162efe5299c37",
+    "stylelint.base.json": "a52187f7a50f3274baa05e50d4c5a21da720458bd99ec475f861d0be7333ce4d"
+  }
+}

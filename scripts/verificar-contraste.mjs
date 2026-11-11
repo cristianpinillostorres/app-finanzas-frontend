@@ -2,9 +2,11 @@
 //
 //   node scripts/verificar-contraste.mjs
 //
-// Lee los hex de `_primitivas.scss` y las asignaciones de cada tema en
-// `_semanticos.scss`, resuelve las cadenas `var(--x)` y calcula el
-// contraste de cada par texto/fondo que existe de verdad en la interfaz.
+// Lee los hex de la paleta de la marca (`src/assets/base/ranvi-lab.tokens.css`),
+// los de estado (`_primitivas.scss`) y las asignaciones de cada modo en
+// `_semanticos.scss`, resuelve `var(--x)` y `color-mix(in srgb, ...)` y
+// calcula el contraste de cada par texto/fondo que existe de verdad en la
+// interfaz.
 // Al leer los archivos en vez de repetir los valores, no puede quedar
 // desactualizado: si alguien cambia un token y rompe el contraste, esto
 // falla (sale con código 1).
@@ -20,10 +22,10 @@ const leer = (ruta) => readFileSync(join(raiz, ruta), 'utf8');
 
 // ── lectura de los tokens ──
 
-/** `--p-nombre: #hex;` → { '--p-nombre': '#hex' } */
+/** `--p-nombre: #hex;` o `--rv-nombre: #hex;` → { '--p-nombre': '#hex' } */
 function leerPrimitivas(css) {
   const mapa = {};
-  for (const [, nombre, hex] of css.matchAll(/(--p-[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
+  for (const [, nombre, hex] of css.matchAll(/(--(?:p|rv)-[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
     mapa[nombre] = hex;
   }
   return mapa;
@@ -51,7 +53,18 @@ function leerAsignaciones(css) {
   return mapa;
 }
 
-/** Sigue la cadena `var(--a)` → `var(--b)` → `#hex`. */
+/** `#rrggbb` → [r, g, b]. */
+const aRgb = (hex) => {
+  const limpio = hex.replace('#', '');
+  const largo = limpio.length === 3 ? [...limpio].map((x) => x + x).join('') : limpio;
+  return [0, 2, 4].map((i) => parseInt(largo.slice(i, i + 2), 16));
+};
+const aHex = (rgb) => '#' + rgb.map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
+
+/**
+ * Sigue la cadena `var(--a)` → `var(--b)` → `#hex`, y resuelve
+ * `color-mix(in srgb, A p%, B)` mezclando los dos colores ya resueltos.
+ */
 function resolver(nombre, capas) {
   let valor = nombre;
   for (let salto = 0; salto < 10; salto++) {
@@ -60,6 +73,14 @@ function resolver(nombre, capas) {
         valor = capa[valor];
         break;
       }
+    }
+    const mezcla = valor.match(/^color-mix\(\s*in srgb\s*,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*(.+?)\s*\)$/);
+    if (mezcla) {
+      const [, a, porcentaje, b] = mezcla;
+      const rgbA = aRgb(resolver(a, capas));
+      const rgbB = aRgb(resolver(b, capas));
+      const p = Number(porcentaje) / 100;
+      return aHex(rgbA.map((c, i) => c * p + rgbB[i] * (1 - p)));
     }
     const ref = valor.match(/^var\((--[\w-]+)\)$/);
     if (ref) {
@@ -107,6 +128,8 @@ const PARES = [
   ['--text-muted', '--bg-surface', 4.5, '.t-meta en panel'],
   ['--text-muted', '--bg-page', 4.5, '.t-meta suelto'],
   ['--text-muted', '--bg-subtle', 4.5, '.t-meta en inset'],
+  ['--text-muted', '--bg-hover', 4.5, 'meta en fila con hover'],
+  ['--text-secondary', '--bg-hover', 4.5, 'secundario en fila con hover'],
   ['--text-muted', '--bg-raised', 4.5, 'ayuda en diálogo, hoja y menú'],
   ['--text-muted', '--bg-sunken', 4.5, 'placeholder de .input, pie de crédito'],
   ['--color-gasto', '--bg-sunken', 4.5, '"Venció el" en el pie de crédito'],
@@ -124,6 +147,10 @@ const PARES = [
   ['--color-deuda', '--bg-surface', 4.5, 'monto de deuda'],
   ['--color-deuda', '--bg-subtle', 4.5, 'deuda en stat-card'],
   ['--color-deuda', '--color-deuda-bg', 4.5, 'badge ámbar'],
+  // Cifras grandes (>= 24px negrita): texto grande, 3:1.
+  ['--vivo-ingreso', '--bg-surface', 3, 'cifra grande de ingreso'],
+  ['--vivo-gasto', '--bg-surface', 3, 'cifra grande de gasto'],
+  ['--vivo-deuda', '--bg-surface', 3, 'cifra grande de deuda'],
   ['--text-on-inverse', '--bg-inverse', 4.5, 'texto del aviso (snack bar)'],
   ['--accent-on-inverse', '--bg-inverse', 4.5, 'acción del aviso (snack bar)'],
   // El borde del input es su única señal de "esto es un campo": 3:1 (1.4.11).
@@ -137,7 +164,10 @@ const PARES = [
 
 // ── ejecución ──
 
-const primitivas = leerPrimitivas(leer('src/styles/tokens/_primitivas.scss'));
+const primitivas = {
+  ...leerPrimitivas(leer('src/assets/base/ranvi-lab.tokens.css')),
+  ...leerPrimitivas(leer('src/styles/tokens/_primitivas.scss')),
+};
 const semanticos = leer('src/styles/tokens/_semanticos.scss');
 // El bloque `:root` trae los alias comunes a los dos temas (semáforo,
 // `--focus-color`...); cada mixin trae lo que cambia entre temas.
@@ -156,16 +186,8 @@ function asignacionesDelMixin(nombre) {
 }
 
 const temas = {
-  'teal claro': asignacionesDelMixin('tokens-claro'),
-  'teal oscuro': asignacionesDelMixin('tokens-oscuro'),
-  'neutro claro': asignacionesDelMixin('tokens-neutro-claro'),
-  'neutro oscuro': asignacionesDelMixin('tokens-neutro-oscuro'),
-  'medianoche claro': asignacionesDelMixin('tokens-medianoche-claro'),
-  'medianoche oscuro': asignacionesDelMixin('tokens-medianoche-oscuro'),
-  'brasa claro': asignacionesDelMixin('tokens-brasa-claro'),
-  'brasa oscuro': asignacionesDelMixin('tokens-brasa-oscuro'),
-  'marino claro': asignacionesDelMixin('tokens-marino-claro'),
-  'marino oscuro': asignacionesDelMixin('tokens-marino-oscuro'),
+  'marca claro': asignacionesDelMixin('tokens-claro'),
+  'marca oscuro': asignacionesDelMixin('tokens-oscuro'),
 };
 
 let fallos = 0;
@@ -188,4 +210,4 @@ if (fallos > 0) {
   console.error(`\n${fallos} par(es) no llegan a WCAG AA.`);
   process.exit(1);
 }
-console.log('\nTodos los pares cumplen WCAG AA en los diez temas.');
+console.log('\nTodos los pares cumplen WCAG AA en claro y en oscuro.');

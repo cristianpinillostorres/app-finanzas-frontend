@@ -31,96 +31,75 @@
     Héroe: la pregunta que responde toda la pantalla es "¿cuánto puedo
     gastar hoy?". Con día de pago, lo libre hasta ese día se reparte en los
     días que faltan y ese es el número grande; debajo, la cuenta que lo
-    produce y cómo va el ritmo de la última semana contra él. Sin día de pago,
-    o si lo que vence antes del pago ya es más de lo que hay, queda la cifra
-    de lo libre y su explicación de siempre.
+    produce. Sin día de pago, o si lo que vence antes del pago ya es más de
+    lo que hay, queda la cifra de lo libre. El héroe mide lo mismo que el de
+    las demás pantallas: rótulo, cifra, una línea y una fila de cifras.
   -->
   <!-- Cuenta nueva: solo la bienvenida. Tarjetas en $0 y gráficas vacías
        no dicen nada todavía; cada panel aparece cuando tiene qué mostrar. -->
   @if (!datosListos() || !cuentaNueva()) {
-    <section class="hero hero--pantalla hero--libre col-md-12">
+    <section class="hero hero--pantalla col-md-12">
       <div class="hero__cabeza">
-        @if (gastoDiario() !== null) {
+        <!-- La cifra del héroe la decide el objetivo principal (ver
+             `vistaDelHeroe`). Mismo molde en todas: rótulo, cifra y una línea. -->
+        @if (vista() === 'ahorro') {
+          <span class="t-meta">Llevas ahorrado</span>
+          <span class="t-hero amt">
+            <app-amount [valor]="totalAhorrado()" [animar]="true" [cargando]="!datosListos()" />
+          </span>
+          @if (aportePlaneado() > 0) {
+            <p class="hero__explica">
+              Este ciclo apartaste <app-amount [valor]="apartadoEnCiclo()" /> de
+              <app-amount [valor]="aportePlaneado()" />
+            </p>
+          }
+        } @else if (vista() === 'deudas') {
+          <span class="t-meta">Lo que debes</span>
+          <span class="t-hero amt">
+            <app-amount [valor]="deudaTotal()" [animar]="true" [cargando]="!datosListos()" />
+          </span>
+          <!-- Lo que se paga en cuotas ya lo dice la tarjeta de ingresos y cuotas. -->
+          @if (creditosConDeuda() > 0) {
+            <p class="hero__explica">
+              En {{ creditosConDeuda() }} {{ creditosConDeuda() === 1 ? 'crédito' : 'créditos' }}
+            </p>
+          }
+        } @else if (vista() === 'pagos') {
+          <span class="t-meta">Falta por pagar antes de tu pago</span>
+          <span class="t-hero amt">
+            <app-amount [valor]="faltaMostrada()" [animar]="true" [cargando]="!datosListos()" />
+          </span>
+          <p class="hero__explica">
+            Primero: {{ primerPagoPendiente()!.nombre }}, {{ textoPrimerPago() }}
+          </p>
+        } @else if (gastoDiario() !== null) {
           <span class="t-meta">Hoy puedes gastar</span>
           <span class="t-hero amt">
             <app-amount [valor]="gastoDiario()!" [animar]="true" [cargando]="!datosListos()" />
             <span class="hero__por-dia">por día</span>
           </span>
-          <!-- Una sola frase: dos párrafos hacían este héroe ~50px más alto que
-               el de las otras pantallas. -->
-          <p class="hero__explica">
-            Te quedan <app-amount [valor]="libreParaGastar()" /> libres hasta tu pago del
-            {{ fechaProximoPago() }} ({{
-              diasHastaPago() === 1 ? 'queda 1 día' : 'quedan ' + diasHastaPago() + ' días'
-            }}).
-            @if (datosListos() && ritmo() > 0) {
-              <span
-                class="hero__ritmo"
-                [class.hero__ritmo--cerca]="estadoRitmo() === 'cerca'"
-                [class.hero__ritmo--pasado]="estadoRitmo() === 'pasado'"
-              >
-                @switch (estadoRitmo()) {
-                  @case ('pasado') {
-                    Te estás pasando: esta semana gastaste <app-amount [valor]="ritmo()" /> por
-                    día y así no te alcanza.
-                  }
-                  @case ('cerca') {
-                    Vas justo: esta semana gastaste <app-amount [valor]="ritmo()" /> por día.
-                  }
-                  @default {
-                    Vas bien: esta semana gastaste <app-amount [valor]="ritmo()" /> por día.
-                  }
-                }
-              </span>
-            }
-          </p>
+          <p class="hero__explica">Hasta tu pago del {{ fechaProximoPago() }}</p>
         } @else {
-        <span class="t-meta">
-          {{ hastaPago() ? 'Te queda libre hasta tu pago' : 'Te queda libre este mes' }}
-        </span>
-        <span class="t-hero amt" [class.mon-out]="libreMostrado() < 0">
-          <app-amount [valor]="libreMostrado()" [animar]="true" [cargando]="!datosListos()" />
-        </span>
-        @if (hastaPago(); as pago) {
+          <span class="t-meta">
+            {{ hastaPago() ? 'Te queda libre hasta tu pago' : 'Te queda libre este mes' }}
+          </span>
+          <span class="t-hero amt" [class.mon-out]="libreMostrado() < 0">
+            <app-amount [valor]="libreMostrado()" [animar]="true" [cargando]="!datosListos()" />
+          </span>
           @if (libreMostrado() < 0) {
             <p class="hero__explica">
-              Lo que vence antes de tu pago del {{ fechaProximoPago() }} es más de lo que tienes
-              disponible.
-              <a routerLink="/pagos-fijos">Mira qué vence primero</a> y qué puedes aplazar.
-            </p>
-          } @else {
-            <p class="hero__explica">
-              Es lo que tienes disponible menos lo que vence antes de tu pago del
-              {{ fechaProximoPago() }}.
+              Lo que vence supera lo disponible. <a routerLink="/pagos-fijos">Ver pagos</a>
             </p>
           }
-          @if (pago.totalDespues > 0) {
-            <p class="hero__explica">
-              Después de tu pago vencen <app-amount [valor]="pago.totalDespues" />
-              ({{ nombresDespuesDelPago() }}): resérvalos de ese ingreso.
-            </p>
-          }
-        } @else if (libreDelMes() < 0) {
-          <p class="hero__explica">
-            Lo que falta pagar este mes es más de lo que tienes disponible.
-            <a routerLink="/pagos-fijos">Mira qué vence primero</a> y qué puedes aplazar.
-          </p>
-        } @else {
-          <p class="hero__explica">
-            Es lo que tienes disponible menos lo que falta pagar este mes.
-          </p>
-        }
         }
       </div>
       <div class="desglose desglose--columnas">
         <div>
-          <span class="t-meta">Disponible en cuentas</span>
+          <span class="t-meta">Disponible</span>
           <app-amount class="amt" [valor]="disponible()" [cargando]="!datosListos()" />
         </div>
         <div>
-          <span class="t-meta">
-            {{ hastaPago() ? 'Falta por pagar antes de tu pago' : 'Falta por pagar este mes' }}
-          </span>
+          <span class="t-meta">Por pagar</span>
           @if (datosListos()) {
             <span class="amt mon-out">−<app-amount [valor]="faltaMostrada()" /></span>
           } @else {
@@ -129,134 +108,35 @@
         </div>
         @if (apartadoParaMetas() > 0) {
           <div>
-            <a class="t-meta" routerLink="/ahorro">Apartas para tus metas</a>
+            <a class="t-meta" routerLink="/ahorro">Para metas</a>
             <span class="amt mon-out">−<app-amount [valor]="apartadoParaMetas()" /></span>
           </div>
         }
         @if (gastoDiario() !== null) {
           <div>
-            <span class="t-meta">Libre hasta tu pago</span>
+            <span class="t-meta">Libre</span>
             <app-amount class="amt" [valor]="libreParaGastar()" [cargando]="!datosListos()" />
           </div>
         }
       </div>
     </section>
 
-    <!--
-      Lo que entró y salió, sin que una cosa tape a la otra: los pagos de
-      deuda van aparte de los gastos (son plata que salió aunque no sea una
-      compra) y los reembolsos aparte de los ingresos (no los ganaste, te
-      los devolvieron). "Reservado" y "Deuda total" ya no van acá: la deuda
-      total vive en Créditos y lo reservado, en Cuentas.
-    -->
-    <div class="kpis col-md-12">
-      <app-stat-card
-        etiqueta="Ingresos"
-        icono="trending_up"
-        tono="ingreso"
-        [valor]="entradasSalidas().ingresos"
-        [nota]="notaIngresos()"
-        [cargando]="!datosListos()"
-      />
-      <app-stat-card
-        etiqueta="Gastos"
-        icono="trending_down"
-        tono="gasto"
-        [valor]="entradasSalidas().gastos"
-        [cargando]="!datosListos()"
-      />
-      <app-stat-card
-        etiqueta="Pagos de deuda"
-        icono="credit_card"
-        tono="deuda"
-        [valor]="entradasSalidas().pagosDeuda"
-        [cargando]="!datosListos()"
-      />
-      <app-stat-card
-        etiqueta="Te devolvieron"
-        icono="undo"
-        tono="neutro"
-        [valor]="entradasSalidas().reembolsos"
-        [cargando]="!datosListos()"
-      />
-    </div>
-
-    <!--
-    Debajo de las cifras, dos filas en escritorio: a la izquierda lo que
-    viene, a la derecha cuánto sueldo van las cuotas y los topes; y debajo,
-    los últimos movimientos y los gastos por categoría. El orden del DOM es
-    el del celular, que va en una sola columna. Si falta una de la pareja,
-    la otra toma la fila entera.
-
-    "¿Qué tengo que pagar y cuándo?": la franja muestra el mes entero con
-    hoy marcado (lo vencido a la izquierda, lo que viene a la derecha) y
-    debajo van los pendientes más urgentes.
-  -->
-    @if (mostrarPagos()) {
-      <section
-        class="seccion g-pagos col-md-12"
-        [class.col-lg-7]="mostrarLateral()"
-        aria-labelledby="titulo-pagos"
-      >
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-pagos">Lo que viene</h2>
-          <a class="btn btn-text" routerLink="/pagos-fijos">Ver el mes</a>
-        </div>
-        <div class="panel panel--enlace" (click)="abrir('/pagos-fijos')">
-          @if (!datosListos()) {
-            <app-skeleton-rows [filas]="3" [conIcono]="false" />
-          } @else if (lineaMes().dias.length === 0) {
-            <!-- Sin ningún pago en el mes, "todo al día" era una tranquilidad
-           falsa: lo más probable es que todavía no haya nada creado. -->
-            <app-empty-state
-              icono="event_repeat"
-              titulo="Todavía no tienes pagos fijos"
-              descripcion="Agrega lo que pagas cada mes para saber cuánto te queda libre."
-              [compacto]="true"
-            >
-              <a class="btn btn-outline" routerLink="/pagos-fijos">Agregar pagos fijos</a>
-            </app-empty-state>
-          } @else {
-            <app-franja-mes class="panel-franja" [linea]="lineaMes()" />
-            <!-- La plata de hoy, cada pago que vence y el sueldo cuando llega,
-                 con lo que quedaría en cuentas después de cada paso: así se ve
-                 cuándo aprieta, no solo cuánto hay que pagar. -->
-            <div class="rows" auto-animate>
-              @for (evento of proyeccion(); track evento.id) {
-                <div class="row row--estatica">
-                  <span class="row-main">
-                    <span class="t-row">{{ evento.nombre }}</span>
-                    @if (evento.esIngreso) {
-                      <span class="t-meta">{{ diaCortoDe(evento.fecha) }}</span>
-                    } @else if (evento.estado && evento.vence) {
-                      <app-semaforo-badge
-                        [estado]="evento.estado"
-                        [texto]="textoVencimientoDe(evento.vence)"
-                      />
-                    }
-                  </span>
-                  <span class="row-end">
-                    <span class="t-row amt" [class.mon-in]="evento.esIngreso">
-                      {{ evento.esIngreso ? '+' : '−'
-                      }}@if (evento.esEstimado) {<span aria-hidden="true">~</span
-                        ><span class="sr-only">aproximadamente </span>
-                      }<app-amount [valor]="absoluto(evento.monto)"
-                    /></span>
-                    <span class="t-meta" [class.mon-out]="evento.saldoDespues < 0">
-                      Te quedan <app-amount [valor]="evento.saldoDespues" />
-                    </span>
-                  </span>
-                </div>
-              } @empty {
-                <app-empty-state
-                  icono="task_alt"
-                  titulo="Todo pagado"
-                  descripcion="Ya pagaste todo lo de este mes."
-                  [compacto]="true"
-                />
-              }
-            </div>
+    <!-- Se pregunta una vez qué importa más y el héroe se adapta. -->
+    @if (preguntarPrioridad()) {
+      <section class="panel prioridad col-md-12" aria-labelledby="titulo-prioridad">
+        <h2 class="prioridad__titulo" id="titulo-prioridad">¿Qué es lo más importante ahora?</h2>
+        <p class="prioridad__nota">
+          Elige uno y General te muestra primero esa cifra. Lo cambias cuando quieras en
+          Configuración.
+        </p>
+        <div class="prioridad__opciones">
+          @for (objetivo of opcionesObjetivo; track objetivo.valor) {
+            <button type="button" class="objetivo" (click)="elegirPrioridad(objetivo.valor)">
+              <mat-icon aria-hidden="true">{{ objetivo.icono }}</mat-icon>
+              {{ objetivo.nombre }}
+            </button>
           }
+          <button type="button" class="btn btn-text" (click)="omitirPrioridad()">Ahora no</button>
         </div>
       </section>
     }
@@ -264,91 +144,291 @@
     <!-- Cuánto del sueldo ya está tomado por las cuotas: una sola cifra que
          dice si hay margen para vivir. Reemplaza al gráfico de ingresos vs
          gastos, que a mitad de mes no decía nada. -->
-    @if (mostrarLateral()) {
-    <div class="g-lateral col-md-12" [class.col-lg-5]="mostrarPagos()">
-    @if (mostrarComprometido()) {
-      <section class="g-comprometido" aria-labelledby="titulo-comprometido">
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-comprometido">Tu sueldo y las cuotas</h2>
-          <a class="btn btn-text" routerLink="/creditos">Ver créditos</a>
-        </div>
-        <div class="panel panel--comprometido">
-          @if (!datosListos()) {
-            <div class="skeleton skeleton-grafica" aria-hidden="true"></div>
-          } @else {
-            <span
-              class="t-hero amt"
-              [class.mon-deuda]="estadoComprometido() === 'cerca'"
-              [class.mon-out]="estadoComprometido() === 'pasado'"
-              >{{ porcentajeComprometido() }}&nbsp;%</span
-            >
-            <p class="hero__explica">
-              de tu último sueldo (<app-amount [valor]="sueldoDeReferencia()!" />) se va en cuotas
-              de créditos este mes: <app-amount [valor]="cuotasDelMes()" />.
-            </p>
-            <div
-              class="bar"
-              [class.bar--cerca]="estadoComprometido() === 'cerca'"
-              [class.bar--pasado]="estadoComprometido() === 'pasado'"
-              role="img"
-              [attr.aria-label]="porcentajeComprometido() + ' % del sueldo en cuotas'"
-            >
-              <i [style.--progreso]="progresoDe(comprometido() ?? 0)"></i>
+    <!-- Un solo grid de dos columnas, con cada par de tarjetas en su fila: la
+         del par que es más baja se estira al alto de la otra (así crecen juntas).
+         Resumen | cuotas, categorías | últimos movimientos, y los topes abajo. -->
+    <div class="tablero col-md-12" [attr.data-lider]="tarjetaLider()">
+      <section class="g-mes" aria-labelledby="titulo-mes">
+        <div class="panel">
+          <div class="panel__cabeza">
+            <h2 class="panel__titulo" id="titulo-mes">Resumen del mes</h2>
+            <span class="t-meta mes-categorias">{{ rotuloPeriodo() }}</span>
+          </div>
+          <div class="rows">
+            <div class="row row--estatica">
+              <span class="row-main">
+                <span class="t-row">Ingresos</span>
+              </span>
+              <span class="row-end">
+                <span class="t-row amt"
+                  ><app-amount [valor]="entradasSalidas().ingresos" [cargando]="!datosListos()"
+                /></span>
+              </span>
             </div>
-            <span class="t-meta">{{ mensajeComprometido() }}</span>
-          }
+            <div class="row row--estatica">
+              <span class="row-main"><span class="t-row">Gastos</span></span>
+              <span class="row-end">
+                <span class="t-row amt"
+                  ><app-amount [valor]="gastosDelDia()" [cargando]="!datosListos()"
+                /></span>
+              </span>
+            </div>
+            @if (datosListos() && comprasACuotasDelMes() > 0) {
+              <div class="row row--estatica">
+                <span class="row-main"><span class="t-row">Compras a cuotas</span></span>
+                <span class="row-end">
+                  <span class="t-row amt"><app-amount [valor]="comprasACuotasDelMes()" /></span>
+                </span>
+              </div>
+            }
+            <div class="row row--estatica">
+              <span class="row-main"><span class="t-row">Pagos de deuda</span></span>
+              <span class="row-end">
+                <span class="t-row amt"
+                  ><app-amount [valor]="entradasSalidas().pagosDeuda" [cargando]="!datosListos()"
+                /></span>
+              </span>
+            </div>
+            <div class="row row--estatica">
+              <span class="row-main"><span class="t-row">Te devolvieron</span></span>
+              <span class="row-end">
+                <span class="t-row amt"
+                  ><app-amount [valor]="entradasSalidas().reembolsos" [cargando]="!datosListos()"
+                /></span>
+              </span>
+            </div>
+          </div>
         </div>
       </section>
-    }
 
-    @if (presupuestos().length > 0) {
-      <section class="g-presupuestos" aria-labelledby="titulo-presupuestos">
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-presupuestos">Presupuestos del mes</h2>
-          <a class="btn btn-text" routerLink="/categorias">Ajustar</a>
-        </div>
-        <div class="panel">
-          <div class="rows">
-            @for (p of presupuestos(); track p.categoria.id) {
-              <div class="row row--estatica fila-presupuesto">
-                <div class="hd">
-                  <span class="t-row">{{ p.categoria.nombre }}</span>
-                  <span class="t-sec tnum"
-                    ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
-                  /></span>
-                </div>
+    @if (mostrarComprometido()) {
+      <section class="g-comprometido" aria-labelledby="titulo-comprometido">
+        <div class="panel panel--comprometido">
+          <div class="panel__cabeza">
+            <span class="titulo-con-info">
+              <!-- En el celular los textos de esta tarjeta van en su versión corta (`texto-corto`). -->
+              <h2 class="panel__titulo titulo-cuotas" id="titulo-comprometido">
+                <span class="texto-largo">Tus ingresos y las cuotas</span>
+                <span class="texto-corto">Tus cuotas</span>
+              </h2>
+              <button
+                #origen="cdkOverlayOrigin"
+                cdkOverlayOrigin
+                type="button"
+                class="info-btn"
+                aria-label="Guía de endeudamiento"
+                aria-haspopup="dialog"
+                [attr.aria-expanded]="infoAbierta()"
+                (mouseenter)="abrirInfo()"
+                (mouseleave)="cerrarInfoConRetraso()"
+                (focus)="abrirInfo()"
+                (blur)="cerrarInfoConRetraso()"
+                (click)="abrirInfo()"
+                (keydown.escape)="cerrarInfo()"
+              >
+                <mat-icon aria-hidden="true">info</mat-icon>
+              </button>
+              <ng-template
+                cdkConnectedOverlay
+                [cdkConnectedOverlayOrigin]="origen"
+                [cdkConnectedOverlayOpen]="infoAbierta()"
+                [cdkConnectedOverlayPositions]="posicionesInfo"
+                (overlayOutsideClick)="cerrarInfo()"
+                (detach)="cerrarInfo()"
+              >
+                <!-- Guía de los tres tramos: punto de color, nombre y qué significa. -->
                 <div
-                  class="bar"
-                  [class.bar--cerca]="p.estado === 'cerca'"
-                  [class.bar--pasado]="p.estado === 'pasado'"
+                  class="popover-guia"
+                  role="dialog"
+                  aria-label="Guía de endeudamiento"
+                  (mouseenter)="cancelarCierreInfo()"
+                  (mouseleave)="cerrarInfoConRetraso()"
                 >
-                  <i [style.--progreso]="progresoDe(p.proporcion)"></i>
+                  <div class="popover-guia__cabeza">
+                    <strong>Guía de endeudamiento</strong>
+                    <button
+                      type="button"
+                      class="popover-guia__cerrar"
+                      aria-label="Cerrar"
+                      (click)="cerrarInfo()"
+                    >
+                      <mat-icon aria-hidden="true">close</mat-icon>
+                    </button>
+                  </div>
+                  <ul class="popover-guia__lista">
+                    <li>
+                      <span class="popover-guia__punto popover-guia__punto--sano"></span>
+                      <span class="popover-guia__tramo">Saludable (&lt;{{ topeSaludablePct }}%)</span>
+                      <span class="popover-guia__nota">
+                        @if (topeCuotasPesos(); as tope) {
+                          Hasta <app-amount [valor]="tope" />
+                        } @else {
+                          Hasta el {{ topeSaludablePct }}% de tus ingresos
+                        }
+                      </span>
+                    </li>
+                    <li>
+                      <span class="popover-guia__punto popover-guia__punto--justo"></span>
+                      <span class="popover-guia__tramo">
+                        Ajustado ({{ topeSaludablePct }}–{{ topeCriticoPct }}%)
+                      </span>
+                      <span class="popover-guia__nota">Empieza a apretar</span>
+                    </li>
+                    <li>
+                      <span class="popover-guia__punto popover-guia__punto--critico"></span>
+                      <span class="popover-guia__tramo">Crítico (&gt;{{ topeCriticoPct }}%)</span>
+                      <span class="popover-guia__nota">Poco margen diario</span>
+                    </li>
+                  </ul>
                 </div>
-                <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
-                  {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
-                  <app-amount [valor]="absoluto(p.restante)" />
-                </span>
+              </ng-template>
+            </span>
+            <a class="btn btn-text" routerLink="/creditos">
+              Ver créditos <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </a>
+          </div>
+          <div class="panel__cuerpo">
+            @if (!datosListos()) {
+              <div class="skeleton skeleton-grafica" aria-hidden="true"></div>
+            } @else {
+              <div class="cuotas__resumen">
+                <!-- Dos bloques de la misma altura: el número con su frase pegada abajo, y el
+                     estado con el monto. Arriba quedan el número y el estado; abajo, la frase
+                     y el monto. -->
+                <div class="cuotas__izquierda">
+                  <span class="t-hero amt"
+                    >{{ porcentajeComprometido() }}<span class="cuotas__pct">%</span></span
+                  >
+                  <p class="cuotas__frase">
+                    <span class="texto-largo">de tus ingresos se va en cuotas este mes</span>
+                    <span class="texto-corto">de tus ingresos</span>
+                  </p>
+                </div>
+                <div class="cuotas__derecha">
+                  <span
+                    class="etiqueta-margen"
+                    [class.etiqueta-margen--cerca]="estadoComprometido() === 'cerca'"
+                    [class.etiqueta-margen--pasado]="estadoComprometido() === 'pasado'"
+                    >{{ etiquetaMargen() }}</span
+                  >
+                  <div class="cuotas__montos">
+                    <span class="t-meta">Equivale a</span>
+                    <span class="cuotas__total amt"><app-amount [valor]="cuotasDelMes()" /></span>
+                  </div>
+                </div>
+              </div>
+              <div class="barra-ideal">
+                <div class="barra-ideal__pista">
+                  <!-- Gris hasta el tope saludable; en color solo lo que pasa de él. -->
+                  <div
+                    class="tramos"
+                    role="img"
+                    [attr.aria-label]="porcentajeComprometido() + ' % de tus ingresos en cuotas'"
+                  >
+                    <i class="tramos__sano" [style.width.%]="tramoSano()"></i>
+                    <i
+                      class="tramos__exceso"
+                      [class.tramos__exceso--cerca]="estadoComprometido() === 'cerca'"
+                      [style.width.%]="tramoExceso()"
+                    ></i>
+                  </div>
+                  <span class="barra-ideal__marca" aria-hidden="true"></span>
+                  <span
+                    class="barra-ideal__marca barra-ideal__marca--tope"
+                    [style.left.%]="topeCriticoPct"
+                    aria-hidden="true"
+                  ></span>
+                </div>
+                <!-- Solo los números, bajo cada marca; qué significan lo dice el ícono de info. -->
+                <div class="barra-ideal__rotulos t-meta" aria-hidden="true">
+                  <span class="barra-ideal__rotulo" [style.left.%]="topeSaludablePct"
+                    >{{ topeSaludablePct }}&nbsp;%</span
+                  >
+                  <span class="barra-ideal__rotulo" [style.left.%]="topeCriticoPct"
+                    >{{ topeCriticoPct }}&nbsp;%</span
+                  >
+                </div>
+              </div>
+              <div class="cuotas__pie">
+                @if (excesoCuotas() !== null) {
+                  @let exceso = excesoCuotas()!;
+                  <p class="cuotas__linea">
+                    @if (exceso > 0) {
+                      <span class="texto-largo">Superas el tope saludable ({{ topeSaludablePct }}%) por</span>
+                      <span class="texto-corto">Pasas el tope por</span>
+                      <strong
+                        class="cuotas__exceso"
+                        [class.cuotas__exceso--cerca]="estadoComprometido() === 'cerca'"
+                        ><app-amount [valor]="exceso"
+                      /></strong>
+                      <span class="texto-largo">este mes.</span>
+                    } @else {
+                      <span class="texto-largo"
+                        >Estás dentro del tope saludable ({{ topeSaludablePct }} %): te quedan</span
+                      >
+                      <span class="texto-corto">Te quedan</span>
+                      <strong><app-amount [valor]="-exceso" /></strong> de margen.
+                    }
+                  </p>
+                }
+                <button
+                  type="button"
+                  class="cuotas__configurar"
+                  aria-label="Elegir qué ingresos cuentan"
+                  matTooltip="Elegir qué ingresos cuentan"
+                  (click)="configurarIngresos()"
+                >
+                  <mat-icon aria-hidden="true">settings</mat-icon>
+                </button>
               </div>
             }
           </div>
         </div>
       </section>
     }
-    </div>
-    }
 
-    <!-- Solo los últimos tres: confirman que lo que acabas de anotar quedó
-         registrado. La lista completa vive en Movimientos. -->
-    @if (mostrarDetalle()) {
-      <section
-        class="seccion seccion--natural g-ultimos col-md-12 col-lg-7"
-        aria-labelledby="titulo-ultimos"
-      >
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-ultimos">Últimos movimientos</h2>
-          <a class="btn btn-text" routerLink="/movimientos">Ver todos</a>
+      @if (mostrarDetalle()) {
+      <section class="g-categorias" aria-labelledby="titulo-categorias">
+        <div class="panel">
+          <div class="panel__cabeza">
+            <h2 class="panel__titulo" id="titulo-categorias">Gastos por categoría</h2>
+            <span class="t-meta mes-categorias">{{ rotuloPeriodo() }}</span>
+          </div>
+          @if (!datosListos()) {
+            <div class="skeleton skeleton-dona" aria-hidden="true"></div>
+          } @else if (gastosPorCategoria().length === 0) {
+            <app-empty-state
+              icono="donut_large"
+              titulo="Sin gastos este mes"
+              [descripcion]="'Todavía no hay gastos categorizados ' + nombrePeriodo() + '.'"
+            />
+          } @else {
+            <app-donut-categorias [datos]="gastosPorCategoria()" />
+          }
+          @if (datosListos() && comprasACuotasDelMes() > 0) {
+            <div class="rows">
+              <div class="row row--estatica">
+                <span class="row-main"><span class="t-row">Compras a cuotas</span></span>
+                <span class="row-end">
+                  <span class="t-row amt"><app-amount [valor]="comprasACuotasDelMes()" /></span>
+                </span>
+              </div>
+            </div>
+          }
         </div>
-        <div class="panel panel--enlace" (click)="abrir('/movimientos')">
+      </section>
+      }
+
+      @if (mostrarDetalle()) {
+      <!-- Los últimos movimientos: confirman que lo que acabas de anotar quedó
+           registrado. En escritorio muestra las filas que caben en el alto de la
+           torta que va a su lado; la lista completa vive en Movimientos. -->
+      <section class="g-ultimos" aria-labelledby="titulo-ultimos">
+        <div class="panel" (click)="abrir('/movimientos')">
+          <div class="panel__cabeza">
+            <h2 class="panel__titulo" id="titulo-ultimos">Últimos movimientos</h2>
+            <a class="btn btn-text" routerLink="/movimientos">Ver todos</a>
+          </div>
           @if (!datosListos()) {
             <app-skeleton-rows [filas]="3" />
           } @else {
@@ -382,27 +462,115 @@
           }
         </div>
       </section>
-    }
+      }
 
-    @if (mostrarDetalle()) {
-      <section class="seccion g-categorias col-md-12 col-lg-5" aria-labelledby="titulo-categorias">
-        <div class="group-head">
-          <h2 class="group-head__titulo" id="titulo-categorias">Gastos por categoría</h2>
-        </div>
+    @if (presupuestos().length > 0) {
+      <section class="g-presupuestos" aria-labelledby="titulo-presupuestos">
         <div class="panel">
-          @if (!datosListos()) {
-            <div class="skeleton skeleton-dona" aria-hidden="true"></div>
-          } @else if (gastosPorCategoria().length === 0) {
-            <app-empty-state
-              icono="donut_large"
-              titulo="Sin gastos este mes"
-              [descripcion]="'Todavía no hay gastos categorizados en ' + nombreMesActual + '.'"
-            />
-          } @else {
-            <app-donut-categorias [datos]="gastosPorCategoria()" />
+          <div class="panel__cabeza">
+            <h2 class="panel__titulo" id="titulo-presupuestos">Presupuestos del mes</h2>
+            <button class="btn btn-text" type="button" (click)="ajustarPresupuestos()">
+              Ajustar
+            </button>
+          </div>
+          <div class="rows">
+            @for (p of presupuestosVisibles(); track p.categoria.id) {
+              <div class="row row--estatica fila-presupuesto">
+                <div class="hd">
+                  <span class="t-row">{{ p.categoria.nombre }}</span>
+                  <span class="t-sec tnum"
+                    ><app-amount [valor]="p.gastado" /> de <app-amount [valor]="p.tope"
+                  /></span>
+                </div>
+                <div
+                  class="bar"
+                  [class.bar--cerca]="p.estado === 'cerca'"
+                  [class.bar--pasado]="p.estado === 'pasado'"
+                >
+                  <i [style.--progreso]="progresoDe(p.proporcion)"></i>
+                </div>
+                <span class="t-meta" [class.mon-out]="p.estado === 'pasado'">
+                  {{ p.restante >= 0 ? 'Te quedan' : 'Te pasaste por' }}
+                  <app-amount [valor]="absoluto(p.restante)" />
+                  @if (p.ritmoAlto) {
+                    · vas más rápido que el mes
+                  }
+                </span>
+                @if (p.deOtras > 0) {
+                  <span class="t-meta">
+                    Incluye <app-amount [valor]="p.deOtras" /> de lo que no tiene presupuesto
+                  </span>
+                }
+              </div>
+            }
+          </div>
+          @if (presupuestos().length > 3) {
+            <button
+              class="btn btn-text presupuestos__todos"
+              type="button"
+              [attr.aria-expanded]="verTodosLosPresupuestos()"
+              (click)="verTodosLosPresupuestos.set(!verTodosLosPresupuestos())"
+            >
+              {{ verTodosLosPresupuestos() ? 'Ver menos' : 'Ver todos (' + presupuestos().length + ')' }}
+            </button>
           }
         </div>
       </section>
     }
+
+    <!-- Asistente: lo más importante según el objetivo. Las cifras, la urgencia y
+         el botón salen de reglas (`alertaDelAsistente`); la IA solo redacta el
+         titular y el consejo (con la plantilla de respaldo si no responde). -->
+    <section class="g-asistente" aria-labelledby="titulo-asistente">
+      <div class="panel panel--asistente">
+        <div class="panel__cabeza">
+          <h2 class="panel__titulo" id="titulo-asistente">Asistente</h2>
+          @if (textoIaVigente()) {
+            <span class="t-meta">Análisis con IA de hoy</span>
+          }
+        </div>
+        @if (!datosListos()) {
+          <app-skeleton-rows [filas]="2" />
+        } @else if (alertaAsistente(); as alerta) {
+          <div class="panel__cuerpo asistente" [attr.aria-label]="alerta.texto">
+            <p class="asistente__titular" [attr.data-gravedad]="alerta.gravedad">
+              {{ textoIaVigente()?.titular ?? alerta.titular }}
+            </p>
+            @if (alerta.evidencia.length > 0) {
+              <div class="evidencia">
+                @for (e of alerta.evidencia; track e.rotulo) {
+                  <div class="evidencia__fila">
+                    <span class="t-sec">{{ e.rotulo }}</span>
+                    <span class="t-row amt" [class.mon-out]="e.alerta">
+                      <app-amount [valor]="e.valor" />
+                    </span>
+                    <div class="bar evidencia__barra" [class.bar--pasado]="e.alerta">
+                      <i [style.--progreso]="progresoEvidencia(e, alerta.evidencia)"></i>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            <p class="asistente__consejo">{{ textoIaVigente()?.consejo ?? alerta.consejo }}</p>
+            @if (alerta.accion.tipo === 'IR_A') {
+              <a class="btn btn-primary asistente__accion" [routerLink]="alerta.accion.ruta">
+                {{ alerta.accion.etiqueta }}
+              </a>
+            } @else {
+              <button
+                class="btn btn-primary asistente__accion"
+                type="button"
+                (click)="ejecutarAccion(alerta.accion)"
+              >
+                {{ alerta.accion.etiqueta }}
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="asistente__consejo asistente__consejo--calma">Sin avisos por ahora.</p>
+        }
+      </div>
+    </section>
+    </div>
   }
 </div>

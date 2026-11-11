@@ -1,0 +1,43 @@
+// Sin ancho máximo propio: lo da el diálogo (480px).
+:host {
+  display: block;
+  padding: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  :host {
+    padding: var(--space-6);
+  }
+}
+
+// Es un monto de verdad, no una pista: "$200.000" pegado a la derecha y en
+// el color del texto (el gris que traen los campos de las filas parece un
+// texto de ejemplo).
+.monto {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-fila);
+  color: var(--text-primary);
+}
+
+.monto__campo {
+  // Mide lo que mide el número, así el "$" queda pegado a la cifra. Donde
+  // `field-sizing` no existe, el ancho fijo deja la cifra a la izquierda.
+  field-sizing: content;
+  min-width: 2ch;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  outline: none;
+
+  @supports not (field-sizing: content) {
+    width: 8rem;
+  }
+}

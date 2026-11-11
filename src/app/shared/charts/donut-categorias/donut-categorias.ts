@@ -94,7 +94,7 @@ export class DonutCategorias {
 
   protected readonly chart = computed<ApexChart>(() => ({
     type: 'donut',
-    height: 220,
+    height: 208,
     fontFamily: 'inherit',
     // El movimiento de entrada lo maneja la fase de animaciones; acá se deja
     // el de ApexCharts, corto y sin rebote, y se apaga si el sistema pide

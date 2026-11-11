@@ -9,17 +9,17 @@
 @use 'styles/tokens/material' as tokens-material;
 @use 'styles/componentes';
 
-// Las dos fuentes de Mi Semana, servidas desde `public/fonts` (subconjunto
-// latino, licencia OFL en `public/fonts/LICENCIAS.txt`) en vez de Google
-// Fonts: así la app instalada las tiene aunque arranque sin conexión (el
-// service worker guarda todo `*.woff2`). Plus Jakarta Sans es variable,
-// de 400 a 800.
+// Inter (la fuente de texto de la marca) y Anton (solo la marca y el panel
+// de login), servidas desde `public/fonts` (subconjunto latino, licencia OFL
+// en `public/fonts/LICENCIAS.txt`) en vez de Google Fonts: así la app
+// instalada las tiene aunque arranque sin conexión (el service worker guarda
+// todo `*.woff2`). Inter es variable, de 100 a 900.
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Inter';
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+  src: url('/fonts/inter-latin.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Anton';
@@ -47,23 +47,22 @@ html {
         primary: mat.$cyan-palette,
         tertiary: mat.$cyan-palette,
       ),
-      typography: "'Plus Jakarta Sans', system-ui, sans-serif",
+      typography: "'Inter', system-ui, sans-serif",
       density: 0,
     )
   );
 }
 
 body {
-  // `color-scheme` lo fija cada tema en `styles/tokens/_semanticos.scss`
-  // (`tokens-claro`/`tokens-oscuro`), para que también acompañe al override
-  // manual de `data-theme` y no solo a la preferencia del sistema.
+  // `color-scheme` lo fija el modo (claro u oscuro) en
+  // `styles/tokens/_semanticos.scss`, según el sistema.
   background-color: var(--bg-page);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-md);
-  // 500 de base, como Mi Semana: Plus Jakarta Sans a 400 se ve delgada
-  // sobre los grises fríos.
-  font-weight: var(--weight-medium);
+  // 400: Inter ya trae cuerpo de sobra; a 500 el texto corrido se veía
+  // apretado y pesado.
+  font-weight: var(--weight-regular);
   line-height: var(--leading-normal);
   margin: 0;
   height: 100%;

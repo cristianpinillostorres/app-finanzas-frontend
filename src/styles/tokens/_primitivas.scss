@@ -1,134 +1,15 @@
-// Capa 1 — Primitivas: solo valores hex. Nada más referencia estos nombres
-// directamente salvo `_semanticos.scss`.
+// Capa 1 — Primitivas propias de la app. La paleta de la marca (Medianoche,
+// Abismo, Pizarra, Acero, Niebla, Bruma, Blanco y Coral) NO está acá: vive en
+// `Marca/ranvi-lab.css` y llega copiada en `src/assets/base/` como `--rv-*`.
 //
-// Paleta compartida con Mi Semana (la otra app de la casa): neutros fríos
-// con un tinte verde azulado y el teal como único color de marca. Los hex
-// de marca, neutros y estado son los de `mi_semana/static/styles/tokens.css`;
-// los que Finanzas necesita y Mi Semana no tiene (un tercer nivel de texto,
-// el borde de control a 3:1, los fondos de badge de cada monto) se
-// derivaron de esa misma rampa. Cada valor que termina usándose como texto
-// o como borde de control está verificado contra WCAG AA sobre sus fondos
-// reales: `npm run verificar:contraste`. No cambies un hex de acá sin
-// volver a correrlo.
+// Lo único que declara la app son los colores de estado, porque la marca
+// todavía no los define (pendiente en `Marca/ranvi-lab-tokens.json`):
+// ingresos en verde, gastos en rojo y deudas o vencimientos en ámbar. Son
+// provisionales; cuando Marca los defina, se reemplazan por sus alias. Cada
+// valor que termina como texto está verificado contra WCAG AA sobre sus
+// fondos reales: `npm run verificar:contraste`.
 :root {
-  // — neutros oscuros (superficies del tema oscuro) —
-  --p-ink-950: #0b1213; // página
-  --p-ink-800: #121b1d; // superficie (paneles, barra lateral)
-  --p-ink-700: #1a2528; // superficie elevada (diálogo, hoja, menú)
-  --p-ink-600: #2b3a3d; // relleno (chips, pistas de barra, ícono de fila)
-  --p-ink-550: #3a4b4f; // borde decorativo fuerte (hover)
-  --p-ink-500: #637377; // borde de control — 3:1 sobre superficie
-  --p-ink-400: #9db0b3; // texto atenuado
-  --p-ink-300: #bccbcd; // texto secundario
-  --p-ink-50: #eaf2f2; // texto primario
-
-  // — neutros claros (superficies del tema claro) —
   --p-white: #ffffff;
-  --p-neutral-50: #ffffff; // superficie (paneles, tarjetas): blanco puro
-  --p-neutral-100: #f6f8f9; // página: casi blanca, que no se vea apagada con poco brillo
-  --p-neutral-200: #e3e8ea; // relleno (chips, pistas de barra, ícono de fila)
-  --p-neutral-300: #cbd5d8; // borde decorativo
-  --p-neutral-350: #b4c0c4; // borde decorativo fuerte (hover)
-  --p-neutral-500: #7f8c90; // borde de control — 3:1 sobre la página
-  --p-neutral-600: #5b686c; // texto atenuado
-  --p-neutral-700: #3e4a4e; // texto secundario
-  --p-neutral-950: #0e1414; // texto primario
-
-  // — grises puros (tema Neutro: blanco y negro, sin tinte) —
-  --p-gris-50: #fafafa;
-  --p-gris-100: #f5f5f5; // página
-  --p-gris-200: #e5e5e5; // bordes y rellenos
-  --p-gris-300: #d4d4d4; // borde fuerte
-  --p-gris-500: #858585; // borde de control — 3:1 sobre la página
-  --p-gris-600: #636363; // texto atenuado
-  --p-gris-700: #404040; // texto secundario
-  --p-gris-950: #0a0a0a; // texto primario y acento
-
-  // — medianoche (tema oscuro: negro con acento azul eléctrico) —
-  --p-noche-950: #0e0e0e; // página
-  --p-noche-800: #191919; // superficie
-  --p-noche-700: #222222; // superficie elevada (hoja, diálogo, menú)
-  --p-noche-600: #2c2c2c; // relleno y bordes
-  --p-noche-550: #414042; // borde fuerte
-  --p-noche-500: #6d6e71; // borde de control — 3:1 sobre la superficie
-  --p-noche-400: #a7a9ac; // texto atenuado
-  --p-noche-300: #d1d3d4; // texto secundario
-  --p-azul-900: #1b2150; // fondo de acento
-  --p-azul-500: #405bff; // botón sólido (blanco encima: 4.9:1)
-  --p-azul-400: #8396ff; // acento como texto y foco sobre negro
-
-  // — teal (marca: acción primaria, enlaces, foco, selección) —
-  --p-teal-100: #ddf1f2; // fondo de acento, tema claro
-  --p-teal-200: #b4e0e3; // texto secundario sobre el panel de marca
-  --p-teal-300: #7fd0d5; // acento del tema oscuro; también su botón sólido
-  --p-teal-400: #4fb3b8; // brillo y foco del tema oscuro
-  --p-teal-500: #2e7f85; // brillo y foco del tema claro
-  --p-teal-700: #22545b; // acento del tema claro; también su botón sólido
-  --p-teal-900: #17383b; // fondo de acento del tema oscuro; panel de marca
-
-  // — medianoche claro (la misma paleta azul sobre blanco con un leve tinte) —
-  --p-noche-claro-100: #f5f5f7; // página
-  --p-noche-claro-200: #e8e9ee; // relleno
-  --p-noche-claro-300: #d4d5da; // borde decorativo
-  --p-noche-claro-350: #bcbdc4; // borde decorativo fuerte
-  --p-noche-claro-500: #85868d; // borde de control — 3:1 sobre la página
-  --p-noche-claro-600: #5f6066; // texto atenuado
-  --p-noche-claro-700: #505156; // texto secundario
-  --p-noche-claro-950: #0e0e0e; // texto primario
-  --p-azul-100: #e8ebff; // fondo de acento, tema claro
-  --p-azul-600: #2d44e0; // acento como texto sobre claro
-
-  // — brasa (ciruela con un coral suave, usado con medida) —
-  --p-ciruela-100: #f6f5fa; // página
-  --p-ciruela-200: #eceaf5; // relleno
-  --p-ciruela-300: #dedcec; // borde decorativo
-  --p-ciruela-350: #c9c6dd; // borde decorativo fuerte
-  --p-ciruela-500: #858499; // borde de control — 3:1 sobre la página
-  --p-ciruela-600: #5b5b76; // texto atenuado
-  --p-ciruela-700: #45455e; // texto secundario
-  --p-ciruela-950: #181824; // texto primario
-  --p-ciruela-ink-950: #181824; // página oscura
-  --p-ciruela-ink-800: #26253b; // superficie oscura; panel de marca
-  --p-ciruela-ink-700: #2d2c46; // superficie elevada oscura
-  --p-ciruela-ink-600: #343352; // relleno y bordes oscuros
-  --p-ciruela-ink-550: #4a4972; // borde fuerte oscuro
-  --p-ciruela-ink-500: #7b7a9c; // borde de control oscuro
-  --p-ciruela-ink-400: #a9a8be; // texto atenuado oscuro
-  --p-ciruela-ink-300: #c4c4d6; // texto secundario oscuro
-  --p-ciruela-ink-50: #f7f7ff; // texto primario oscuro
-  --p-coral-100: #ffe9e5; // fondo de acento, tema claro
-  --p-coral-300: #ff7d6c; // acento como texto sobre oscuro
-  --p-coral-400: #ff6a57; // botón sólido (texto oscuro encima) y foco oscuro
-  --p-coral-500: #ff4a36; // brillo y foco del tema claro
-  --p-coral-700: #c2301f; // acento como texto sobre claro
-  --p-coral-900: #4a2430; // fondo de acento oscuro
-
-  // — marino (azul tinta con azul de señal) —
-  --p-marino-100: #f8f9fb; // página
-  --p-marino-200: #e6ecf4; // relleno
-  --p-marino-300: #d4e0ed; // borde decorativo
-  --p-marino-350: #b8c9dc; // borde decorativo fuerte
-  --p-marino-500: #6f8aa6; // borde de control — 3:1 sobre la página
-  --p-marino-600: #476788; // texto atenuado
-  --p-marino-700: #2f5273; // texto secundario
-  --p-marino-950: #0b3558; // texto primario
-  --p-marino-ink-950: #07182a; // página oscura
-  --p-marino-ink-800: #0d2640; // superficie oscura
-  --p-marino-ink-700: #123150; // superficie elevada oscura
-  --p-marino-ink-600: #173a5f; // relleno oscuro
-  --p-marino-ink-550: #25517f; // borde fuerte oscuro
-  --p-marino-ink-500: #5a82ad; // borde de control oscuro
-  --p-marino-ink-400: #9db4cc; // texto atenuado oscuro
-  --p-marino-ink-300: #c4d4e5; // texto secundario oscuro
-  --p-marino-ink-50: #eaf2fb; // texto primario oscuro
-  --p-senal-100: #e6f0ff; // fondo de acento, tema claro
-  --p-senal-300: #7ab5ff; // acento sobre la superficie invertida oscura
-  --p-senal-400: #4d9bff; // acento oscuro y botón sólido (texto oscuro encima)
-  --p-senal-500: #3a86ff; // brillo y foco claro
-  --p-senal-600: #006bff; // botón sólido, tema claro (blanco encima)
-  --p-senal-700: #0057d1; // acento como texto sobre claro
-  --p-senal-900: #0f3560; // fondo de acento oscuro; panel de marca
-  --p-senal-950: #0b2a4d; // fondo de acento oscuro
 
   // — verde (ingresos) —
   --p-green-700: #2f6e35;
@@ -143,7 +24,7 @@
   --p-red-950: #2e1715;
 
   // — ámbar (deuda, vencimientos) —
-  --p-amber-800: #7f5d0f;
+  --p-amber-800: #745409;
   --p-amber-300: #e6b84e;
   --p-amber-50: #f7eedb;
   --p-amber-950: #2b2210;

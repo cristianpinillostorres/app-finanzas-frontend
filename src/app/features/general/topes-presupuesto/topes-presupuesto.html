@@ -1,0 +1,49 @@
+<app-hoja-cabecera titulo="Tus presupuestos" (cerrar)="cerrar()" />
+
+<div class="ios-form">
+  <p class="ios-nota">
+    @if (haySugerencia) {
+      Bajé los topes para que lo que te queda por gastar quepa en lo que tienes libre. Cámbialos
+      si quieres y pulsa Guardar.
+    } @else {
+      Lo máximo que quieres gastar al mes en cada categoría.
+    }
+  </p>
+
+  <div class="ios-grupo">
+    @for (categoria of conTope(); track categoria.id) {
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" [for]="'tope-' + categoria.id">{{ categoria.nombre }}</label>
+        <span class="monto">
+          <span class="monto__signo" aria-hidden="true">$</span>
+          <input
+            appMonto
+            class="monto__campo"
+            [id]="'tope-' + categoria.id"
+            [ngModel]="valores()[categoria.id]"
+            (ngModelChange)="escribir(categoria.id, $event)"
+          />
+        </span>
+      </div>
+    }
+  </div>
+
+  @if (invalido()) {
+    <p class="ios-nota err">Cada presupuesto necesita un monto mayor que cero.</p>
+  }
+
+  <button
+    class="btn btn-primary btn-block"
+    type="button"
+    [disabled]="invalido() || guardando()"
+    (click)="guardar()"
+  >
+    @if (guardando()) {
+      <span class="spinner" aria-hidden="true"></span>
+    }
+    Guardar
+  </button>
+  <button class="btn btn-text btn-block" type="button" (click)="verCategorias()">
+    Agregar o quitar presupuestos
+  </button>
+</div>

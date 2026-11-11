@@ -1,6 +1,12 @@
 import type { Movimiento } from '../models';
-import type { AnioMes } from './fechas';
-import { diasEntre, fechaLocalDesdeIso, inicioDelDia, perteneceAlMes } from './fechas';
+import type { AnioMes, Periodo } from './fechas';
+import {
+  diasEntre,
+  fechaLocalDesdeIso,
+  inicioDelDia,
+  perteneceAlMes,
+  perteneceAlPeriodo,
+} from './fechas';
 import type { ItemPagoFijoMes } from './pagos-fijos-agrupados';
 import type { EstadoPresupuesto } from './presupuestos';
 
@@ -32,7 +38,7 @@ export interface SalidasYEntradasMes {
 
 export function salidasYEntradasDelMes(
   movimientos: readonly Movimiento[],
-  mes: AnioMes,
+  periodo: Periodo,
 ): SalidasYEntradasMes {
   let ingresos = 0;
   let reembolsos = 0;
@@ -40,7 +46,7 @@ export function salidasYEntradasDelMes(
   let pagosDeuda = 0;
 
   for (const m of movimientos) {
-    if (!perteneceAlMes(m.fecha, mes)) continue;
+    if (!perteneceAlPeriodo(m.fecha, periodo)) continue;
     if (m.tipo === 'INGRESO') {
       if (m.categoriaId === CATEGORIA_REEMBOLSO) reembolsos += m.monto;
       else ingresos += m.monto;
@@ -192,6 +198,62 @@ export function ultimoSueldo(movimientos: readonly Movimiento[]): number | null 
   return sueldos[0]?.monto ?? null;
 }
 
+/** Cuántos meses completos se promedian para el ingreso de referencia. */
+const MESES_DE_REFERENCIA = 3;
+
+/**
+ * Cuánto entra al mes, como referencia para medir las cuotas: el promedio de
+ * los últimos meses completos (hasta tres) con ingresos de las categorías
+ * elegidas. Promediar evita que un mes flojo o uno con un extra muevan el
+ * porcentaje; un mes sin ingreso entre dos con ingreso cuenta como cero.
+ *
+ * - `categoriasElegidas` es la lista de ids de categorías de ingreso; `null`
+ *   es "todas las de ingreso menos los reembolsos", que no son plata ganada
+ *   (ver `salidasYEntradasDelMes`).
+ * - Si no hay ningún mes completo con ingreso, se usa el último mes que lo
+ *   tenga (el actual, si es el único), para no dejar al recién llegado sin
+ *   referencia.
+ * - `null` si ninguna categoría elegida tiene ingresos.
+ */
+export function ingresoMensualDeReferencia(
+  movimientos: readonly Movimiento[],
+  categoriasElegidas: readonly string[] | null,
+  hoy: Date,
+): number | null {
+  const cuenta = (m: Movimiento): boolean =>
+    m.tipo === 'INGRESO' &&
+    (categoriasElegidas === null
+      ? m.categoriaId !== CATEGORIA_REEMBOLSO
+      : categoriasElegidas.includes(m.categoriaId ?? ''));
+
+  const porMes = new Map<string, number>();
+  for (const m of movimientos) {
+    if (!cuenta(m)) continue;
+    const clave = m.fecha.slice(0, 7);
+    porMes.set(clave, (porMes.get(clave) ?? 0) + m.monto);
+  }
+  if (porMes.size === 0) return null;
+
+  const claveDeMes = (atras: number): string => {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - atras, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  // Del mes pasado hacia atrás; el promedio llega hasta el más viejo con ingreso.
+  const completos = Array.from({ length: MESES_DE_REFERENCIA }, (_, i) => claveDeMes(i + 1));
+  let masViejo = -1;
+  completos.forEach((clave, i) => {
+    if (porMes.has(clave)) masViejo = i;
+  });
+  if (masViejo >= 0) {
+    const meses = completos.slice(0, masViejo + 1);
+    return Math.round(meses.reduce((suma, clave) => suma + (porMes.get(clave) ?? 0), 0) / meses.length);
+  }
+
+  const ultimo = [...porMes.keys()].sort().at(-1)!;
+  return Math.round(porMes.get(ultimo)!);
+}
+
 /** Lo que se paga en cuotas de créditos en un mes (pagadas y por pagar). */
 export function totalCuotasDelMes(items: readonly ItemPagoFijoMes[]): number {
   return items.filter((i) => i.esCredito).reduce((acc, i) => acc + i.monto, 0);
@@ -204,9 +266,23 @@ export function totalCuotasDelMes(items: readonly ItemPagoFijoMes[]): number {
  * allá ya no queda margen para vivir.
  */
 export function estadoDeComprometido(proporcion: number): EstadoPresupuesto {
-  if (proporcion > 0.5) return 'pasado';
-  if (proporcion >= 0.35) return 'cerca';
+  if (proporcion > TOPE_CUOTAS_CRITICO) return 'pasado';
+  if (proporcion >= TOPE_CUOTAS_SALUDABLE) return 'cerca';
   return 'bien';
+}
+
+/** Hasta qué parte del sueldo se recomienda llevar en cuotas (35 %). */
+export const TOPE_CUOTAS_SALUDABLE = 0.35;
+/** Pasada la mitad del sueldo en cuotas ya casi no queda margen (50 %). */
+export const TOPE_CUOTAS_CRITICO = 0.5;
+
+/**
+ * Cuánto se pasan las cuotas del tope saludable, en pesos: positivo si se
+ * pasan, negativo si todavía hay margen. `null` sin sueldo de referencia.
+ */
+export function excesoSobreTopeCuotas(cuotasDelMes: number, sueldo: number | null): number | null {
+  if (sueldo === null || sueldo <= 0) return null;
+  return Math.round(cuotasDelMes - TOPE_CUOTAS_SALUDABLE * sueldo);
 }
 
 /**

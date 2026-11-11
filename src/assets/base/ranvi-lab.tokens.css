@@ -1,0 +1,302 @@
+/* GENERADO por Base-desarrollo/scripts/generar_tokens.py a partir de Marca/ranvi-lab.css.
+ * NO editar a mano: se edita Marca/ y se vuelve a generar.
+ * Solo variables --rv-*; sin estilos globales, clases ni fuentes. */
+
+:root {
+  --rv-medianoche: #06141B;
+  --rv-abismo: #11212D;
+  --rv-pizarra: #253745;
+  --rv-acero: #4A5C6A;
+  --rv-niebla: #9BA8AB;
+  --rv-bruma: #CCD0CF;
+  --rv-blanco: #FFFFFF;
+  --rv-coral: #FF7F5C;
+  --rv-coral-intenso: #E8663F;
+  --rv-medianoche-rgb: 6 20 27;
+  --rv-abismo-rgb: 17 33 45;
+  --rv-pizarra-rgb: 37 55 69;
+  --rv-acero-rgb: 74 92 106;
+  --rv-niebla-rgb: 155 168 171;
+  --rv-bruma-rgb: 204 208 207;
+  --rv-coral-rgb: 255 127 92;
+}
+
+:root {
+  --rv-bg: var(--rv-blanco);
+  --rv-surface: rgb(var(--rv-bruma-rgb) / 0.4);
+  --rv-surface-strong: var(--rv-bruma);
+  --rv-surface-inverse: var(--rv-abismo);
+  --rv-border: var(--rv-bruma);
+  --rv-border-strong: var(--rv-pizarra);
+  --rv-text: var(--rv-medianoche);
+  --rv-text-muted: var(--rv-acero);
+  --rv-text-inverse: var(--rv-blanco);
+  --rv-heading: var(--rv-pizarra);
+  --rv-link: var(--rv-pizarra);
+  --rv-link-hover: var(--rv-medianoche);
+  --rv-accent: var(--rv-coral);
+  --rv-accent-hover: var(--rv-coral-intenso);
+  --rv-on-accent: var(--rv-medianoche);
+  --rv-focus-ring: var(--rv-medianoche);
+  --rv-field-focus-bg: var(--rv-blanco);
+  --rv-nav-bg: var(--rv-bruma);
+  --rv-nav-fg: var(--rv-pizarra);
+  --rv-nav-active-bg: var(--rv-coral);
+  --rv-nav-active-fg: var(--rv-medianoche);
+  --rv-hover-surface: rgb(var(--rv-bruma-rgb) / 0.4);
+  --rv-disabled-bg: var(--rv-bruma);
+  --rv-disabled-fg: var(--rv-acero);
+  --rv-node-done: var(--rv-pizarra);
+  --rv-shadow-card: 0 1px 2px rgb(var(--rv-medianoche-rgb) / 0.12);
+  --rv-shadow-raised: 0 12px 32px rgb(var(--rv-medianoche-rgb) / 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --rv-bg: var(--rv-abismo);
+    --rv-surface: var(--rv-pizarra);
+    --rv-surface-strong: var(--rv-pizarra);
+    --rv-surface-inverse: var(--rv-blanco);
+    --rv-border: var(--rv-niebla);
+    --rv-border-strong: var(--rv-bruma);
+    --rv-text: var(--rv-blanco);
+    --rv-text-muted: var(--rv-niebla);
+    --rv-text-inverse: var(--rv-medianoche);
+    --rv-heading: var(--rv-blanco);
+    --rv-link: var(--rv-bruma);
+    --rv-link-hover: var(--rv-blanco);
+    --rv-accent: var(--rv-coral);
+    --rv-accent-hover: var(--rv-coral-intenso);
+    --rv-on-accent: var(--rv-medianoche);
+    --rv-focus-ring: var(--rv-blanco);
+    --rv-field-focus-bg: var(--rv-pizarra);
+    --rv-nav-bg: var(--rv-pizarra);
+    --rv-nav-fg: var(--rv-bruma);
+    --rv-nav-active-bg: var(--rv-coral);
+    --rv-nav-active-fg: var(--rv-medianoche);
+    --rv-hover-surface: var(--rv-pizarra);
+    --rv-disabled-bg: var(--rv-pizarra);
+    --rv-disabled-fg: var(--rv-niebla);
+    --rv-node-done: var(--rv-bruma);
+    --rv-shadow-card: none;
+    --rv-shadow-raised: 0 12px 32px rgb(0 0 0 / 0.35);
+  }
+}
+
+:root[data-theme="dark"], [data-theme="dark"] {
+  --rv-bg: var(--rv-abismo);
+  --rv-surface: var(--rv-pizarra);
+  --rv-surface-strong: var(--rv-pizarra);
+  --rv-surface-inverse: var(--rv-blanco);
+  --rv-border: var(--rv-niebla);
+  --rv-border-strong: var(--rv-bruma);
+  --rv-text: var(--rv-blanco);
+  --rv-text-muted: var(--rv-niebla);
+  --rv-text-inverse: var(--rv-medianoche);
+  --rv-heading: var(--rv-blanco);
+  --rv-link: var(--rv-bruma);
+  --rv-link-hover: var(--rv-blanco);
+  --rv-accent: var(--rv-coral);
+  --rv-accent-hover: var(--rv-coral-intenso);
+  --rv-on-accent: var(--rv-medianoche);
+  --rv-focus-ring: var(--rv-blanco);
+  --rv-field-focus-bg: var(--rv-pizarra);
+  --rv-nav-bg: var(--rv-pizarra);
+  --rv-nav-fg: var(--rv-bruma);
+  --rv-nav-active-bg: var(--rv-coral);
+  --rv-nav-active-fg: var(--rv-medianoche);
+  --rv-hover-surface: var(--rv-pizarra);
+  --rv-disabled-bg: var(--rv-pizarra);
+  --rv-disabled-fg: var(--rv-niebla);
+  --rv-node-done: var(--rv-bruma);
+  --rv-shadow-card: none;
+  --rv-shadow-raised: 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+[data-theme="light"] {
+  --rv-bg: var(--rv-blanco);
+  --rv-surface: rgb(var(--rv-bruma-rgb) / 0.4);
+  --rv-surface-strong: var(--rv-bruma);
+  --rv-surface-inverse: var(--rv-abismo);
+  --rv-border: var(--rv-bruma);
+  --rv-border-strong: var(--rv-pizarra);
+  --rv-text: var(--rv-medianoche);
+  --rv-text-muted: var(--rv-acero);
+  --rv-text-inverse: var(--rv-blanco);
+  --rv-heading: var(--rv-pizarra);
+  --rv-link: var(--rv-pizarra);
+  --rv-link-hover: var(--rv-medianoche);
+  --rv-accent: var(--rv-coral);
+  --rv-accent-hover: var(--rv-coral-intenso);
+  --rv-on-accent: var(--rv-medianoche);
+  --rv-focus-ring: var(--rv-medianoche);
+  --rv-field-focus-bg: var(--rv-blanco);
+  --rv-nav-bg: var(--rv-bruma);
+  --rv-nav-fg: var(--rv-pizarra);
+  --rv-nav-active-bg: var(--rv-coral);
+  --rv-nav-active-fg: var(--rv-medianoche);
+  --rv-hover-surface: rgb(var(--rv-bruma-rgb) / 0.4);
+  --rv-disabled-bg: var(--rv-bruma);
+  --rv-disabled-fg: var(--rv-acero);
+  --rv-node-done: var(--rv-pizarra);
+  --rv-shadow-card: 0 1px 2px rgb(var(--rv-medianoche-rgb) / 0.12);
+  --rv-shadow-raised: 0 12px 32px rgb(var(--rv-medianoche-rgb) / 0.18);
+}
+
+:root {
+  --rv-font-title: "Sora", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --rv-font-text: "Inter", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --rv-weight-regular: 400;
+  --rv-weight-medium: 500;
+  --rv-weight-semibold: 600;
+  --rv-fs-h1: 2.5rem;
+  --rv-lh-h1: 3rem;
+  --rv-fs-h2: 2rem;
+  --rv-lh-h2: 2.5rem;
+  --rv-fs-h3: 1.5rem;
+  --rv-lh-h3: 2rem;
+  --rv-fs-h4: 1.25rem;
+  --rv-lh-h4: 1.75rem;
+  --rv-fs-lead: 1.125rem;
+  --rv-lh-lead: 1.75rem;
+  --rv-fs-body: 1rem;
+  --rv-lh-body: 1.5rem;
+  --rv-fs-small: 0.875rem;
+  --rv-lh-small: 1.25rem;
+  --rv-fs-caption: 0.75rem;
+  --rv-lh-caption: 1rem;
+  --rv-fs-overline: 0.75rem;
+  --rv-lh-overline: 1rem;
+  --rv-fs-button: 1rem;
+  --rv-lh-button: 1.5rem;
+  --rv-fs-figure: 2rem;
+  --rv-lh-figure: 2.25rem;
+  --rv-ls-overline: 0.08em;
+  --rv-measure: 70ch;
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --rv-fs-h1: 1.75rem;
+    --rv-lh-h1: 2.125rem;
+    --rv-fs-h2: 1.5rem;
+    --rv-lh-h2: 1.875rem;
+    --rv-fs-h3: 1.25rem;
+    --rv-lh-h3: 1.625rem;
+    --rv-fs-h4: 1.125rem;
+    --rv-lh-h4: 1.5rem;
+  }
+}
+
+:root {
+  --rv-space-1: 4px;
+  --rv-space-2: 8px;
+  --rv-space-3: 12px;
+  --rv-space-4: 16px;
+  --rv-space-5: 24px;
+  --rv-space-6: 32px;
+  --rv-space-7: 48px;
+  --rv-space-8: 64px;
+  --rv-radius-capsule: 999px;
+  --rv-radius-card: 16px;
+  --rv-radius-field: 12px;
+  --rv-radius-app-icon: 22%;
+  --rv-border-width: 1px;
+  --rv-border-width-strong: 1.5px;
+  --rv-control-height: 48px;
+  --rv-control-height-lg: 52px;
+  --rv-chip-height: 32px;
+  --rv-touch-min: 44px;
+  --rv-touch-min-android: 48px;
+  --rv-z-base: 0;
+  --rv-z-sticky: 100;
+  --rv-z-overlay: 1000;
+  --rv-z-modal: 1100;
+  --rv-z-toast: 1200;
+  --rv-container-max: 1200px;
+  --rv-margin-mobile: 16px;
+  --rv-margin-tablet: 24px;
+  --rv-margin-desktop: 32px;
+  --rv-gutter: 24px;
+  --rv-columns-mobile: 4;
+  --rv-columns-tablet: 8;
+  --rv-columns-desktop: 12;
+  --rv-bp-tablet: 768px;
+  --rv-bp-desktop: 1024px;
+  --rv-bp-wide: 1280px;
+}
+
+:root {
+  --rv-dur-fast: 150ms;
+  --rv-dur-base: 250ms;
+  --rv-dur-hop: 320ms;
+  --rv-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rv-dur-fast: 0.01ms;
+    --rv-dur-base: 0.01ms;
+    --rv-dur-hop: 0.01ms;
+  }
+}
+
+:root {
+  --rv-chart-bg: var(--rv-blanco);
+  --rv-chart-grid: var(--rv-bruma);
+  --rv-chart-axis: var(--rv-acero);
+  --rv-chart-label: var(--rv-medianoche);
+  --rv-chart-baseline: var(--rv-acero);
+  --rv-chart-current: var(--rv-pizarra);
+  --rv-chart-current-fill: rgb(var(--rv-pizarra-rgb) / 0.2);
+  --rv-chart-focus: var(--rv-coral);
+  --rv-chart-focus-stroke: var(--rv-medianoche);
+  --rv-chart-series-1: var(--rv-pizarra);
+  --rv-chart-series-2: var(--rv-acero);
+  --rv-chart-series-3: var(--rv-niebla);
+  --rv-chart-series-4: var(--rv-bruma);
+  --rv-chart-stroke: 2.5px;
+  --rv-chart-node-size: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --rv-chart-bg: var(--rv-abismo);
+    --rv-chart-grid: var(--rv-acero);
+    --rv-chart-axis: var(--rv-acero);
+    --rv-chart-label: var(--rv-bruma);
+    --rv-chart-baseline: var(--rv-niebla);
+    --rv-chart-current: var(--rv-coral);
+    --rv-chart-current-fill: rgb(var(--rv-coral-rgb) / 0.2);
+    --rv-chart-focus: var(--rv-coral);
+    --rv-chart-focus-stroke: var(--rv-abismo);
+  }
+}
+
+:root[data-theme="dark"], [data-theme="dark"] {
+  --rv-chart-bg: var(--rv-abismo);
+  --rv-chart-grid: var(--rv-acero);
+  --rv-chart-axis: var(--rv-acero);
+  --rv-chart-label: var(--rv-bruma);
+  --rv-chart-baseline: var(--rv-niebla);
+  --rv-chart-current: var(--rv-coral);
+  --rv-chart-current-fill: rgb(var(--rv-coral-rgb) / 0.2);
+  --rv-chart-focus: var(--rv-coral);
+  --rv-chart-focus-stroke: var(--rv-abismo);
+}
+
+:root {
+  --rv-logo-circle-d: 10.4;
+  --rv-logo-opening-deg: 40;
+  --rv-logo-opening-center-deg: 45;
+  --rv-logo-exit-length: 9;
+  --rv-logo-dot-d: 1.6;
+  --rv-logo-clear-space: 5;
+  --rv-logo-gap-horizontal: 4;
+  --rv-logo-gap-stacked: 5;
+  --rv-logo-small-stroke-ratio: 0.14;
+  --rv-logo-min-sign-screen: 16px;
+  --rv-logo-min-horizontal-screen: 96px;
+  --rv-logo-min-stacked-screen: 64px;
+  --rv-logo-small-below: 24px;
+}

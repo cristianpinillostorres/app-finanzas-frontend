@@ -15,7 +15,10 @@
       <aside class="lateral">
         <span class="marca">
           <span class="brand__marca" aria-hidden="true"><mat-icon>savings</mat-icon></span>
-          <span class="marca__nombre">Finanzas</span>
+          <span class="marca__texto">
+            <span class="marca__nombre">Finanzas</span>
+            <span class="marca__sub">Personal · COP</span>
+          </span>
         </span>
 
         <!-- La acción principal, arriba y antes de las secciones: es lo que
@@ -64,24 +67,44 @@
           }
         </nav>
 
-        <!-- Las acciones de la cuenta, debajo de las secciones como el bloque
-           de "Administrar" de Mi Semana. -->
-        <hr class="lateral__divisor" />
-        <span class="lateral__titulo" aria-hidden="true">Cuenta</span>
-        <div class="cuenta" role="group" aria-label="Cuenta">
-          <a
-            class="nav__item"
-            routerLink="/categorias"
-            routerLinkActive="nav__item--activo"
-            #activoCategorias="routerLinkActive"
-            [attr.aria-current]="activoCategorias.isActive ? 'page' : null"
-            aria-label="Categorías"
-            title="Categorías"
-          >
-            <span class="nav__fondo" aria-hidden="true"></span>
-            <mat-icon aria-hidden="true">sell</mat-icon>
-            <span class="nav__texto">Categorías</span>
-          </a>
+        <!-- Contexto, no contenido: qué enfoque lleva la persona y en qué punto
+             del ciclo va, justo debajo de las secciones. Cambiar el enfoque es
+             en Configuración. -->
+        @if (enfoque() || ciclo()) {
+          <div class="estado" role="group" aria-label="Tu enfoque y tu ciclo">
+            <hr class="lateral__divisor" />
+            @if (enfoque(); as e) {
+              <span class="lateral__titulo" aria-hidden="true">Enfoque</span>
+              <a class="estado__enfoque" routerLink="/configuracion" title="Cambiar enfoque">
+                <mat-icon aria-hidden="true">{{ e.icono }}</mat-icon>
+                <span>{{ e.nombre }}</span>
+              </a>
+            }
+            @if (ciclo(); as c) {
+              <span class="lateral__titulo" aria-hidden="true">Ciclo</span>
+              <div class="estado__ciclo">
+                <span class="estado__texto"
+                  >Día {{ c.dia }} de {{ c.duracion }} ·
+                  {{ c.diasHastaPago === 1 ? 'falta 1 día' : 'faltan ' + c.diasHastaPago + ' días' }}</span
+                >
+                <div
+                  class="estado__barra"
+                  role="progressbar"
+                  aria-label="Avance del ciclo de pago"
+                  [attr.aria-valuenow]="c.dia"
+                  aria-valuemin="1"
+                  [attr.aria-valuemax]="c.duracion"
+                >
+                  <span class="estado__relleno" [style.width.%]="c.porcentaje"></span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Configuración, al piso de la barra. Categorías es una sección más. -->
+        <div class="cuenta">
+          <hr class="lateral__divisor" />
           <a
             class="nav__item"
             routerLink="/configuracion"
@@ -153,8 +176,7 @@
         }
         <!-- Botones redondos sobre la superficie, como los de la barra de
              navegación de iOS. El ojo va afuera porque se usa a diario (en
-             la calle, con alguien al lado); el tema, que se elige una vez,
-             vive en el menú "···". -->
+             la calle, con alguien al lado). -->
         <button
           mat-icon-button
           type="button"
@@ -176,10 +198,6 @@
           <mat-icon aria-hidden="true">more_horiz</mat-icon>
         </button>
         <mat-menu #menuMovil="matMenu" class="menu-cuenta">
-          <button mat-menu-item type="button" [matMenuTriggerFor]="menuTema">
-            <mat-icon aria-hidden="true">contrast</mat-icon>
-            <span>Tema</span>
-          </button>
           <a mat-menu-item routerLink="/ahorro">
             <mat-icon aria-hidden="true">savings</mat-icon>
             <span>Ahorro</span>
@@ -192,6 +210,25 @@
             <mat-icon aria-hidden="true">settings</mat-icon>
             <span>Configuración</span>
           </a>
+          <div class="menu-cuenta__grupo menu-cuenta__grupo--linea t-meta" aria-hidden="true">Apariencia</div>
+          @for (opcion of opcionesTema; track opcion.valor) {
+            <button
+              mat-menu-item
+              type="button"
+              role="menuitemradio"
+              [attr.aria-checked]="tema.preferencia() === opcion.valor"
+              (click)="tema.elegir(opcion.valor)"
+            >
+              <mat-icon aria-hidden="true">{{ opcion.icono }}</mat-icon>
+              <span class="menu-cuenta__fila">
+                {{ opcion.nombre }}
+                @if (tema.preferencia() === opcion.valor) {
+                  <mat-icon class="menu-cuenta__check" aria-hidden="true">check</mat-icon>
+                }
+              </span>
+            </button>
+          }
+          <div class="menu-cuenta__grupo menu-cuenta__grupo--linea t-meta" aria-hidden="true">Cuenta</div>
           <button mat-menu-item type="button" class="menu-cuenta__salir" (click)="cerrarSesion()">
             <mat-icon aria-hidden="true">logout</mat-icon>
             <span>Cerrar sesión</span>
@@ -238,62 +275,20 @@
   }
 }
 
-<!-- Menú de tema, el mismo en escritorio y en el teléfono: las cinco
-     paletas a la vista, con una muestra de su color y la activa marcada, y
-     debajo el modo (claro u oscuro), que se elige aparte. -->
-<mat-menu #menuTema="matMenu" class="menu-tema">
-  @for (opcion of opcionesTema; track opcion.id) {
-    <button
-      mat-menu-item
-      type="button"
-      role="menuitemradio"
-      [attr.aria-checked]="tema.tema() === opcion.id"
-      (click)="tema.fijar(opcion.id)"
-    >
-      <!-- La muestra va en el hueco del ícono del ítem; el visto, al final. -->
-      <mat-icon class="muestra-tema" [attr.data-tema]="opcion.id" aria-hidden="true"></mat-icon>
-      <span class="menu-tema__fila">
-        {{ opcion.nombre }}
-        @if (tema.tema() === opcion.id) {
-          <span class="material-symbols-outlined menu-tema__check" aria-hidden="true">check</span>
-        }
-      </span>
-    </button>
-  }
-  <div class="menu-tema__separador" role="separator"></div>
-  @for (opcion of opcionesModo; track opcion.id) {
-    <button
-      mat-menu-item
-      type="button"
-      role="menuitemradio"
-      [attr.aria-checked]="tema.modo() === opcion.id"
-      (click)="tema.fijarModo(opcion.id)"
-    >
-      <mat-icon aria-hidden="true">{{ opcion.icono }}</mat-icon>
-      <span class="menu-tema__fila">
-        {{ opcion.nombre }}
-        @if (tema.modo() === opcion.id) {
-          <span class="material-symbols-outlined menu-tema__check" aria-hidden="true">check</span>
-        }
-      </span>
-    </button>
-  }
-</mat-menu>
-
 <!-- Botones globales de escritorio: el ojo, que se usa a diario, y la
      cuenta. `PageHead` los dibuja dentro de la tarjeta del título de cada
-     pantalla (ver `AccionesEscritorioService`). El tema, que se elige una
-     vez, vive en el menú de la cuenta, como en el "···" del teléfono. -->
+     pantalla (ver `AccionesEscritorioService`).  -->
 <ng-template #acciones>
   <button
-    mat-icon-button
     type="button"
-    class="cabezote__icono"
-    [attr.aria-label]="tituloOjo()"
+    role="switch"
+    class="cabezote__saldos"
+    [attr.aria-checked]="!montos.oculto()"
     [title]="tituloOjo()"
     (click)="montos.alternar()"
   >
     <mat-icon aria-hidden="true">{{ montos.oculto() ? 'visibility_off' : 'visibility' }}</mat-icon>
+    <span>{{ montos.oculto() ? 'Saldos ocultos' : 'Saldos visibles' }}</span>
   </button>
 
   <button
@@ -313,10 +308,25 @@
         <span class="t-meta">Cuenta personal</span>
       </div>
     }
-    <button mat-menu-item type="button" [matMenuTriggerFor]="menuTema">
-      <mat-icon aria-hidden="true">contrast</mat-icon>
-      <span>Tema</span>
-    </button>
+    <div class="menu-cuenta__grupo t-meta" aria-hidden="true">Apariencia</div>
+    @for (opcion of opcionesTema; track opcion.valor) {
+      <button
+        mat-menu-item
+        type="button"
+        role="menuitemradio"
+        [attr.aria-checked]="tema.preferencia() === opcion.valor"
+        (click)="tema.elegir(opcion.valor)"
+      >
+        <mat-icon aria-hidden="true">{{ opcion.icono }}</mat-icon>
+        <span class="menu-cuenta__fila">
+          {{ opcion.nombre }}
+          @if (tema.preferencia() === opcion.valor) {
+            <mat-icon class="menu-cuenta__check" aria-hidden="true">check</mat-icon>
+          }
+        </span>
+      </button>
+    }
+    <div class="menu-cuenta__grupo menu-cuenta__grupo--linea t-meta" aria-hidden="true">Cuenta</div>
     <button mat-menu-item type="button" class="menu-cuenta__salir" (click)="cerrarSesion()">
       <mat-icon aria-hidden="true">logout</mat-icon>
       <span>Cerrar sesión</span>

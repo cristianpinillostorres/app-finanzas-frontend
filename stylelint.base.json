@@ -1,0 +1,14 @@
+{
+  "customSyntax": "postcss-scss",
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "No uses hex: referencia un token con var(--*). Ver Base-desarrollo/README.md."
+      }
+    ],
+    "declaration-property-value-disallowed-list": {
+      "font-family": ["/Inter/", "/Plus Jakarta Sans/"]
+    }
+  }
+}

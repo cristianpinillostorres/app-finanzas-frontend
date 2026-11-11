@@ -5,31 +5,24 @@
     <title>Finanzas personales</title>
     <base href="/" />
     <!--
-      Aplica el tema y el modo guardados (`ThemeService`, `data-theme` y
-      `data-modo` en `<html>`) antes del primer pintado — de lo contrario
-      se ve un parpadeo: la app arranca en Teal claro (CSS puro, instantáneo)
-      y recién después de que Angular carga, `ThemeService` corrige al tema
-      guardado. Bloqueante a propósito, mínimo, sin dependencias.
+      Volviendo de la bienvenida al login ("¿Ya tienes cuenta? Entra"): el
+      panel de marca queda pintado durante la recarga (ver
+      `TransicionLogin.marcarVuelta` y `html[data-puente]` en styles.scss).
+      Bloqueante a propósito, mínimo, sin dependencias.
     -->
     <script>
       try {
-        // Login: siempre Teal claro (ver `ThemeService.soloClaro`). Bienvenida:
-        // el tema elegido pero en claro (`ThemeService.soloModoClaro`).
-        var ruta = location.pathname;
-        var esLogin = /^\/login(\/|$)/.test(ruta);
-        var esBienvenida = /^\/bienvenida(\/|$)/.test(ruta);
-        var temas = ['teal', 'neutro', 'medianoche', 'brasa', 'marino'];
+        if (sessionStorage.getItem('finanzas.vuelta-login') === '1') {
+          document.documentElement.setAttribute('data-puente', '');
+        }
+      } catch (e) {}
+      // El modo que fijó la persona en Configuración (ver `ThemeService`),
+      // antes del primer pintado para que la página no parpadee.
+      try {
         var tema = localStorage.getItem('finanzas.tema');
-        var modo = localStorage.getItem('finanzas.modo');
-        // Volviendo de la bienvenida al login ("¿Ya tienes cuenta? Entra"):
-        // el panel de marca queda pintado durante la recarga (ver
-        // `TransicionLogin.marcarVuelta` y `html[data-puente]` en styles.scss).
-        var vuelta = sessionStorage.getItem('finanzas.vuelta-login') === '1';
-        if (vuelta) document.documentElement.setAttribute('data-puente', '');
-        if (esLogin || vuelta || temas.indexOf(tema) === -1) tema = 'teal';
-        if (esLogin || esBienvenida || (modo !== 'claro' && modo !== 'oscuro')) modo = 'claro';
-        document.documentElement.setAttribute('data-theme', tema);
-        document.documentElement.setAttribute('data-modo', modo);
+        if (tema === 'claro' || tema === 'oscuro') {
+          document.documentElement.setAttribute('data-theme', tema === 'claro' ? 'light' : 'dark');
+        }
       } catch (e) {}
     </script>
     <!--
@@ -50,10 +43,11 @@
     <meta name="apple-mobile-web-app-title" content="Finanzas" />
     <!--
       Barra del navegador en Android (sin efecto directo en iOS, ahí manda
-      `apple-mobile-web-app-status-bar-style`). Arranca con la página de
-      Teal; `ThemeService` lo cambia al tema elegido (ver `COLOR_BARRA`).
+      `apple-mobile-web-app-status-bar-style`): el fondo de la página en cada
+      modo, Blanco y Abismo de la marca.
     -->
-    <meta name="theme-color" content="#f6f8f9" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11212d" />
     <!-- Ícono de la pantalla de inicio en iOS — Safari no lee `icons` del manifest para esto, necesita su propio `<link>`. -->
     <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -64,7 +58,7 @@
     -->
     <link
       rel="preload"
-      href="fonts/plus-jakarta-sans-latin.woff2"
+      href="fonts/inter-latin.woff2"
       as="font"
       type="font/woff2"
       crossorigin=""

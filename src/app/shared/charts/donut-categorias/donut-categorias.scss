@@ -1,8 +1,14 @@
 :host {
   display: block;
-  padding: var(--space-4);
+  // Es el cuerpo de una tarjeta estándar: mismo margen que su cabeza (ver
+  // `.panel__cuerpo` en los estilos globales).
+  padding: 0 var(--tarjeta-aire, var(--space-5)) var(--tarjeta-aire, var(--space-5));
+  // El diseño depende del ancho de la tarjeta, no del de la pantalla: la misma
+  // dona queda en columna angosta (celular, o columna lateral) o en una tarjeta ancha.
+  container-type: inline-size;
 }
 
+// Angosto: la dona arriba y la leyenda debajo.
 .dona {
   display: flex;
   flex-direction: column;
@@ -11,6 +17,26 @@
 
 .dona__grafica {
   position: relative;
+}
+
+// Ancho: la dona a la izquierda y la leyenda a su lado, centrada en vertical.
+// La tarjeta queda más baja y cada color queda junto a su porcentaje y monto.
+@container (min-width: 30rem) {
+  .dona {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  .dona__grafica {
+    flex: none;
+    width: 13rem;
+  }
+
+  .leyenda {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .dona__centro {

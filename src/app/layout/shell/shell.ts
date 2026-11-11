@@ -16,11 +16,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
+import { avanceDelCiclo } from '../../core/domain/ciclo-pago';
+import { PREFERENCIAS_INICIALES } from '../../core/models';
+import { OPCIONES_OBJETIVO } from '../../shared/bienvenida/pasos-bienvenida';
 import { AuthService } from '../../core/auth/auth.service';
+import { OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
 import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
 import { GuiaPaso } from '../../shared/bienvenida/guia-paso';
 import { MontosVisibilityService } from '../../core/montos-visibility.service';
-import { OPCIONES_MODO, OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
 import { AccionesEscritorioService } from '../acciones-escritorio.service';
 import { HeaderActionService } from '../header-action.service';
 import { HeaderSearchService } from '../header-search.service';
@@ -53,9 +57,12 @@ export class Shell {
   protected readonly navItems = NAV_ITEMS;
   /** La barra de abajo del celular: solo lo que cabe en cinco lugares. */
   protected readonly navItemsMovil = NAV_ITEMS.filter((item) => !item.soloEscritorio);
+  // Se crea con el shell para que el modo fijado (en Configuración o en el menú
+  // de la cuenta) se aplique, barra del navegador incluida, en cualquier pantalla.
+  protected readonly tema = inject(ThemeService);
+  protected readonly opcionesTema = OPCIONES_TEMA;
   protected readonly viewport = inject(ViewportService);
   protected readonly montos = inject(MontosVisibilityService);
-  protected readonly tema = inject(ThemeService);
   protected readonly accionPantalla = inject(HeaderActionService).accion;
   protected readonly headerSearch = inject(HeaderSearchService);
   private readonly nuevoMovimiento = inject(NuevoMovimientoService);
@@ -89,12 +96,27 @@ export class Shell {
     { initialValue: '' },
   );
 
+
+  private readonly preferencias = toSignal(inject(PREFERENCIAS_API).obtener(), {
+    initialValue: PREFERENCIAS_INICIALES,
+  });
+
+  /** El enfoque que eligió (cambiarlo es en Configuración), o `null` si no eligió. */
+  protected readonly enfoque = computed(
+    () => OPCIONES_OBJETIVO.find((o) => o.valor === this.preferencias().objetivoPrincipal) ?? null,
+  );
+
+  /** Dónde va el ciclo de pago; sin día de pago no hay ciclo que mostrar. */
+  protected readonly ciclo = computed(() => {
+    const dia = this.preferencias().diaDePago;
+    if (dia === null) return null;
+    const avance = avanceDelCiclo(new Date(), dia);
+    return { ...avance, porcentaje: Math.min(100, Math.round((avance.dia / avance.duracion) * 100)) };
+  });
+
   protected readonly tituloOjo = computed(() =>
     this.montos.oculto() ? 'Mostrar montos' : 'Ocultar montos',
   );
-
-  protected readonly opcionesTema = OPCIONES_TEMA;
-  protected readonly opcionesModo = OPCIONES_MODO;
 
   /** Correo de la sesión, para el avatar y el menú de la cuenta en escritorio. */
   protected readonly correoUsuario = this.auth.email;

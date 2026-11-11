@@ -19,5 +19,8 @@ export * from './gastos-por-categoria';
 export * from './progreso-creditos';
 export * from './tendencia-mes';
 export * from './presupuestos';
+export * from './compras-a-cuotas';
 export * from './panorama-del-mes';
 export * from './metas-ahorro';
+export * from './vista-del-heroe';
+export * from './asistente';

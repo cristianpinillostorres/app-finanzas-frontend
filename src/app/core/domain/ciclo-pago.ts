@@ -1,4 +1,11 @@
-import { diasEntre, inicioDelDia, ultimoDiaDelMes } from './fechas';
+import {
+  anioMesDe,
+  diasEntre,
+  fechaIsoDesdeLocal,
+  inicioDelDia,
+  type Periodo,
+  ultimoDiaDelMes,
+} from './fechas';
 import type { ItemPagoFijoMes } from './pagos-fijos-agrupados';
 
 /** El día de pago dentro de un mes: un 31 en un mes más corto cae en su último día. */
@@ -29,6 +36,42 @@ export function inicioDelCiclo(hoy: Date, diaDePago: number | null): Date {
   if (diaDePago === null) return new Date(dia.getFullYear(), dia.getMonth(), 1);
   const esteMes = fechaDePagoEnMes(dia.getFullYear(), dia.getMonth(), diaDePago);
   return esteMes <= dia ? esteMes : fechaDePagoEnMes(dia.getFullYear(), dia.getMonth() - 1, diaDePago);
+}
+
+/**
+ * El periodo que miden los resúmenes: el ciclo de pago en curso (del último
+ * día de pago hasta el próximo, sin incluirlo) o, sin día de pago, el mes
+ * calendario.
+ */
+export function periodoDelCiclo(hoy: Date, diaDePago: number | null): Periodo {
+  if (diaDePago === null) return anioMesDe(hoy);
+  return {
+    desde: fechaIsoDesdeLocal(inicioDelCiclo(hoy, diaDePago)),
+    hasta: fechaIsoDesdeLocal(proximoPago(hoy, diaDePago)),
+  };
+}
+
+/** En qué punto va el ciclo de pago: "día 20 de 30", con el pago que lo cierra. */
+export interface AvanceDelCiclo {
+  /** Día del ciclo en que estamos (1 el día de pago). */
+  dia: number;
+  /** Cuántos días dura este ciclo, del último pago al próximo. */
+  duracion: number;
+  /** Días que faltan para el próximo pago. */
+  diasHastaPago: number;
+  proximoPago: Date;
+}
+
+/** Dónde va el ciclo de pago de `hoy`; ver `inicioDelCiclo` y `proximoPago`. */
+export function avanceDelCiclo(hoy: Date, diaDePago: number): AvanceDelCiclo {
+  const inicio = inicioDelCiclo(hoy, diaDePago);
+  const pago = proximoPago(hoy, diaDePago);
+  return {
+    dia: diasEntre(inicio, hoy) + 1,
+    duracion: diasEntre(inicio, pago),
+    diasHastaPago: diasEntre(hoy, pago),
+    proximoPago: pago,
+  };
 }
 
 /** Lo que queda libre hasta el próximo pago y lo que vence después. Ver `libreHastaProximoPago`. */

@@ -1,6 +1,6 @@
 import type { Categoria, Movimiento } from '../models';
-import type { AnioMes } from './fechas';
-import { perteneceAlMes } from './fechas';
+import type { Periodo } from './fechas';
+import { perteneceAlPeriodo } from './fechas';
 
 /** Un gasto de una categoría en un mes, con su barra relativa a la categoría mayor. */
 export interface CategoriaConGasto {
@@ -20,11 +20,11 @@ export interface CategoriaConGasto {
 export function gastosPorCategoriaDelMes(
   movimientos: Movimiento[],
   categorias: Categoria[],
-  mes: AnioMes,
+  periodo: Periodo,
 ): CategoriaConGasto[] {
   const porCategoria = new Map<string, number>();
   for (const m of movimientos) {
-    if (m.tipo !== 'GASTO' || !m.categoriaId || !perteneceAlMes(m.fecha, mes)) continue;
+    if (m.tipo !== 'GASTO' || !m.categoriaId || !perteneceAlPeriodo(m.fecha, periodo)) continue;
     porCategoria.set(m.categoriaId, (porCategoria.get(m.categoriaId) ?? 0) + m.monto);
   }
 

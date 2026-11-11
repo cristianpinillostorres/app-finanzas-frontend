@@ -26,7 +26,9 @@ import {
   type Movimiento,
   type Objetivo,
   PREFERENCIAS_INICIALES,
+  cambiosDeObjetivo,
 } from '../../core/models';
+import { OPCIONES_TEMA, ThemeService } from '../../core/theme.service';
 import { OPCIONES_OBJETIVO } from '../../shared/bienvenida/pasos-bienvenida';
 import { formatearDiaMes, formatearMesAnioCapitalizado } from '../../shared/format/fecha';
 import { PageHead } from '../../shared/page-head/page-head';
@@ -60,6 +62,8 @@ export class ConfiguracionPage {
   protected readonly tieneGoogle = this.auth.tieneGoogle;
   protected readonly vinculando = this.auth.vinculando;
   protected readonly opcionesObjetivo = OPCIONES_OBJETIVO;
+  protected readonly tema = inject(ThemeService);
+  protected readonly opcionesTema = OPCIONES_TEMA;
 
   private readonly preferencias = toSignal(this.preferenciasApi.obtener(), {
     initialValue: PREFERENCIAS_INICIALES,
@@ -72,7 +76,7 @@ export class ConfiguracionPage {
   protected readonly diaDePago = linkedSignal(() => this.preferencias().diaDePago);
   protected readonly avisos = linkedSignal(() => this.preferencias().avisos);
   protected readonly nombre = computed(() => this.preferencias().nombre);
-  protected readonly objetivos = computed(() => this.preferencias().objetivos);
+  protected readonly objetivoPrincipal = computed(() => this.preferencias().objetivoPrincipal);
 
   // ── Mis datos ───────────────────────────────────────────────────────
   private readonly movimientos = toSignal(this.movimientosApi.listar(), {
@@ -169,17 +173,9 @@ export class ConfiguracionPage {
     this.guardar({ nombre });
   }
 
-  protected estaElegido(objetivo: Objetivo): boolean {
-    return this.objetivos().includes(objetivo);
-  }
-
-  /** Marca o desmarca un objetivo; la lista guardada siempre sigue el orden de la bienvenida. */
-  protected alternarObjetivo(objetivo: Objetivo): void {
-    const elegidos = new Set(this.objetivos());
-    if (elegidos.has(objetivo)) elegidos.delete(objetivo);
-    else elegidos.add(objetivo);
-    const objetivos = OPCIONES_OBJETIVO.map((o) => o.valor).filter((v) => elegidos.has(v));
-    this.guardar({ objetivos });
+  /** El objetivo que encabeza General: uno solo; tocar el elegido lo quita. */
+  protected elegirPrincipal(objetivo: Objetivo): void {
+    this.guardar(cambiosDeObjetivo(this.objetivoPrincipal() === objetivo ? null : objetivo));
   }
 
   protected vincularGoogle(): void {

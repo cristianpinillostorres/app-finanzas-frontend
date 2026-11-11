@@ -3,9 +3,11 @@ import type { ItemPagoFijoMes } from './pagos-fijos-agrupados';
 import {
   estadoDeComprometido,
   estadoDelRitmo,
+  excesoSobreTopeCuotas,
   gastoDiarioPermitido,
   proporcionComprometida,
   proyeccionDeCaja,
+  ingresoMensualDeReferencia,
   ritmoDeGasto,
   salidasYEntradasDelMes,
   totalCuotasDelMes,
@@ -210,6 +212,70 @@ describe('ultimoSueldo', () => {
   });
 });
 
+describe('ingresoMensualDeReferencia', () => {
+  const HOY = new Date(2026, 10, 10); // 10 de noviembre de 2026
+
+  it('promedia los meses completos con ingreso, sin contar el mes en curso', () => {
+    const movimientos = [
+      mov({ tipo: 'INGRESO', monto: 2_000_000, categoriaId: 'cat-salario', fecha: '2026-09-18' }),
+      mov({ tipo: 'INGRESO', monto: 3_000_000, categoriaId: 'cat-salario', fecha: '2026-10-20' }),
+      mov({ tipo: 'INGRESO', monto: 9_000_000, categoriaId: 'cat-salario', fecha: '2026-11-03' }),
+    ];
+    expect(ingresoMensualDeReferencia(movimientos, null, HOY)).toBe(2_500_000);
+  });
+
+  it('suma varias categorías en el mismo mes', () => {
+    const movimientos = [
+      mov({ tipo: 'INGRESO', monto: 2_000_000, categoriaId: 'cat-salario', fecha: '2026-10-20' }),
+      mov({ tipo: 'INGRESO', monto: 500_000, categoriaId: 'cat-freelance', fecha: '2026-10-25' }),
+    ];
+    expect(ingresoMensualDeReferencia(movimientos, null, HOY)).toBe(2_500_000);
+  });
+
+  it('por defecto no cuenta los reembolsos, pero sí si se eligen', () => {
+    const movimientos = [
+      mov({ tipo: 'INGRESO', monto: 2_000_000, categoriaId: 'cat-salario', fecha: '2026-10-20' }),
+      mov({ tipo: 'INGRESO', monto: 510_000, categoriaId: 'cat-reembolso', fecha: '2026-10-22' }),
+    ];
+    expect(ingresoMensualDeReferencia(movimientos, null, HOY)).toBe(2_000_000);
+    expect(ingresoMensualDeReferencia(movimientos, ['cat-salario', 'cat-reembolso'], HOY)).toBe(
+      2_510_000,
+    );
+  });
+
+  it('solo cuenta las categorías elegidas', () => {
+    const movimientos = [
+      mov({ tipo: 'INGRESO', monto: 2_000_000, categoriaId: 'cat-salario', fecha: '2026-10-20' }),
+      mov({ tipo: 'INGRESO', monto: 500_000, categoriaId: 'cat-freelance', fecha: '2026-10-25' }),
+    ];
+    expect(ingresoMensualDeReferencia(movimientos, ['cat-salario'], HOY)).toBe(2_000_000);
+    expect(ingresoMensualDeReferencia(movimientos, [], HOY)).toBeNull();
+  });
+
+  it('un mes sin ingreso entre dos con ingreso cuenta como cero', () => {
+    const movimientos = [
+      mov({ tipo: 'INGRESO', monto: 900_000, categoriaId: 'cat-freelance', fecha: '2026-08-10' }),
+      mov({ tipo: 'INGRESO', monto: 900_000, categoriaId: 'cat-freelance', fecha: '2026-10-10' }),
+    ];
+    expect(ingresoMensualDeReferencia(movimientos, null, HOY)).toBe(600_000);
+  });
+
+  it('sin meses completos usa el último mes con ingreso', () => {
+    const solo = [
+      mov({ tipo: 'INGRESO', monto: 2_000_000, categoriaId: 'cat-salario', fecha: '2026-11-03' }),
+    ];
+    expect(ingresoMensualDeReferencia(solo, null, HOY)).toBe(2_000_000);
+    const viejo = [
+      mov({ tipo: 'INGRESO', monto: 1_800_000, categoriaId: 'cat-salario', fecha: '2026-03-20' }),
+    ];
+    expect(ingresoMensualDeReferencia(viejo, null, HOY)).toBe(1_800_000);
+  });
+
+  it('es null si nunca entró nada', () => {
+    expect(ingresoMensualDeReferencia([mov({ tipo: 'GASTO', monto: 1 })], null, HOY)).toBeNull();
+  });
+});
+
 describe('cuotas comprometidas', () => {
   it('suma solo las cuotas de créditos, pagadas o no', () => {
     const items = [
@@ -234,5 +300,21 @@ describe('cuotas comprometidas', () => {
     expect(estadoDeComprometido(0.35)).toBe('cerca');
     expect(estadoDeComprometido(0.5)).toBe('cerca');
     expect(estadoDeComprometido(0.64)).toBe('pasado');
+  });
+});
+
+describe('excesoSobreTopeCuotas', () => {
+  it('es lo que las cuotas pasan del 35 % del sueldo', () => {
+    // 35 % de 2.876.134 = 1.006.647: con 1.875.023 en cuotas se pasan por 868.376.
+    expect(excesoSobreTopeCuotas(1_875_023, 2_876_134)).toBe(868_376);
+  });
+
+  it('es negativo cuando todavía hay margen', () => {
+    expect(excesoSobreTopeCuotas(500_000, 2_000_000)).toBe(-200_000);
+  });
+
+  it('no hay con qué comparar sin un sueldo de referencia', () => {
+    expect(excesoSobreTopeCuotas(500_000, null)).toBeNull();
+    expect(excesoSobreTopeCuotas(500_000, 0)).toBeNull();
   });
 });

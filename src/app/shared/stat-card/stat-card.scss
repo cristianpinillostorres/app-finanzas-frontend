@@ -22,3 +22,26 @@
   width: var(--text-base);
   height: var(--text-base);
 }
+
+// Cifra e ícono en el tono vivo del estado (ver `--vivo-*` en los tokens): la
+// cifra es texto grande, así que puede ser más saturada que el monto de una fila.
+.stat-card--ingreso {
+  --vivo: var(--vivo-ingreso);
+}
+.stat-card--gasto {
+  --vivo: var(--vivo-gasto);
+}
+.stat-card--deuda {
+  --vivo: var(--vivo-deuda);
+}
+.stat-card--ingreso .t-kpi,
+.stat-card--gasto .t-kpi,
+.stat-card--deuda .t-kpi {
+  color: var(--vivo);
+  font-weight: var(--weight-extrabold);
+}
+.stat-card--ingreso .t-meta mat-icon,
+.stat-card--gasto .t-meta mat-icon,
+.stat-card--deuda .t-meta mat-icon {
+  color: var(--vivo);
+}

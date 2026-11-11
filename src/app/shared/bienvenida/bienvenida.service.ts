@@ -10,7 +10,7 @@ import { CUENTAS_API } from '../../core/api/cuentas/cuentas-api';
 import { MOVIMIENTOS_API } from '../../core/api/movimientos/movimientos-api';
 import { PAGOS_FIJOS_API } from '../../core/api/pagos-fijos/pagos-fijos-api';
 import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
-import { type CambiosPreferencias, PREFERENCIAS_INICIALES } from '../../core/models';
+import { type Objetivo, PREFERENCIAS_INICIALES, cambiosDeObjetivo } from '../../core/models';
 import { NuevoMovimientoService } from '../../layout/nuevo-movimiento/nuevo-movimiento.service';
 import { primeraCarga } from '../carga/primera-carga';
 import {
@@ -96,6 +96,8 @@ export class BienvenidaService {
   /** Lo que eligió en "¿Qué quieres lograr?"; se cambia al instante, como `oculto`. */
   private readonly _objetivos = linkedSignal(() => this.preferencias().objetivos);
   readonly objetivos = this._objetivos.asReadonly();
+  /** El objetivo único que eligió, o `null` si todavía no. */
+  readonly objetivoPrincipal = computed(() => this.preferencias().objetivoPrincipal);
   /** Cómo prefiere que la llamemos (ver `Preferencias.nombre`). */
   private readonly _nombre = linkedSignal(() => this.preferencias().nombre);
   readonly nombre = this._nombre.asReadonly();
@@ -177,12 +179,11 @@ export class BienvenidaService {
   }
 
   /** Guarda en la cuenta el paso "Cuéntanos de ti"; reemplaza lo elegido antes. */
-  guardarCaracterizacion(
-    cambios: Required<Pick<CambiosPreferencias, 'nombre' | 'objetivos'>>,
-  ): void {
-    this._nombre.set(cambios.nombre);
-    this._objetivos.set(cambios.objetivos);
-    this.preferenciasApi.actualizar(cambios).subscribe();
+  guardarCaracterizacion(nombre: string | null, objetivo: Objetivo | null): void {
+    const cambios = cambiosDeObjetivo(objetivo);
+    this._nombre.set(nombre);
+    this._objetivos.set(cambios.objetivos ?? []);
+    this.preferenciasApi.actualizar({ nombre, ...cambios }).subscribe();
   }
 
   /**

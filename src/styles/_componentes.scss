@@ -119,6 +119,93 @@
   color: var(--color-deuda);
 }
 
+// ───────────────────── guía flotante (ícono de info) ─────────────────────
+// Tarjeta oscura en los dos modos (Medianoche con línea fina Pizarra): título
+// con su cerrar, y una fila por tramo con punto de color, nombre y nota. Vive
+// en el contenedor de overlays, fuera del componente, por eso es global.
+.popover-guia {
+  // Se ajusta a su contenido: cada fila cabe en una línea, sin saltos.
+  width: max-content;
+  max-width: calc(100vw - var(--space-6));
+  padding: var(--space-4);
+  border: 1px solid var(--rv-pizarra);
+  border-radius: var(--radius-md);
+  background: var(--rv-medianoche);
+  color: var(--rv-blanco);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+}
+.popover-guia__cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-weight: var(--weight-semibold);
+}
+.popover-guia__cerrar {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--rv-niebla);
+  cursor: pointer;
+}
+.popover-guia__cerrar:hover {
+  color: var(--rv-blanco);
+}
+.popover-guia__cerrar:focus-visible {
+  outline: 2px solid var(--rv-blanco);
+  outline-offset: 2px;
+}
+.popover-guia__cerrar mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+.popover-guia__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.popover-guia__lista li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+.popover-guia__punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.popover-guia__punto--sano {
+  background: var(--p-green-300);
+}
+.popover-guia__punto--justo {
+  background: var(--p-amber-300);
+}
+.popover-guia__punto--critico {
+  background: var(--p-red-300);
+}
+.popover-guia__tramo {
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+.popover-guia__nota {
+  margin-left: var(--space-3);
+  color: var(--rv-niebla);
+  text-align: right;
+  white-space: nowrap;
+}
+
 // ───────────────────────────── botones ─────────────────────────────
 
 // Píldoras en semibold, como los botones de Mi Semana: al pasar por encima
@@ -369,7 +456,7 @@
 // transparente (no se quita) para no mover nada de sitio.
 .card {
   background: var(--bg-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--borde-superficie);
   border-radius: var(--radius-card);
   padding: var(--space-4);
   box-shadow: none;
@@ -377,7 +464,7 @@
 
 .panel {
   background: var(--bg-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--borde-superficie);
   border-radius: var(--radius-card);
   overflow: hidden;
 }
@@ -396,6 +483,67 @@
     box-shadow: var(--shadow-md);
   }
 }
+// ─────────────────────── tarjeta estándar ───────────────────────
+// Una sola anatomía para toda tarjeta con título. Nada de rellenos propios
+// por pantalla: se cambia aquí y cambian todas.
+//
+//   <section class="panel">
+//     <div class="panel__cabeza">            ← título a la izquierda; a la derecha
+//       <h2 class="panel__titulo">…</h2>       un dato (`.t-meta`) o un `.btn-text`
+//       <a class="btn btn-text">Ver todos</a>
+//     </div>
+//     <div class="rows">…</div>              ← lista de filas, o bien
+//     <div class="panel__cuerpo">…</div>     ← contenido libre (gráfica, cifras)
+//   </section>
+//
+// Las medidas salen de dos variables, definidas en `.panel`:
+//   --tarjeta-aire    el margen de la tarjeta (arriba, a los lados y abajo)
+//   --tarjeta-cabeza  el alto del contenido de la cabeza (el del ícono de info)
+// Así el título queda a la misma altura y al mismo margen en todas las tarjetas,
+// lleven o no ícono o enlace, y el contenido arranca alineado con el título.
+.panel {
+  --tarjeta-aire: var(--space-5);
+  --tarjeta-cabeza: var(--space-6);
+}
+.panel__cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  box-sizing: content-box;
+  min-height: var(--tarjeta-cabeza);
+  padding: var(--tarjeta-aire) var(--tarjeta-aire) var(--space-3);
+}
+.panel__titulo {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+// El enlace de la cabeza conserva sus 44px de toque sin agrandar la cabeza ni
+// despegarse del margen derecho.
+.panel__cabeza > .btn-text {
+  margin-block: calc((var(--tap-min) - 1lh) / -2);
+  margin-right: calc(-1 * var(--space-3));
+  font-size: var(--text-sm);
+
+  &:hover:not(:disabled) {
+    background: none;
+    color: var(--accent-brillo);
+  }
+}
+// Contenido libre bajo la cabeza: mismo margen que ella a los lados y abajo.
+.panel__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 var(--tarjeta-aire) var(--tarjeta-aire);
+}
+// Las filas de una lista bajo la cabeza empiezan en la misma línea que el título.
+.panel__cabeza ~ .rows > .row {
+  padding-inline: var(--tarjeta-aire);
+}
+
 .panel-head {
   display: flex;
   align-items: center;
@@ -435,7 +583,7 @@
   flex-direction: column;
   gap: var(--space-1);
   background: var(--bg-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--borde-superficie);
   border-radius: var(--radius-card);
   padding: var(--space-4) var(--space-5);
   min-width: 0;
@@ -474,7 +622,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   background: var(--bg-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--borde-superficie);
   border-radius: var(--radius-pill);
   padding: 0 var(--space-1);
 }
@@ -489,7 +637,7 @@
   isolation: isolate;
   overflow: hidden;
   background: var(--bg-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--borde-superficie);
   border-radius: var(--radius-card);
   padding: var(--space-5);
   display: flex;
@@ -612,9 +760,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-4);
-  padding: var(--space-3) var(--space-5);
-  background: var(--bg-surface);
-  border-radius: var(--radius-card);
+  padding: var(--space-2) var(--space-1);
 }
 
 .page-head__texto {
@@ -626,21 +772,20 @@
 }
 
 .page-head__titulo {
-  font-family: var(--font-display);
-  font-size: var(--text-display);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-display);
-  letter-spacing: var(--tracking-display);
-  text-transform: uppercase;
-  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: var(--weight-bold);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
   overflow-wrap: anywhere;
   margin: 0;
 }
 
 .page-head__texto .t-meta {
   font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  font-weight: var(--weight-regular);
+  color: var(--text-secondary);
 }
 
 .page-head__acciones {
@@ -1085,9 +1230,12 @@
 .row--estatica {
   cursor: default;
 }
+// Sin la esquina redondeada del resaltado: si se queda, la línea inferior de la
+// fila se curva hacia arriba al pasar el mouse.
 .row--estatica:hover {
   background: none;
   border-bottom-color: var(--border);
+  border-radius: 0;
 }
 .row-main {
   flex: 1;

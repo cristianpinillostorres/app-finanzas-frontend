@@ -1,9 +1,14 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { CdkConnectedOverlay, CdkOverlayOrigin, type ConnectedPosition } from '@angular/cdk/overlay';
 import { Router, RouterLink } from '@angular/router';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 
+import { AsistenteIa, type TextoDeIa } from '../../core/api/asistente/asistente-ia';
 import { CATEGORIAS_API } from '../../core/api/categorias/categorias-api';
 import { cambiosTasaDeBancos } from '../../core/api/creditos/cambios-tasa.util';
 import { COMPRAS_API } from '../../core/api/compras/compras-api';
@@ -13,32 +18,47 @@ import { MOVIMIENTOS_API } from '../../core/api/movimientos/movimientos-api';
 import { PAGOS_FIJOS_API } from '../../core/api/pagos-fijos/pagos-fijos-api';
 import { PREFERENCIAS_API } from '../../core/api/preferencias/preferencias-api';
 import {
+  type AccionAsistente,
+  alertaDelAsistente,
+  claveDeAlerta,
+  type EvidenciaAsistente,
+  agruparCreditosPorTipo,
   agruparPagosFijosDelMes,
   anioMesDe,
+  avanceDelCiclo,
+  avanceDelMes,
   disponible,
   estadoDeComprometido,
   estadoDelRitmo,
+  excesoSobreTopeCuotas,
   fechaIsoDesdeLocal,
   gastoDiarioPermitido,
   aporteFaltanteTotal,
   gastosPorCategoriaDelMes,
+  ingresoMensualDeReferencia,
   inicioDelCiclo,
   libreDelMes,
   libreDespuesDeAhorrar,
   libreHastaProximoPago,
   lineaDelMes,
+  periodoDelCiclo,
+  perteneceAlPeriodo,
   presupuestosDelMes,
   progresoDeMeta,
   proporcionComprometida,
   proximoPago,
   proyeccionDeCaja,
   ritmoDeGasto,
+  TOPE_CUOTAS_CRITICO,
+  TOPE_CUOTAS_SALUDABLE,
   salidasYEntradasDelMes,
+  separarComprasACuotas,
   sumarMesesAnioMes,
   totalCuotasDelMes,
   ultimoSueldo,
+  vistaDelHeroe,
 } from '../../core/domain';
-import { PREFERENCIAS_INICIALES } from '../../core/models';
+import { PREFERENCIAS_INICIALES, cambiosDeObjetivo } from '../../core/models';
 import type {
   Categoria,
   CompraCuotas,
@@ -46,18 +66,20 @@ import type {
   Cuenta,
   ExtractoTarjeta,
   Movimiento,
+  Objetivo,
   PagoFijo,
 } from '../../core/models';
+import { OPCIONES_OBJETIVO } from '../../shared/bienvenida/pasos-bienvenida';
 import { Amount } from '../../shared/amount/amount';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import { formatearCop } from '../../shared/format/moneda';
 import { DonutCategorias } from '../../shared/charts/donut-categorias/donut-categorias';
 import { EmptyState } from '../../shared/empty-state/empty-state';
-import { FranjaMes } from '../../shared/franja-mes/franja-mes';
 import { PageHead } from '../../shared/page-head/page-head';
 import { primeraCarga } from '../../shared/carga/primera-carga';
 import { SkeletonRows } from '../../shared/skeleton-rows/skeleton-rows';
 import { AparicionEscalonada } from '../../shared/motion/aparicion-escalonada';
 import { AutoAnimar } from '../../shared/motion/auto-animar';
-import { StatCard } from '../../shared/stat-card/stat-card';
 import {
   etiquetaDia,
   formatearDiaMes,
@@ -69,6 +91,8 @@ import { SemaforoBadge } from '../../shared/semaforo-badge/semaforo-badge';
 import { BienvenidaService } from '../../shared/bienvenida/bienvenida.service';
 import { PrimerosPasos } from '../../shared/bienvenida/primeros-pasos';
 import { PantallaVacia } from '../../shared/pantalla-vacia/pantalla-vacia';
+import { IngresosReferencia } from './ingresos-referencia/ingresos-referencia';
+import { TopesPresupuesto } from './topes-presupuesto/topes-presupuesto';
 
 /**
  * Tab General: foto rápida de las demás tabs, sin datos propios (ver
@@ -85,11 +109,12 @@ import { PantallaVacia } from '../../shared/pantalla-vacia/pantalla-vacia';
   imports: [
     RouterLink,
     MatIconModule,
+    MatTooltipModule,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin,
     Amount,
     EmptyState,
     SemaforoBadge,
-    FranjaMes,
-    StatCard,
     SkeletonRows,
     PageHead,
     DonutCategorias,
@@ -111,6 +136,9 @@ export class GeneralPage {
   private readonly preferenciasApi = inject(PREFERENCIAS_API);
   protected readonly bienvenida = inject(BienvenidaService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly asistenteIa = inject(AsistenteIa);
 
   private readonly cuentas = toSignal(this.cuentasApi.listar(), { initialValue: [] as Cuenta[] });
   private readonly creditos = toSignal(this.creditosApi.listar(), {
@@ -200,30 +228,12 @@ export class GeneralPage {
     }
   });
   protected readonly hayMovimientos = computed(() => this.movimientos().length > 0);
-  /** Pagos fijos o cuotas de crédito en el mes: lo que llena "Pagos del mes". */
-  protected readonly hayPagosDelMes = computed(() => this.lineaMes().dias.length > 0);
 
-  // Qué tarjetas se dibujan. Mientras carga van todas (en esqueleto); cada
-  // pareja de escritorio mira si está su vecina para saber si llena la fila.
+  // Qué tarjetas se dibujan. Mientras carga van todas (en esqueleto).
   protected readonly mostrarDetalle = computed(() => !this.datosListos() || this.hayMovimientos());
-  protected readonly mostrarPagos = computed(() => !this.datosListos() || this.hayPagosDelMes());
   protected readonly mostrarComprometido = computed(
     () => !this.datosListos() || (this.comprometido() !== null && this.cuotasDelMes() > 0),
   );
-  /** La columna de la derecha: cuánto sueldo van las cuotas y los topes por categoría. */
-  protected readonly mostrarLateral = computed(
-    () => this.mostrarComprometido() || this.presupuestos().length > 0,
-  );
-
-  /**
-   * Un "$0" en ingresos a mitad de mes asusta sin motivo si el sueldo todavía
-   * no llega: se explica con la fecha en que entra.
-   */
-  protected readonly notaIngresos = computed(() => {
-    const dia = this.preferencias().diaDePago;
-    if (!this.datosListos() || dia === null || this.entradasSalidas().ingresos > 0) return '';
-    return `Tu pago entra el ${formatearDiaMes(fechaIsoDesdeLocal(proximoPago(new Date(), dia)))}`;
-  });
 
   /**
    * Tocar el panel de una sección lleva a su pantalla, igual que el enlace
@@ -272,15 +282,128 @@ export class GeneralPage {
       : null;
   });
 
-  /** Lo que falta apartar este ciclo para las metas de ahorro. */
-  private readonly ahorroPendiente = computed(() => {
+  private readonly progresosAhorro = computed(() => {
     const inicio = inicioDelCiclo(new Date(), this.preferencias().diaDePago);
-    return aporteFaltanteTotal(
-      this.preferencias().metasAhorro.map((meta) =>
-        progresoDeMeta(meta, this.cuentas(), this.movimientos(), inicio),
-      ),
+    return this.preferencias().metasAhorro.map((meta) =>
+      progresoDeMeta(meta, this.cuentas(), this.movimientos(), inicio),
     );
   });
+  /** Lo que falta apartar este ciclo para las metas de ahorro. */
+  private readonly ahorroPendiente = computed(() => aporteFaltanteTotal(this.progresosAhorro()));
+  /** Lo que ya hay en los bolsillos de las metas: la cifra del héroe para quien quiere ahorrar. */
+  protected readonly totalAhorrado = computed(() =>
+    this.progresosAhorro().reduce((acc, p) => acc + p.ahorrado, 0),
+  );
+  /** Lo apartado en lo que va del ciclo, de lo que se pensaba apartar. */
+  protected readonly apartadoEnCiclo = computed(() =>
+    this.progresosAhorro().reduce((acc, p) => acc + p.aportadoEnCiclo, 0),
+  );
+  protected readonly aportePlaneado = computed(() =>
+    this.progresosAhorro().reduce((acc, p) => acc + (p.cumplida ? 0 : p.meta.aporteMensual), 0),
+  );
+
+  // ── Héroe según el objetivo principal ───────────────────────────────
+
+  protected readonly objetivoPrincipal = computed(() => this.preferencias().objetivoPrincipal);
+  private readonly gruposCreditos = computed(() =>
+    agruparCreditosPorTipo(this.creditos(), {
+      compras: this.compras(),
+      movimientos: this.movimientos(),
+      extractos: this.extractos(),
+      cambiosTasa: this.cambiosTasa(),
+    }),
+  );
+  /** Lo que se debe en total, en todos los créditos activos. */
+  protected readonly deudaTotal = computed(() =>
+    this.gruposCreditos()
+      .flatMap((g) => g.creditos)
+      .reduce((acc, c) => acc + c.deuda, 0),
+  );
+  /** Cuántos créditos tienen deuda: la línea del héroe de "salir de deudas". */
+  protected readonly creditosConDeuda = computed(
+    () =>
+      this.gruposCreditos()
+        .flatMap((g) => g.creditos)
+        .filter((c) => c.deuda > 0).length,
+  );
+  /**
+   * La tarjeta que sube al primer lugar según lo que más le importa a la
+   * persona; el resto queda en su orden de siempre (ver `.tablero` en el scss).
+   */
+  protected readonly tarjetaLider = computed<'deudas' | 'gastos' | null>(() => {
+    if (this.vista() === 'deudas') return 'deudas';
+    return this.objetivoPrincipal() === 'gastos' ? 'gastos' : null;
+  });
+  /** Lo primero que vence antes del próximo pago, para el héroe de "no olvidar pagos". */
+  protected readonly primerPagoPendiente = computed(() => this.hastaPago()?.antes[0] ?? null);
+
+  protected readonly vista = computed(() =>
+    vistaDelHeroe(this.objetivoPrincipal(), {
+      hayMetas: this.progresosAhorro().length > 0,
+      hayDeudas: this.deudaTotal() > 0,
+      hayPagosPendientes: this.primerPagoPendiente() !== null,
+    }),
+  );
+
+  /** "Ahora no" en la tarjeta de elegir prioridad: vale hasta recargar. */
+  private readonly prioridadOmitida = signal(false);
+  // ── Guía de endeudamiento (ícono de info de "Tu sueldo y las cuotas") ──
+  protected readonly infoAbierta = signal(false);
+  /** Arriba del ícono y, si no cabe, abajo. */
+  protected readonly posicionesInfo: ConnectedPosition[] = [
+    { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -8 },
+    { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: 8 },
+  ];
+  private temporizadorInfo: ReturnType<typeof setTimeout> | undefined;
+
+  protected abrirInfo(): void {
+    this.cancelarCierreInfo();
+    this.infoAbierta.set(true);
+  }
+
+  /** Con un respiro, para poder llevar el mouse del ícono a la guía sin que se cierre. */
+  protected cerrarInfoConRetraso(): void {
+    this.cancelarCierreInfo();
+    this.temporizadorInfo = setTimeout(() => this.infoAbierta.set(false), 150);
+  }
+
+  protected cerrarInfo(): void {
+    this.cancelarCierreInfo();
+    this.infoAbierta.set(false);
+  }
+
+  protected cancelarCierreInfo(): void {
+    clearTimeout(this.temporizadorInfo);
+  }
+
+  /** Hasta cuánto se recomienda llevar en cuotas, en pesos; `null` sin ingreso de referencia. */
+  protected readonly topeCuotasPesos = computed(() => {
+    const ingreso = this.ingresoDeReferencia();
+    return ingreso === null ? null : Math.round(ingreso * TOPE_CUOTAS_SALUDABLE);
+  });
+  protected readonly opcionesObjetivo = OPCIONES_OBJETIVO;
+  /** Quien no ha dicho qué le importa más: se le pregunta una vez, sin bloquear nada. */
+  protected readonly preguntarPrioridad = computed(
+    () =>
+      this.datosListos() &&
+      !this.cuentaNueva() &&
+      this.objetivoPrincipal() === null &&
+      !this.prioridadOmitida(),
+  );
+
+  /** "vence en 3 días", en minúscula para ir dentro de una frase. */
+  protected textoPrimerPago(): string {
+    const pago = this.primerPagoPendiente();
+    return pago ? textoVencimiento(pago.fechaLimite, false).toLowerCase() : '';
+  }
+
+  protected elegirPrioridad(objetivo: Objetivo): void {
+    this.preferenciasApi.actualizar(cambiosDeObjetivo(objetivo)).subscribe();
+  }
+
+  protected omitirPrioridad(): void {
+    this.prioridadOmitida.set(true);
+  }
   /**
    * Lo libre hasta el pago una vez apartado el ahorro del ciclo: de ahí sale
    * "hoy puedes gastar". Solo con día de pago, que es cuando General reparte
@@ -324,35 +447,73 @@ export class GeneralPage {
   protected readonly tituloMes = formatearMesAnioCapitalizado(
     new Date(this.mesActual.anio, this.mesActual.mes - 1, 1),
   );
+  /** "Martes 10 de noviembre": el mes ya está en el título, así que va el día completo. */
   protected readonly detalleHoy = (() => {
     const hoy = new Date();
-    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
-    const quedan = ultimoDia - hoy.getDate();
-    // "Miércoles 28": el mes ya está en el título, no se repite.
     const semana = hoy.toLocaleDateString('es-CO', { weekday: 'long' });
-    const fecha = `${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${hoy.getDate()}`;
-    if (quedan === 0) return `${fecha} · último día del mes`;
-    return `${fecha} · ${quedan === 1 ? 'queda 1 día' : `quedan ${quedan} días`} del mes`;
+    const mes = hoy.toLocaleDateString('es-CO', { month: 'long' });
+    return `${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${hoy.getDate()} de ${mes}`;
   })();
+
 
   protected readonly nombreMesActual = formatearNombreMes(
     new Date(this.mesActual.anio, this.mesActual.mes - 1, 1),
   );
 
-  /** Lo que entró y salió este mes, con los pagos de deuda aparte de los gastos. */
-  protected readonly entradasSalidas = computed(() =>
-    salidasYEntradasDelMes(this.movimientos(), this.mesActual),
+  /**
+   * Lo que miden Resumen, categorías y presupuestos: el ciclo de pago (desde
+   * el día que te pagan, así el sueldo ya cuenta) o, sin día de pago, el mes.
+   */
+  private readonly periodo = computed(() =>
+    periodoDelCiclo(new Date(), this.preferencias().diaDePago),
+  );
+  /** Cómo se llama ese periodo en los rótulos: "Desde el 20 de octubre" o "Noviembre". */
+  protected readonly rotuloPeriodo = computed(() => {
+    const p = this.periodo();
+    return 'desde' in p
+      ? `Desde el ${formatearDiaMes(p.desde)}`
+      : this.nombreMesActual;
+  });
+  /** Para frases: "este ciclo" o "este mes". */
+  protected readonly nombrePeriodo = computed(() =>
+    'desde' in this.periodo() ? 'este ciclo' : 'este mes',
   );
 
-  /** El último sueldo registrado: con qué se compara lo que se paga en cuotas. */
+  /** Lo que entró y salió en el periodo, con los pagos de deuda aparte de los gastos. */
+  protected readonly entradasSalidas = computed(() =>
+    salidasYEntradasDelMes(this.movimientos(), this.periodo()),
+  );
+
+  /**
+   * Los gastos del mes sin las compras a cuotas, que van en su propia fila:
+   * de esas solo sale cada mes la cuota (ya cuenta en "Pagos de deuda") y
+   * así este número coincide con el de la dona de categorías.
+   */
+  protected readonly gastosDelDia = computed(
+    () => this.entradasSalidas().gastos - this.comprasACuotasDelMes(),
+  );
+
+  /** El último sueldo registrado: lo que se espera que entre en el próximo pago. */
   protected readonly sueldoDeReferencia = computed(() => ultimoSueldo(this.movimientos()));
+  /**
+   * Lo que entra al mes con las categorías de ingreso que la persona eligió
+   * (por defecto todas menos reembolsos): con qué se compara lo que se paga
+   * en cuotas.
+   */
+  protected readonly ingresoDeReferencia = computed(() =>
+    ingresoMensualDeReferencia(
+      this.movimientos(),
+      this.preferencias().categoriasDeIngreso,
+      new Date(),
+    ),
+  );
   protected readonly cuotasDelMes = computed(() => {
     const resumen = this.resumenPagosFijos();
     return totalCuotasDelMes([...resumen.pagados, ...resumen.porPagar]);
   });
-  /** Qué parte del sueldo se va en cuotas (0-1+), o `null` si no hay un sueldo registrado. */
+  /** Qué parte de los ingresos se va en cuotas (0-1+), o `null` si no hay ingresos registrados. */
   protected readonly comprometido = computed(() =>
-    proporcionComprometida(this.cuotasDelMes(), this.sueldoDeReferencia()),
+    proporcionComprometida(this.cuotasDelMes(), this.ingresoDeReferencia()),
   );
   protected readonly porcentajeComprometido = computed(() =>
     Math.round((this.comprometido() ?? 0) * 100),
@@ -360,12 +521,169 @@ export class GeneralPage {
   protected readonly estadoComprometido = computed(() =>
     estadoDeComprometido(this.comprometido() ?? 0),
   );
+  /** Los topes, en porcentaje, para rotular la barra. */
+  protected readonly topeSaludablePct = TOPE_CUOTAS_SALUDABLE * 100;
+  protected readonly topeCriticoPct = TOPE_CUOTAS_CRITICO * 100;
+  /** Cuánto pasan las cuotas del tope saludable (negativo si queda margen); `null` sin ingresos. */
+  protected readonly excesoCuotas = computed(() =>
+    excesoSobreTopeCuotas(this.cuotasDelMes(), this.ingresoDeReferencia()),
+  );
+
+  /** Abre la lista de categorías de ingreso que cuentan para medir las cuotas. */
+  protected configurarIngresos(): void {
+    this.dialog.open(IngresosReferencia, { width: '480px', maxHeight: '90vh' });
+  }
+  /** Los topes de las categorías que ya tienen uno, sin salir de General. */
+  protected ajustarPresupuestos(topes: Record<string, number> = {}): void {
+    this.dialog.open(TopesPresupuesto, {
+      width: '480px',
+      maxHeight: '90vh',
+      data: { topes },
+    });
+  }
+
+  // ── Asistente ───────────────────────────────────────────────────────
+
+  /**
+   * Lo más importante según el objetivo de la persona. Las cifras salen de
+   * las mismas cuentas que pintan el resto de General; el texto, de reglas
+   * (ver `alertaDelAsistente`).
+   */
+  protected readonly alertaAsistente = computed(() => {
+    const pago = this.hastaPago();
+    return alertaDelAsistente(
+      this.objetivoPrincipal(),
+      {
+        disponible: this.disponible(),
+        porPagar: this.faltaMostrada(),
+        pagosPendientes: pago ? pago.antes.length : this.resumenPagosFijos().porPagar.length,
+        hasta: pago ? 'tu pago' : 'fin de mes',
+        libreParaGastar: this.libreParaGastar(),
+        libreAntesDeMetas: this.libreMostrado(),
+        presupuestos: this.presupuestos(),
+        cuotasDelMes: this.cuotasDelMes(),
+        comprometido: this.comprometido(),
+        estadoComprometido: this.estadoComprometido(),
+        comprasACuotas: this.comprasACuotasDelMes(),
+        pagosDeuda: this.entradasSalidas().pagosDeuda,
+        metas: this.progresosAhorro(),
+      },
+      formatearCop,
+    );
+  });
+
+  /**
+   * El texto con IA, si ya llegó y describe las cifras de ahora (la clave
+   * guarda de cuáles era). Mientras no, o si algo falla, la tarjeta usa el
+   * titular y el consejo de plantilla.
+   */
+  private readonly textoIa = signal<(TextoDeIa & { clave: string }) | null>(null);
+  protected readonly textoIaVigente = computed(() => {
+    const alerta = this.alertaAsistente();
+    const ia = this.textoIa();
+    return alerta && ia && ia.clave === claveDeAlerta(alerta) ? ia : null;
+  });
+  private readonly clavesPedidas = new Set<string>();
+  /**
+   * Pide el texto a la IA cuando las cifras de la alerta se quedan quietas un
+   * momento (los extractos llegan después y las mueven un poco: pedirlo antes
+   * gastaría el análisis del día en cifras provisionales). Una vez por cifras.
+   */
+  private readonly pedirTextoIa = effect((alAcabar) => {
+    const alerta = this.alertaAsistente();
+    if (!alerta || !this.datosListos()) return;
+    const clave = claveDeAlerta(alerta);
+    const espera = setTimeout(() => {
+      untracked(() => {
+        if (this.clavesPedidas.has(clave)) return;
+        this.clavesPedidas.add(clave);
+        const dia = fechaIsoDesdeLocal(new Date());
+        void this.asistenteIa
+          .analizar(alerta, this.objetivoPrincipal(), dia)
+          .then((texto) => texto && this.textoIa.set({ ...texto, clave }));
+      });
+    }, 1500);
+    alAcabar(() => clearTimeout(espera));
+  });
+
+  /** Qué parte de la cifra más grande es esta: el largo de la barra de la evidencia. */
+  protected progresoEvidencia(e: EvidenciaAsistente, todas: readonly EvidenciaAsistente[]): number {
+    const mayor = Math.max(...todas.map((x) => x.valor), 0);
+    return mayor > 0 ? Math.min(e.valor / mayor, 1) : 0;
+  }
+
+  /** El botón de la tarjeta. Ninguna acción cambia datos sin que la persona confirme. */
+  protected ejecutarAccion(accion: AccionAsistente): void {
+    switch (accion.tipo) {
+      case 'IR_A':
+        void this.router.navigateByUrl(accion.ruta);
+        break;
+      case 'AJUSTAR_TOPES':
+        this.ajustarPresupuestos(accion.topes);
+        break;
+      case 'PAUSAR_METAS':
+        this.pausarMetas(accion.metasIds);
+        break;
+    }
+  }
+
+  /** Pone en 0 el aporte de esas metas, con confirmación y un "Deshacer" a mano. */
+  private pausarMetas(ids: readonly string[]): void {
+    const antes = this.preferencias().metasAhorro;
+    this.dialog
+      .open(ConfirmDialog, {
+        width: '400px',
+        maxHeight: '90vh',
+        data: {
+          titulo: 'Pausar tus metas',
+          mensaje:
+            'Dejarán de pedirte aporte cada ciclo hasta que vuelvas a ponerles uno en Ahorro. Lo que ya ahorraste no se toca.',
+          textoConfirmar: 'Pausar',
+        },
+      })
+      .afterClosed()
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+        const metasAhorro = antes.map((m) => (ids.includes(m.id) ? { ...m, aporteMensual: 0 } : m));
+        this.preferenciasApi.actualizar({ metasAhorro }).subscribe(() => {
+          this.snackBar
+            .open('Metas en pausa', 'Deshacer', { duration: 6000 })
+            .onAction()
+            .subscribe(() => this.preferenciasApi.actualizar({ metasAhorro: antes }).subscribe());
+        });
+      });
+  }
+
+  /** Presupuestos: solo los tres más cerca de agotarse, o todos si la persona lo pide. */
+  protected readonly verTodosLosPresupuestos = signal(false);
+  protected readonly presupuestosVisibles = computed(() =>
+    this.verTodosLosPresupuestos() ? this.presupuestos() : this.presupuestos().slice(0, 3),
+  );
+  /** Tramo de la barra hasta el tope saludable, en % de ancho (gris). */
+  protected readonly tramoSano = computed(() =>
+    Math.min((this.comprometido() ?? 0) * 100, this.topeSaludablePct),
+  );
+  /** Tramo que pasa del tope saludable, en % de ancho (en el color del estado). */
+  protected readonly tramoExceso = computed(() =>
+    Math.max(0, Math.min((this.comprometido() ?? 0) * 100, 100) - this.topeSaludablePct),
+  );
+  /** El estado de las cuotas en dos palabras, junto al porcentaje. */
+  protected readonly etiquetaMargen = computed(() => {
+    switch (this.estadoComprometido()) {
+      case 'pasado':
+        return 'Margen crítico';
+      case 'cerca':
+        return 'Margen justo';
+      default:
+        return 'Margen sano';
+    }
+  });
 
   /**
    * Lo que viene, con el saldo que quedaría después de cada paso: la plata
    * de hoy, los pagos que vencen y el sueldo cuando llega.
    */
-  protected readonly proyeccion = computed(() => {
+  private readonly proyeccionCompleta = computed(() => {
     const hoy = new Date();
     const dia = this.preferencias().diaDePago;
     const sueldo = this.sueldoDeReferencia();
@@ -377,24 +695,56 @@ export class GeneralPage {
       ...this.resumenPagosFijos().porPagar,
       ...this.resumenMesSiguiente().porPagar,
     ];
-    return proyeccionDeCaja(this.disponible(), pendientes, hoy, ingreso).slice(0, 6);
+    return proyeccionDeCaja(this.disponible(), pendientes, hoy, ingreso);
   });
+
+  protected readonly proyeccion = computed(() => this.proyeccionCompleta().slice(0, 6));
 
   // Los primeros: son un resumen, no la lista completa (que ya vive en su
   // propia tab, con el enlace "Ver todos"/"Ver créditos").
   /** El mes de pagos como línea de tiempo, para la franja de "Pagos del mes". */
   protected readonly lineaMes = computed(() => lineaDelMes(this.resumenPagosFijos()));
-  protected readonly gastosPorCategoria = computed(() =>
-    gastosPorCategoriaDelMes(this.movimientos(), this.categorias(), this.mesActual),
+  /**
+   * Las compras en cuotas van aparte: entran de golpe como un gasto enorme y
+   * aplastarían las categorías y los topes, cuando lo que pesa cada mes es
+   * su cuota (que ya cuenta en "Tus cuotas").
+   */
+  private readonly gastosSeparados = computed(() =>
+    separarComprasACuotas(this.movimientos(), this.compras()),
   );
+  protected readonly comprasACuotasDelMes = computed(() =>
+    this.gastosSeparados()
+      .aCuotas.filter((m) => perteneceAlPeriodo(m.fecha, this.periodo()))
+      .reduce((suma, m) => suma + m.monto, 0),
+  );
+  protected readonly gastosPorCategoria = computed(() =>
+    gastosPorCategoriaDelMes(this.gastosSeparados().diaADia, this.categorias(), this.periodo()),
+  );
+  /** Qué parte del periodo ya pasó (0-1), para avisar si se gasta más rápido que él. */
+  private readonly avancePeriodo = computed(() => {
+    const dia = this.preferencias().diaDePago;
+    if (dia === null) return avanceDelMes(new Date());
+    const ciclo = avanceDelCiclo(new Date(), dia);
+    return ciclo.dia / ciclo.duracion;
+  });
   /** Categorías con tope, de la más cerca de pasarse a la más lejos. */
   protected readonly presupuestos = computed(() =>
-    presupuestosDelMes(this.categorias(), this.movimientos(), this.mesActual),
+    presupuestosDelMes(
+      this.categorias(),
+      this.gastosSeparados().diaADia,
+      this.periodo(),
+      this.avancePeriodo(),
+    ),
   );
+  /**
+   * Los más recientes, con margen de sobra: en escritorio la tarjeta muestra
+   * solo las filas que caben en el alto de la torta (ver `.g-ultimos` en el
+   * scss) y en el celular solo las tres primeras.
+   */
   protected readonly ultimosMovimientos = computed(() =>
     [...this.movimientos()]
       .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.creadoEn.localeCompare(a.creadoEn))
-      .slice(0, 3),
+      .slice(0, 8),
   );
 
   /**

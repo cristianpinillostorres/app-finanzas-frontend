@@ -1,0 +1,49 @@
+/* Ranvi Lab · Base de desarrollo
+ *
+ * Tokens de interfaz de producto que comparten todas las apps.
+ * Se apoya en Marca/ranvi-lab.css (el original): cada token de marca se declara
+ * aquí SOLO como alias var(--rv-*), nunca con un valor escrito a mano.
+ * Lo que no existe en Marca va en la sección «Extras de producto» y debe estar
+ * listado, con su motivo, en extras.json.
+ *
+ * Alineación con Marca: la revisa scripts/check_alineacion.py.
+ * Cargar ranvi-lab.css antes que este archivo.
+ */
+
+:root {
+  /* ── Alias de Marca (solo var(--rv-*)) ─────────────────────────────────── */
+  --shadow-card: var(--rv-shadow-card);
+  --shadow-raised: var(--rv-shadow-raised);
+  --focus-ring: var(--rv-focus-ring);
+
+  --radius-card: var(--rv-radius-card);
+  --radius-field: var(--rv-radius-field);
+  --radius-capsule: var(--rv-radius-capsule);
+
+  /* Espaciado: sin alias a propósito. La escala de Marca (4, 8, 12, 16, 24, 32, 48, 64) no es la
+     de MBC (N × 4 px): usar el mismo nombre --space-N con otro significado movería todo el
+     diseño. Hasta decidir una escala única, las apps usan --rv-space-N directo o la suya. */
+
+  --border-width: var(--rv-border-width);
+  --border-width-strong: var(--rv-border-width-strong);
+  --control-height: var(--rv-control-height);
+  --control-height-lg: var(--rv-control-height-lg);
+
+  --ease-out: var(--rv-ease-out);
+  --dur-fast: var(--rv-dur-fast);
+  --dur-base: var(--rv-dur-base);
+
+  /* ── Extras de producto (no están en Marca; ver extras.json) ───────────── */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+
+  --reveal-duration: 0.5s;
+  --reveal-step: 55ms;
+  --skeleton-duration: 1.4s;
+}

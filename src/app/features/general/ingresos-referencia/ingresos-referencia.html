@@ -1,0 +1,49 @@
+<app-hoja-cabecera titulo="Tus ingresos" (cerrar)="cerrar()" />
+
+<div class="ios-form">
+  <p class="ios-nota">
+    Elige qué ingresos cuentan para medir cuánto de lo que entra se va en cuotas.
+  </p>
+
+  <div class="ios-grupo">
+    @for (categoria of opciones(); track categoria.id) {
+      <div class="ios-fila">
+        <label class="ios-fila__rotulo" [for]="'ing-' + categoria.id">{{ categoria.nombre }}</label>
+        <input
+          class="ios-interruptor"
+          type="checkbox"
+          [id]="'ing-' + categoria.id"
+          [checked]="activa(categoria.id)"
+          (change)="alternar(categoria.id, $any($event.target).checked)"
+        />
+      </div>
+    }
+  </div>
+
+  @if (seleccion().length === 0) {
+    <p class="ios-nota err">Deja al menos una categoría prendida.</p>
+  } @else if (ingreso(); as monto) {
+    <p class="ios-nota">
+      Con esto cuentas con <strong><app-amount [valor]="monto" /></strong> al mes: el promedio de
+      tus últimos meses completos.
+    </p>
+  } @else {
+    <p class="ios-nota">Todavía no hay ingresos registrados en estas categorías.</p>
+  }
+
+  @if (hayReembolso()) {
+    <p class="ios-nota">
+      Los reembolsos arrancan apagados: es plata que te devuelven, no plata que ganas, y haría ver
+      tu mes más holgado de lo que es.
+    </p>
+  }
+
+  <button
+    class="btn btn-primary btn-block"
+    type="button"
+    [disabled]="seleccion().length === 0"
+    (click)="guardar()"
+  >
+    Guardar
+  </button>
+</div>

@@ -36,6 +36,49 @@
   color: var(--accent);
 }
 
+// Interruptor de saldos: píldora con el ojo y el estado en palabras. Se usa
+// a diario (en la calle, con alguien al lado), así que dice qué está pasando.
+.cabezote__saldos {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-brillo);
+    outline-offset: 2px;
+  }
+
+  &[aria-checked='false'] {
+    color: var(--text-secondary);
+  }
+}
+
 // La cuenta: solo la inicial, del tamaño del ojo. El correo, el tema y
 // "Cerrar sesión" están en su menú. Es de otra clase que las acciones de
 // la pantalla: va aparte, tras una raya fina, y no pegada al ojo.
@@ -76,6 +119,33 @@
   border-bottom: 1px solid var(--border);
 }
 
+// Rótulo de cada sección del menú ("Apariencia", "Cuenta"). Con `--linea`
+// lleva además un separador arriba; la primera sección de escritorio no lo
+// necesita porque ya queda bajo la línea del correo.
+.menu-cuenta__grupo {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+}
+.menu-cuenta__grupo--linea {
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--border);
+}
+
+// Nombre de la opción de tema y, al final de la misma fila, la marca de la
+// elegida. Va dentro del texto porque `mat-menu-item` saca los `mat-icon`
+// hijos directos y los pone antes del texto.
+.menu-cuenta__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+.menu-cuenta__check {
+  flex: none;
+  margin: 0;
+  color: var(--accent);
+}
+
 .menu-cuenta__correo {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -90,14 +160,14 @@
 .cuerpo {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-4);
-  max-width: var(--layout-max);
-  margin: 0 auto;
-  padding: var(--space-4) var(--layout-gutter) var(--space-8);
+  // Todo el ancho de la ventana: la barra va pegada al borde y el contenido
+  // se reparte el resto, sin tope en pantallas grandes.
+  width: 100%;
 }
 
-// Panel flotante de 28px con sombra larga, pegado arriba al hacer scroll:
-// la `.sidebar` de Mi Semana. En una ventana baja (un portátil con la barra
+// Columna fija de todo el alto de la ventana, pegada al borde izquierdo y
+// separada del contenido por una línea fina, como la barra lateral de las apps
+// de escritorio de iOS/macOS. En una ventana baja (un portátil con la barra
 // del navegador abierta) no cabe entera: ahí se desplaza sola en vez de
 // cortar la última sección. Siempre mide lo mismo (el alto de la ventana,
 // no el de su contenido), así no cambia de tamaño entre pantallas.
@@ -107,13 +177,10 @@
 .lateral {
   view-transition-name: barra-lateral;
   position: sticky;
-  top: var(--space-4);
+  top: 0;
   flex: none;
   width: var(--ancho-lateral);
-  // Resta los rellenos de arriba (space-4) y de abajo (space-8) de
-  // `.cuerpo`: con menos, la barra sola ya pasaba del alto de la ventana y
-  // aparecía scroll en pantallas con poco contenido.
-  height: calc(100dvh - var(--space-4) - var(--space-8));
+  height: 100dvh;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
@@ -122,16 +189,28 @@
   gap: var(--space-2);
   padding: var(--space-4);
   background: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
+  border-right: 1px solid var(--border);
 }
 
-// Como los encabezados de sección del teléfono (`.ios-seccion`): en caja
-// normal y gris, sin mayúsculas espaciadas.
+// Rótulos de grupo de la barra: en caja normal y gris, sin mayúsculas.
 .lateral__titulo {
-  margin: var(--space-1) var(--space-3) 0;
+  margin: var(--space-2) var(--space-3) 0;
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
+
+// Logo con su subtítulo debajo.
+.marca__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.marca__sub {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: normal;
   color: var(--text-muted);
 }
 
@@ -252,10 +331,10 @@
   border: 0;
   border-radius: var(--radius-chip);
   background: none;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-medium);
   white-space: nowrap;
   text-align: left;
   text-decoration: none;
@@ -268,7 +347,15 @@
 
   &:hover {
     background: var(--bg-subtle);
+    color: var(--text-primary);
     text-decoration: none;
+  }
+
+  // Aro de foco hacia adentro y en Coral: el de la página (negro, con
+  // separación) se veía como un recuadro pegado a la sección activa.
+  &:focus-visible {
+    outline: 2px solid var(--accent-solid);
+    outline-offset: -2px;
   }
 
   &:disabled {
@@ -299,6 +386,7 @@
 
 .nav__item--activo {
   color: var(--accent);
+  font-weight: var(--weight-semibold);
 
   &:hover {
     background: none;
@@ -315,10 +403,77 @@
 
 // ── cuenta (al final de la barra lateral) ──
 .cuenta {
+  margin-top: auto; // al piso de la barra
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
+}
+
+// ── enfoque y ciclo (al pie de la barra lateral) ──
+// Sin tarjeta ni relleno: dos líneas de contexto sobre la misma barra, que
+// se quedan abajo aunque la barra mida más que su contenido.
+.estado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.estado__enfoque {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-inline: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-decoration: none;
+
+  mat-icon {
+    flex: none;
+    width: var(--space-5);
+    height: var(--space-5);
+    font-size: var(--space-5);
+    color: var(--text-muted);
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover span {
+    text-decoration: underline;
+  }
+}
+
+.estado__ciclo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+}
+
+.estado__texto {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.estado__barra {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.estado__relleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-solid);
 }
 
 .avatar__inicial {
@@ -333,53 +488,6 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   line-height: 1;
-}
-
-// Menú de tema. El `mat-menu` se dibuja en el overlay, pero su contenido
-// está declarado en esta plantilla y por eso estos estilos encapsulados lo
-// alcanzan. La muestra es el acento de cada tema, fijo (no el del tema
-// activo): por eso sale de las primitivas.
-.muestra-tema {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-pill);
-  box-shadow: inset 0 0 0 1px rgb(127 127 127 / 35%);
-
-  &[data-tema='teal'] {
-    background: var(--p-teal-700);
-  }
-  &[data-tema='neutro'] {
-    background: var(--p-gris-950);
-  }
-  &[data-tema='medianoche'] {
-    background: var(--p-azul-500);
-  }
-  &[data-tema='brasa'] {
-    background: var(--p-coral-400);
-  }
-  &[data-tema='marino'] {
-    background: var(--p-senal-600);
-  }
-}
-
-.menu-tema__fila {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  min-width: 120px;
-}
-
-.menu-tema__separador {
-  height: 1px;
-  margin: var(--space-1) 0;
-  background: var(--border);
-}
-
-.menu-tema__check {
-  font-size: 20px;
-  color: var(--accent);
 }
 
 .spacer {
@@ -403,6 +511,7 @@
   display: block;
   flex: 1;
   min-width: 0;
+  padding: var(--space-4) var(--layout-gutter) var(--space-8);
 }
 
 .contenido--movil {
@@ -520,7 +629,8 @@
   }
 
   .lateral__titulo,
-  .nav__texto {
+  .nav__texto,
+  .estado {
     display: none;
   }
 

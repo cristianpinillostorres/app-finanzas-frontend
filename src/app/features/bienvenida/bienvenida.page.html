@@ -131,39 +131,26 @@
                 </div>
               </div>
 
-              <h3 class="ios-seccion" id="bv-objetivos">¿Qué quieres lograr?</h3>
-              <div class="ios-grupo" role="group" aria-labelledby="bv-objetivos">
+              <h3 class="ios-seccion" id="bv-objetivos">¿Qué es lo más importante para ti?</h3>
+              <div class="ios-grupo" role="radiogroup" aria-labelledby="bv-objetivos">
                 @for (o of opcionesObjetivo; track o.valor) {
                   <button
                     type="button"
                     class="ios-fila"
-                    [attr.aria-pressed]="objetivos().has(o.valor)"
-                    (click)="alternarObjetivo(o.valor)"
+                    role="radio"
+                    [attr.aria-checked]="objetivo() === o.valor"
+                    (click)="elegirObjetivo(o.valor)"
                   >
                     <span class="ios-fila__rotulo">{{ o.nombre }}</span>
-                    @if (objetivos().has(o.valor)) {
+                    @if (objetivo() === o.valor) {
                       <mat-icon class="marca" aria-hidden="true">check</mat-icon>
                     }
                   </button>
                 }
               </div>
-              <p class="ios-nota">Elige los que quieras.</p>
-
-              <h3 class="ios-seccion" id="bv-tema">Tema</h3>
-              <div class="ios-grupo temas" role="group" aria-labelledby="bv-tema">
-                @for (t of opcionesTema; track t.id) {
-                  <button
-                    type="button"
-                    class="tema"
-                    [attr.aria-pressed]="tema() === t.id"
-                    (click)="elegirTema(t.id)"
-                  >
-                    <i class="muestra-tema" [attr.data-tema]="t.id" aria-hidden="true"></i>
-                    {{ t.nombre }}
-                  </button>
-                }
-              </div>
-              <p class="ios-nota">Se aplica al instante. Lo cambias cuando quieras en el menú.</p>
+              <p class="ios-nota">
+                Elige uno: es la cifra que verás primero en General. Lo cambias cuando quieras.
+              </p>
 
               <div class="datos">
                 <button

@@ -1,0 +1,16 @@
+// Sin ancho máximo propio: lo da el diálogo (480px).
+:host {
+  display: block;
+  padding: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  :host {
+    padding: var(--space-6);
+  }
+}
+
+.ios-nota strong {
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}

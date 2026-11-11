@@ -25,6 +25,11 @@ export interface Preferencias {
   };
   /** Lo que eligió en "¿Qué quieres lograr?"; vacío si no eligió nada. */
   objetivos: Objetivo[];
+  /**
+   * Lo más importante ahora, uno solo: decide qué cifra encabeza General (ver
+   * `vistaDelHeroe`). `null` si todavía no lo eligió.
+   */
+  objetivoPrincipal: Objetivo | null;
   /** Cómo prefiere que la llamemos; `null` si no lo dijo. */
   nombre: string | null;
   /**
@@ -37,6 +42,12 @@ export interface Preferencias {
   avisos: { amarillo: number; rojo: number };
   /** Lo que quiere ahorrar, con su aporte mensual (ver `MetaAhorro`). */
   metasAhorro: MetaAhorro[];
+  /**
+   * Ids de las categorías de ingreso con que se mide lo que se paga en cuotas
+   * (ver `ingresoMensualDeReferencia`). `null`: todas las de ingreso menos los
+   * reembolsos, también las que se creen después.
+   */
+  categoriasDeIngreso: string[] | null;
 }
 
 /** Cambios parciales: solo los campos que vienen se escriben. */
@@ -44,11 +55,14 @@ export interface CambiosPreferencias {
   recorrido?: Partial<Preferencias['recorrido']>;
   ultimaCuenta?: Partial<Preferencias['ultimaCuenta']>;
   objetivos?: Objetivo[];
+  objetivoPrincipal?: Objetivo | null;
   nombre?: string | null;
   diaDePago?: number | null;
   avisos?: Partial<Preferencias['avisos']>;
   /** La lista completa: lo que viene reemplaza lo anterior. */
   metasAhorro?: MetaAhorro[];
+  /** La lista completa, o `null` para volver a "todas menos reembolsos". */
+  categoriasDeIngreso?: string[] | null;
 }
 
 /** Lo que vale mientras la persona no haya decidido nada. */
@@ -56,12 +70,23 @@ export const PREFERENCIAS_INICIALES: Preferencias = {
   recorrido: { oculto: false, omitidos: [] },
   ultimaCuenta: { gasto: null, ingreso: null },
   objetivos: [],
+  objetivoPrincipal: null,
   nombre: null,
   diaDePago: null,
   // Los mismos de `UMBRALES_INICIALES` (core/domain/semaforo.ts): el modelo no importa del dominio.
   avisos: { amarillo: 4, rojo: 1 },
   metasAhorro: [],
+  categoriasDeIngreso: null,
 };
+
+/**
+ * Lo que se guarda al elegir (o quitar) el objetivo: uno solo, que manda en
+ * General y también ordena lo que la bienvenida sugiere (`objetivos` queda
+ * como lista de ese único objetivo).
+ */
+export function cambiosDeObjetivo(objetivo: Objetivo | null): CambiosPreferencias {
+  return { objetivoPrincipal: objetivo, objetivos: objetivo ? [objetivo] : [] };
+}
 
 /** Todos los objetivos, para validar lo que llega guardado. */
 export const OBJETIVOS: readonly Objetivo[] = ['deudas', 'ahorrar', 'gastos', 'pagos', 'orden'];

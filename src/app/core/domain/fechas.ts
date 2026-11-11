@@ -75,3 +75,21 @@ export function perteneceAlMes(fechaIso: string, mes: AnioMes): boolean {
   const fecha = fechaLocalDesdeIso(fechaIso);
   return fecha.getFullYear() === mes.anio && fecha.getMonth() === mes.mes - 1;
 }
+
+/** Un tramo de días ("YYYY-MM-DD"): desde el primero (incluido) hasta `hasta` (sin incluirlo). */
+export interface RangoFechas {
+  desde: string;
+  hasta: string;
+}
+
+/**
+ * Lo que se mide en un resumen: un mes calendario o un tramo cualquiera
+ * (el ciclo de pago, que empieza el día que te pagan).
+ */
+export type Periodo = AnioMes | RangoFechas;
+
+/** Si una fecha "YYYY-MM-DD" cae dentro del periodo. */
+export function perteneceAlPeriodo(fechaIso: string, periodo: Periodo): boolean {
+  if ('desde' in periodo) return fechaIso >= periodo.desde && fechaIso < periodo.hasta;
+  return perteneceAlMes(fechaIso, periodo);
+}

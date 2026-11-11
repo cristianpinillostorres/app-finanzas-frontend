@@ -13,8 +13,22 @@
 // una línea de lectura.
 .hero__explica {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--text-secondary);
+
+  app-amount,
+  strong {
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+  }
+
+  .cuotas__exceso {
+    color: var(--color-gasto);
+  }
+
+  .cuotas__exceso--cerca {
+    color: var(--color-deuda);
+  }
 }
 
 // "por día" junto al número grande: una leyenda, no otra cifra.
@@ -28,26 +42,391 @@
   color: var(--text-secondary);
 }
 
-// El ritmo de la última semana contra lo permitido. El color acompaña a la
-// frase ("Vas bien", "Vas justo", "Te estás pasando"), que ya lo dice solo.
-.hero__ritmo--cerca {
-  color: var(--color-deuda);
-}
-.hero__ritmo--pasado {
-  color: var(--color-gasto);
-}
 
-// El panel de "Tu sueldo y las cuotas": cifra, frase, barra y una nota
-// apilados con aire entre sí.
+// El panel de "Tu sueldo y las cuotas": su cabeza y su cuerpo son los de la
+// tarjeta estándar (`.panel__cabeza`, `.panel__cuerpo`); aquí solo se declara
+// el contenedor para que los textos cambien según el ancho de la tarjeta.
+//
+// Cuando la tarjeta se estira para igualar a su vecina de fila, el cuerpo
+// toma el alto sobrante y el pie (la nota y el engranaje) queda pegado al
+// fondo, con el mismo margen de abajo que cualquier tarjeta.
 .panel--comprometido {
+  container: cuotas / inline-size;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
 
-  .bar {
-    align-self: stretch;
+  > .panel__cuerpo {
+    flex: 1;
+  }
+}
+
+// Los textos de la tarjeta de cuotas: completos en pantallas anchas y, en el
+// celular, una versión corta que dice lo mismo con menos.
+.titulo-cuotas {
+  white-space: nowrap;
+}
+
+.texto-corto {
+  display: none;
+}
+
+// El corte depende del ancho de la tarjeta, no de la pantalla: en escritorio
+// vive en una columna lateral angosta y necesita los textos cortos igual que el
+// celular.
+@container cuotas (max-width: 520px) {
+  .texto-largo {
+    display: none;
+  }
+
+  .texto-corto {
+    display: inline;
+  }
+}
+
+// Título con su ícono de info al lado, en una sola línea. El ícono es un
+// círculo sin borde ni fondo de 24px; el área táctil llega a 44px con la
+// extensión invisible, sin agrandarlo.
+.titulo-con-info {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.info-btn {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+
+  &:hover,
+  &[aria-expanded='true'] {
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-solid);
+    outline-offset: 2px;
+  }
+}
+
+// Igual en celular y en escritorio: dos filas con aire. Arriba el porcentaje a
+// la izquierda y el estado a la derecha; abajo la frase a la izquierda y lo que
+// se paga en cuotas a la derecha, las dos apoyadas en la misma línea. Las piezas
+// vienen dentro de dos contenedores (`izquierda`, `derecha`) que aquí se
+// deshacen para colocarlas directo en la cuadrícula.
+.cuotas__resumen {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--space-1) var(--space-4);
+  // `auto`: si la tarjeta se estira, el sobrante queda entre el título y la
+  // cifra, y cifra, frase, barra y nota se mantienen juntas contra el fondo.
+  margin-top: auto;
+}
+
+.cuotas__izquierda,
+.cuotas__derecha {
+  display: contents;
+}
+
+// Sin la altura de línea holgada de `.t-hero`: pegado a su frase, sin hueco.
+.cuotas__izquierda > .t-hero {
+  grid-area: 1 / 1;
+  line-height: 1;
+}
+
+.etiqueta-margen {
+  grid-area: 1 / 2;
+  justify-self: end;
+}
+
+.cuotas__frase {
+  grid-area: 2 / 1;
+  align-self: baseline;
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.4;
+  color: var(--text-secondary);
+  // Si baja a dos líneas, las reparte parejas en vez de dejar una palabra sola.
+  text-wrap: balance;
+}
+
+.cuotas__montos {
+  grid-area: 2 / 2;
+  align-self: baseline;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  text-align: right;
+}
+
+.cuotas__total {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+// En una tarjeta angosta el monto es un poco menor para que quepa junto a la frase.
+@container cuotas (max-width: 520px) {
+  .cuotas__resumen {
+    column-gap: var(--space-3);
+  }
+
+  .cuotas__total {
+    font-size: var(--text-base);
+  }
+}
+
+// Pie de la tarjeta: la frase del exceso a la izquierda y, a la derecha, el
+// engranaje que abre qué ingresos cuentan.
+.cuotas__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+// Engranaje sin borde ni fondo, de 24px; el área táctil llega a 44px con la
+// extensión invisible, sin agrandarlo.
+.cuotas__configurar {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-solid);
+    outline-offset: 2px;
+  }
+}
+
+// El "%" va más pequeño que la cifra, como en los números de iOS.
+.cuotas__pct {
+  margin-left: 2px;
+  font-size: 0.5em;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+}
+
+// El estado de las cuotas en dos palabras: lo único que lleva color además de
+// la barra. Verde si hay margen, ámbar si aprieta, rojo si no queda.
+.etiqueta-margen {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-ingreso-bg);
+  color: var(--color-ingreso);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+
+  &--cerca {
+    background: var(--color-deuda-bg);
+    color: var(--color-deuda);
+  }
+
+  &--pasado {
+    background: var(--color-gasto-bg);
+    color: var(--color-gasto);
+  }
+}
+
+// La barra con sus dos topes: el ideal (35 %) en tinta fuerte y el crítico
+// (50 %) más suave. Sin rótulos: lo que significan lo explica el ícono de info.
+.barra-ideal {
+  align-self: stretch;
+}
+
+// Barra de dos tramos: gris hasta el tope saludable y, encima, solo lo que lo
+// pasa, en el color del estado (rojo si pasa de la mitad, ámbar si no).
+.tramos {
+  display: flex;
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+}
+
+// Tonos suaves, como las barras de iOS: el gris de lo sano es medio y el
+// color del exceso es el "vivo" del estado, no el oscuro del texto.
+.tramos__sano {
+  background: color-mix(in srgb, var(--text-muted) 70%, var(--bg-subtle));
+}
+
+.tramos__exceso {
+  background: var(--vivo-gasto);
+
+  &--cerca {
+    background: var(--vivo-deuda);
+  }
+}
+
+
+.barra-ideal__pista {
+  position: relative;
+}
+
+// Las marcas son blancas con un borde finísimo: se ven sobre el gris, sobre
+// el color del exceso y sobre la pista vacía.
+.barra-ideal__marca {
+  position: absolute;
+  top: -3px;
+  left: 35%;
+  width: 3px;
+  height: calc(var(--space-2) + 6px);
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 22%, transparent);
+}
+
+// Los números van centrados bajo su marca.
+.barra-ideal__rotulos {
+  position: relative;
+  height: var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.barra-ideal__rotulo {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+// La frase con la cifra que hay que mover: cuánto se pasa del tope.
+.cuotas__linea {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-secondary);
+
+  strong {
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+  }
+}
+
+// La pregunta de "qué es lo más importante ahora": un panel bajo con las
+// opciones como fichas, las mismas de Configuración.
+.prioridad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.prioridad__titulo {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.prioridad__nota {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.prioridad__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.objetivo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+
+  &:hover {
+    border-color: var(--accent-solid);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-brillo);
+    outline-offset: 2px;
   }
 }
 
@@ -58,41 +437,198 @@
   border-bottom: 1px solid var(--border);
 }
 
-// En escritorio las dos tarjetas de una fila miden lo mismo: la más baja
-// se estira y su panel llena el alto, en vez de dejar un escalón.
-@media (min-width: 1024px) {
-  .seccion {
-    align-self: stretch;
+// El orden del DOM es el del celular y el de escritorio: héroe, cifras y dos
+// columnas. A la izquierda, el resumen, las cuotas y los topes (`.g-lateral`);
+// a la derecha, la dona de categorías y debajo los últimos movimientos
+// (`.col-apilada`). En el celular todo va en una sola columna, en ese orden.
+//
+// La columna lateral apila sus paneles con el mismo aire que el resto.
+.tablero {
+  display: grid;
+  gap: var(--space-4);
+
+  // Cada tarjeta llena el alto de su celda: así, en una fila, la más baja
+  // se estira y las dos miden lo mismo.
+  > section {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 
     > .panel {
       flex: 1;
     }
   }
+
 }
 
-// El orden del DOM es el del celular y el de escritorio: héroe, cifras, lo
-// que viene, y a su lado (o debajo en el celular) la columna de cuánto sueldo
-// van las cuotas y los topes; después movimientos y categorías.
-//
-// La columna lateral apila sus dos paneles con el mismo aire que el resto.
-.g-lateral {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+// Celular: una sola columna, en este orden (el del DOM es el de escritorio).
+@media (max-width: 1023.98px) {
+  .tablero {
+    .g-mes { order: 1; }
+    .g-comprometido { order: 2; }
+    .g-asistente { order: 3; }
+    .g-presupuestos { order: 4; }
+    .g-categorias { order: 5; }
+    .g-ultimos { order: 6; }
+  }
 }
 
-// Los últimos movimientos son tres filas: su panel mide lo que miden ellas,
-// sin estirarse al alto de la gráfica de categorías que va al lado.
+// Escritorio: dos columnas iguales, tres filas de dos tarjetas. Cada fila
+// empareja dos tarjetas en el orden del DOM (resumen | cuotas, categorías |
+// últimos movimientos, presupuestos | asistente).
 @media (min-width: 1024px) {
-  .seccion--natural {
-    align-self: start;
+  .tablero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
 
-    > .panel {
-      flex: none;
+    // Últimos movimientos: no manda su propio alto, lo manda la torta que va
+    // a su lado. Se dibujan solo las filas que caben (las que no, pasan a una
+    // segunda "columna" invisible) así que si la torta crece, aparece un
+    // movimiento más; si se achica, desaparece el último. Nunca se corta una
+    // fila a la mitad.
+    .g-ultimos {
+      contain: size;
+      min-height: 15rem;
+
+      > .panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      // Mismo aire abajo que cualquier tarjeta estándar (`--tarjeta-aire`, menos
+      // el relleno propio de la última fila) y las filas que caben se reparten
+      // lo que sobra (`flex-grow`), en vez de dejarlo como un hueco al final.
+      .rows {
+        flex: 1;
+        min-height: 0;
+        padding-bottom: calc(var(--tarjeta-aire) - var(--space-2));
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        overflow: hidden;
+
+        > * {
+          flex: 1 0 auto;
+          width: 100%;
+        }
+      }
     }
   }
+}
+
+// La tarjeta del objetivo sube al primer lugar (celular y escritorio); las
+// demás siguen en su orden. Va después de los órdenes de arriba para ganarles.
+// El asistente la acompaña (queda a su lado en la primera fila).
+.tablero[data-lider='deudas'] .g-comprometido,
+.tablero[data-lider='gastos'] .g-presupuestos {
+  order: -2;
+}
+.tablero[data-lider] .g-asistente {
+  order: -1;
+}
+
+// Asistente: titular, las cifras que lo explican, un consejo y un botón. El botón
+// va abajo para que, si la tarjeta de al lado es más alta, quede siempre en el mismo lugar.
+.panel--asistente {
+  display: flex;
+  flex-direction: column;
+
+  .asistente {
+    flex: 1;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+}
+
+.asistente__titular {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+  text-wrap: balance;
+
+  // Solo lo urgente lleva color: lo demás se lee neutro.
+  &[data-gravedad='3'] {
+    color: var(--color-gasto);
+  }
+}
+
+.evidencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--border);
+}
+
+.evidencia__fila {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  align-items: baseline;
+}
+
+.evidencia__barra {
+  grid-column: 1 / -1;
+}
+
+.asistente__consejo {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.asistente__consejo--calma {
+  padding: 0 var(--tarjeta-aire) var(--tarjeta-aire);
+}
+
+.asistente__accion {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+// "Ver todos" de presupuestos, al pie de la tarjeta y alineado con las filas.
+.presupuestos__todos {
+  align-self: flex-start;
+  margin: 0 var(--space-3) var(--space-3);
+}
+
+// La línea separadora va arriba de cada fila (menos la primera), no abajo:
+// como la lista corta las filas que no caben, la última visible no es la
+// última del DOM y con la línea abajo quedaba una raya pegada al borde.
+.tablero .g-ultimos .rows > .row {
+  border-bottom: 0;
+  border-top: 1px solid var(--border);
+
+  &:first-child {
+    border-top: 0;
+  }
+}
+
+// En el celular no hay torta al lado que dé el alto: se muestran tres.
+@media (max-width: 1023.98px) {
+  .tablero .g-ultimos .rows > .row:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+// Tocar la tarjeta de movimientos lleva a Movimientos, pero sin efecto al pasar
+// el mouse: ninguna tarjeta de General se levanta, para que todas se comporten
+// igual. El enlace "Ver todos" de su cabeza es la señal de que se puede entrar.
+.tablero .g-ultimos > .panel {
+  cursor: pointer;
+}
+
+// Mes de la dona, a la derecha del título: "noviembre" se escribe con inicial
+// mayúscula, como el título de la pantalla.
+// Solo la primera letra en mayúscula: "Desde el 20 de octubre", no "Desde El 20 De Octubre".
+.mes-categorias::first-letter {
+  text-transform: uppercase;
 }
 
 // Presupuesto: nombre y "gastado de tope" arriba, barra y lo que queda

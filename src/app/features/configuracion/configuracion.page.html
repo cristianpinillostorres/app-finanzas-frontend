@@ -164,22 +164,49 @@
         </li>
         <li class="row row--estatica row--objetivos">
           <span class="row-main">
-            <span class="t-row" id="cfg-objetivos-rotulo">Lo que quieres lograr</span>
-            <span class="t-meta">Ordena lo que la app te sugiere primero.</span>
-            <span class="objetivos" role="group" aria-labelledby="cfg-objetivos-rotulo">
+            <span class="t-row" id="cfg-principal-rotulo">Lo más importante ahora</span>
+            <span class="t-meta">
+              Elige uno: es la cifra que encabeza General y lo que la app te sugiere primero. Toca
+              de nuevo el elegido para quitarlo.
+            </span>
+            <span class="objetivos" role="radiogroup" aria-labelledby="cfg-principal-rotulo">
               @for (objetivo of opcionesObjetivo; track objetivo.valor) {
                 <button
                   type="button"
                   class="objetivo"
-                  role="checkbox"
-                  [attr.aria-checked]="estaElegido(objetivo.valor)"
-                  [class.objetivo--elegido]="estaElegido(objetivo.valor)"
-                  (click)="alternarObjetivo(objetivo.valor)"
+                  role="radio"
+                  [attr.aria-checked]="objetivoPrincipal() === objetivo.valor"
+                  [class.objetivo--elegido]="objetivoPrincipal() === objetivo.valor"
+                  (click)="elegirPrincipal(objetivo.valor)"
                 >
                   <mat-icon aria-hidden="true">{{
-                    estaElegido(objetivo.valor) ? 'check' : objetivo.icono
+                    objetivoPrincipal() === objetivo.valor ? 'check' : objetivo.icono
                   }}</mat-icon>
                   {{ objetivo.nombre }}
+                </button>
+              }
+            </span>
+          </span>
+        </li>
+        <li class="row row--estatica row--objetivos">
+          <span class="row-main">
+            <span class="t-row" id="cfg-tema-rotulo">Apariencia</span>
+            <span class="t-meta">
+              Con «Sistema» la app sigue el modo claro u oscuro de tu dispositivo. Se guarda en este
+              dispositivo.
+            </span>
+            <span class="objetivos" role="radiogroup" aria-labelledby="cfg-tema-rotulo">
+              @for (opcion of opcionesTema; track opcion.valor) {
+                <button
+                  type="button"
+                  class="objetivo"
+                  role="radio"
+                  [attr.aria-checked]="tema.preferencia() === opcion.valor"
+                  [class.objetivo--elegido]="tema.preferencia() === opcion.valor"
+                  (click)="tema.elegir(opcion.valor)"
+                >
+                  <mat-icon aria-hidden="true">{{ opcion.icono }}</mat-icon>
+                  {{ opcion.nombre }}
                 </button>
               }
             </span>
